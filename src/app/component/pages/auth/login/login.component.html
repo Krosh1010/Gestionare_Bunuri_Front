@@ -1,0 +1,130 @@
+<div class="login-container">
+  <div class="left-section">
+    <div class="background-pattern"></div>
+    <div class="content-wrapper">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <img src="assets/images/logo_huiogo.png" alt="Asset Manager Logo" />
+        </div>
+        <div class="brand-name">AssetManager</div>
+      </div>
+      
+      <div class="illustration">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <img src="assets/images/logo_huiogo.png" alt="Asset Management Illustration" class="main-illustration" />
+      </div>
+      
+      <div class="content">
+        <h1><span class="gradient-text">AssetManager</span></h1>
+        <h2>Simplifying asset management</h2>
+        <p>Manage your assets effortlessly and securely with our intuitive platform designed for modern businesses.</p>
+        
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Real-time tracking</span>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Secure data encryption</span>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">✓</div>
+            <span>Multi-device access</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-section">
+    <div class="login-card-wrapper">
+      <div class="login-card">
+        <div class="card-header">
+          <div class="card-logo">
+            <div class="logo-icon">A</div>
+            <div class="logo-text">
+              <h3>AssetM</h3>
+              <p>Personal Asset</p>
+            </div>
+          </div>
+          <div class="welcome-text">
+            Welcome back! Please log in to continue.
+          </div>
+        </div>
+
+        <form class="login-form">
+          <h2>Log in to your account</h2>
+          
+          <div class="form-group">
+            <label for="assetId">
+              <span class="label-text">Asset ID</span>
+              <span class="label-hint">Format: A123-456-789</span>
+            </label>
+            <div class="input-with-icon">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+              </svg>
+              <input 
+                type="text" 
+                id="assetId" 
+                placeholder="A123-456-789"
+                class="form-control"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">
+              <span class="label-text">Password</span>
+              <span class="label-hint">At least 8 characters</span>
+            </label>
+            <div class="input-with-icon">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <input 
+                type="password" 
+                id="password" 
+                placeholder="Enter your password"
+                class="form-control"
+              />
+              <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="checkbox">
+              <input type="checkbox" />
+              <span class="checkmark"></span>
+              <span class="checkbox-label">Remember me</span>
+            </label>
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn-login">
+            <span>Log in</span>
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </button>
+          
+          <div class="divider">
+            <span>or</span>
+          </div>
+          
+          <div class="signup-link">
+            Don't have an account? <a href="/register">Request access</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

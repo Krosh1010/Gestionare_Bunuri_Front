@@ -1,0 +1,440 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="dashboard-title">Dashboard Gestionare Bunuri</h1>
+        <p class="dashboard-subtitle">Monitorizează și gestionează activele companiei tale</p>
+      </div>
+      <div class="header-right">
+        <div class="date-display">
+          <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span id="current-date">{{ currentDate | date:'EEEE, d MMMM y' }}</span>
+        </div>
+        <button class="btn-notifications">
+          <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="notification-badge">3</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick Actions -->
+  <section class="quick-actions">
+    <div class="actions-grid">
+      <a routerLink="/inventory" class="action-card">
+        <div class="action-icon inventory">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Inventar</h3>
+          <p>Gestionează toate bunurile</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+      
+      <a routerLink="/reports" class="action-card">
+        <div class="action-icon reports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Rapoarte</h3>
+          <p>Generează și exportă</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+      
+      <a routerLink="/locations" class="action-card">
+        <div class="action-icon locations">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Locații</h3>
+          <p>Urmărește bunurile</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+      
+      <a routerLink="/notifications" class="action-card">
+        <div class="action-icon notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="action-content">
+          <h3>Notificări</h3>
+          <p>Expirare garanții/asigurări</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Main Dashboard Grid -->
+  <main class="dashboard-grid">
+    <!-- Left Column -->
+    <div class="dashboard-column">
+      <!-- Statistics Cards -->
+      <div class="stats-grid">
+        <div class="stat-card total">
+          <div class="stat-header">
+            <h3>Total Bunuri</h3>
+            <div class="stat-trend up">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              <span>12%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <p class="stat-number">1,245</p>
+            <p class="stat-change">+134 față de luna trecută</p>
+          </div>
+          <div class="stat-chart">
+            <div class="chart-line" style="height: 60%"></div>
+            <div class="chart-line" style="height: 80%"></div>
+            <div class="chart-line" style="height: 70%"></div>
+            <div class="chart-line" style="height: 90%"></div>
+            <div class="chart-line" style="height: 85%"></div>
+          </div>
+        </div>
+        
+        <div class="stat-card in-stock">
+          <div class="stat-header">
+            <h3>Bunuri în Stoc</h3>
+            <div class="stat-trend up">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              <span>8%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <p class="stat-number">980</p>
+            <p class="stat-change">+72 față de luna trecută</p>
+          </div>
+          <div class="stat-progress">
+            <div class="progress-bar" style="width: 78%">
+              <div class="progress-fill"></div>
+            </div>
+            <div class="progress-label">78% din total</div>
+          </div>
+        </div>
+        
+        <div class="stat-card value">
+          <div class="stat-header">
+            <h3>Valoare Totală</h3>
+            <div class="stat-trend up">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              <span>15%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <p class="stat-number">€542,850</p>
+            <p class="stat-change">+€70,850 față de luna trecută</p>
+          </div>
+          <div class="stat-details">
+            <div class="detail-item">
+              <span class="detail-label">Valoare medie/bun</span>
+              <span class="detail-value">€436</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stat-card alerts">
+          <div class="stat-header">
+            <h3>Alerte Active</h3>
+            <div class="stat-trend down">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+              <span>5%</span>
+            </div>
+          </div>
+          <div class="stat-content">
+            <p class="stat-number">18</p>
+            <p class="stat-change">-2 față de săptămâna trecută</p>
+          </div>
+          <div class="stat-breakdown">
+            <div class="breakdown-item urgent">
+              <span class="breakdown-label">Urgente</span>
+              <span class="breakdown-value">5</span>
+            </div>
+            <div class="breakdown-item warning">
+              <span class="breakdown-label">Avertismente</span>
+              <span class="breakdown-value">8</span>
+            </div>
+            <div class="breakdown-item info">
+              <span class="breakdown-label">Informative</span>
+              <span class="breakdown-value">5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Locations Overview -->
+      <div class="locations-card">
+        <div class="card-header">
+          <h3>Distribuție Locații</h3>
+          <a routerLink="/locations" class="view-all">Vezi toate →</a>
+        </div>
+        <div class="locations-content">
+          <div class="locations-map">
+            <div class="building-map">
+              <div class="floor" data-floor="3">
+                <div class="floor-label">Etaj 3</div>
+                <div class="rooms">
+                  <div class="room occupied" data-room="301" data-count="12"></div>
+                  <div class="room" data-room="302"></div>
+                  <div class="room occupied" data-room="303" data-count="8"></div>
+                  <div class="room" data-room="304"></div>
+                </div>
+              </div>
+              <div class="floor" data-floor="2">
+                <div class="floor-label">Etaj 2</div>
+                <div class="rooms">
+                  <div class="room" data-room="201"></div>
+                  <div class="room occupied" data-room="202" data-count="15"></div>
+                  <div class="room occupied" data-room="203" data-count="6"></div>
+                  <div class="room occupied" data-room="204" data-count="10"></div>
+                </div>
+              </div>
+              <div class="floor" data-floor="1">
+                <div class="floor-label">Etaj 1</div>
+                <div class="rooms">
+                  <div class="room occupied" data-room="101" data-count="25"></div>
+                  <div class="room occupied" data-room="102" data-count="18"></div>
+                  <div class="room" data-room="103"></div>
+                  <div class="room occupied" data-room="104" data-count="14"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="locations-stats">
+            <div class="location-stat">
+              <div class="stat-icon">📍</div>
+              <div class="stat-info">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Locații ocupate</div>
+              </div>
+            </div>
+            <div class="location-stat">
+              <div class="stat-icon">📦</div>
+              <div class="stat-info">
+                <div class="stat-value">98</div>
+                <div class="stat-label">Bunuri în depozit</div>
+              </div>
+            </div>
+            <div class="location-stat">
+              <div class="stat-icon">🏢</div>
+              <div class="stat-info">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Etaje active</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="dashboard-column">
+      <!-- Recent Notifications -->
+      <div class="notifications-card">
+        <div class="card-header">
+          <h3>Notificări Recente</h3>
+          <a routerLink="/notifications" class="view-all">Vezi toate →</a>
+        </div>
+        <div class="notifications-list">
+          <div class="notification-item urgent">
+            <div class="notification-icon">⚠️</div>
+            <div class="notification-content">
+              <div class="notification-title">Garantie expiră</div>
+              <div class="notification-desc">Server Rack #245 - Expiră în 7 zile</div>
+              <div class="notification-time">Acum 2 ore</div>
+            </div>
+            <button class="notification-action">Rezolvă</button>
+          </div>
+          
+          <div class="notification-item warning">
+            <div class="notification-icon">📋</div>
+            <div class="notification-content">
+              <div class="notification-title">Asigurare</div>
+              <div class="notification-desc">Mașină companie #3 - Expiră în 30 zile</div>
+              <div class="notification-time">Ieri, 14:30</div>
+            </div>
+            <button class="notification-action">Amână</button>
+          </div>
+          
+          <div class="notification-item info">
+            <div class="notification-icon">📊</div>
+            <div class="notification-content">
+              <div class="notification-title">Raport lunar</div>
+              <div class="notification-desc">Generat automat pentru Octombrie</div>
+              <div class="notification-time">28 Oct, 09:00</div>
+            </div>
+            <button class="notification-action">Vezi</button>
+          </div>
+          
+          <div class="notification-item warning">
+            <div class="notification-icon">🔧</div>
+            <div class="notification-content">
+              <div class="notification-title">Întreținere</div>
+              <div class="notification-desc">UPS Backup System - Revizie programată</div>
+              <div class="notification-time">26 Oct, 11:15</div>
+            </div>
+            <button class="notification-action">Planifică</button>
+          </div>
+          
+          <div class="notification-item info">
+            <div class="notification-icon">📍</div>
+            <div class="notification-content">
+              <div class="notification-title">Mutare bun</div>
+              <div class="notification-desc">Imprimantă #45 mutată la etajul 2</div>
+              <div class="notification-time">25 Oct, 16:45</div>
+            </div>
+            <button class="notification-action">Confirmă</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Reports -->
+      <div class="reports-card">
+        <div class="card-header">
+          <h3>Rapoarte Recente</h3>
+          <a routerLink="/reports" class="view-all">Toate rapoartele →</a>
+        </div>
+        <div class="reports-list">
+          <div class="report-item">
+            <div class="report-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div class="report-content">
+              <div class="report-title">Inventar Lunar - Octombrie 2024</div>
+              <div class="report-meta">Generat automat • 245 bunuri</div>
+            </div>
+            <div class="report-actions">
+              <button class="action-btn" title="Descarcă PDF">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="report-item">
+            <div class="report-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div class="report-content">
+              <div class="report-title">Analiză Valoare Active - Q3 2024</div>
+              <div class="report-meta">Generat manual • Analiză detaliată</div>
+            </div>
+            <div class="report-actions">
+              <button class="action-btn" title="Descarcă Excel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="report-item">
+            <div class="report-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="report-content">
+              <div class="report-title">Raport Costuri Întreținere</div>
+              <div class="report-meta">Septembrie 2024 • 18 înregistrări</div>
+            </div>
+            <div class="report-actions">
+              <button class="action-btn" title="Partajează">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="reports-actions">
+          <button class="btn-generate-report" routerLink="/reports/new">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Generează raport nou
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Distribution -->
+      <div class="categories-card">
+        <div class="card-header">
+          <h3>Distribuție pe Categorii</h3>
+          <a routerLink="/inventory/categories" class="view-all">Detalii →</a>
+        </div>
+        <div class="categories-chart">
+          <div class="chart-visual">
+            <div class="pie-chart">
+              <div class="pie-segment" style="--percentage: 35; --color: #667eea;"></div>
+              <div class="pie-segment" style="--percentage: 25; --color: #764ba2;"></div>
+              <div class="pie-segment" style="--percentage: 20; --color: #f59e0b;"></div>
+              <div class="pie-segment" style="--percentage: 15; --color: #10b981;"></div>
+              <div class="pie-segment" style="--percentage: 5; --color: #ef4444;"></div>
+              <div class="chart-center">
+                <div class="chart-total">245</div>
+                <div class="chart-label">bunuri</div>
+              </div>
+            </div>
+          </div>
+          <div class="categories-legend">
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: #667eea;"></span>
+              <span class="legend-label">Tehnologie</span>
+              <span class="legend-value">35%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: #764ba2;"></span>
+              <span class="legend-label">Mobilier</span>
+              <span class="legend-value">25%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: #f59e0b;"></span>
+              <span class="legend-label">Echipamente</span>
+              <span class="legend-value">20%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: #10b981;"></span>
+              <span class="legend-label">Vehicule</span>
+              <span class="legend-value">15%</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: #ef4444;"></span>
+              <span class="legend-label">Altele</span>
+              <span class="legend-value">5%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
