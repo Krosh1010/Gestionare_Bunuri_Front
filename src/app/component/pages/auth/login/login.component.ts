@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthenticationService } from '../../../../services/ApiServices/authentication.service';
+import { AuthStateService } from '../../../../services/auth-state.service';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule,RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -17,10 +20,10 @@ export class LoginComponent {
   loginSuccess = false;
   showDemoInfo = true;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthenticationService, private authState: AuthStateService, private router: Router) {
     this.loginForm = this.fb.group({
-      assetId: ['', [Validators.required, Validators.pattern(/^A\d{3}-\d{3}-\d{3}$/)]],
-      password: ['', [Validators.required, Validators.minLength(8)]]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(3)]]
     });
   }
 
@@ -28,24 +31,34 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.loginMessage = '';
-      
-      // Simulate login process
-      setTimeout(() => {
-        const { assetId, password } = this.loginForm.value;
-        if (assetId === 'A123-456-789' && password === 'password123') {
+      const { email, password } = this.loginForm.value;
+      try {
+        const loginData = { Email: email, Password: password };
+        const response = await this.authService.login(loginData);
+        console.log('Login response:', response);
+        // Dacă răspunsul este un obiect Axios, token-ul e în response.data.token
+        const token = response && response.data && response.data.token;
+        console.log('Token extras:', token);
+        if (token) {
+          localStorage.setItem('authToken', JSON.stringify({ token }));
+          this.authState.refresh();
           this.loginSuccess = true;
           this.loginMessage = 'Login successful! Redirecting to dashboard...';
-          // Here you would typically navigate to dashboard
+          this.router.navigate(['/dashboard']);
         } else {
           this.loginSuccess = false;
           this.loginMessage = 'Invalid credentials. Please try again.';
         }
-        this.isLoading = false;
-      }, 2000);
+      } catch (error) {
+        this.loginSuccess = false;
+        this.loginMessage = 'A apărut o eroare la autentificare. Încearcă din nou!';
+        console.error('Login error:', error);
+      }
+      this.isLoading = false;
     } else {
       this.loginMessage = 'Please fill in all required fields correctly.';
       this.loginSuccess = false;

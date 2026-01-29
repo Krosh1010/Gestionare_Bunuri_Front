@@ -2,6 +2,7 @@ import { Component,OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthenticationService } from '../../../../services/ApiServices/authentication.service';
 
 @Component({
   selector: 'app-register',
@@ -10,12 +11,12 @@ import { RouterLink } from '@angular/router';
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
-export class RegisterComponent  {
+export class RegisterComponent {
   registerForm: FormGroup;
   showPassword = false;
   accountType: 'personal' | 'company' = 'personal';
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthenticationService) {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -41,25 +42,25 @@ export class RegisterComponent  {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.registerForm.valid) {
-      // Prepare form data
-      const formData = {
-        ...this.registerForm.value,
-        accountType: this.accountType
+      // Map form data to RegisterModel (for home use, only personal account)
+      const registerData = {
+        FullName: this.registerForm.value.fullName,
+        Email: this.registerForm.value.email,
+        Password: this.registerForm.value.password
       };
-      
-      console.log('Form submitted:', formData);
-      
-      // Show success message
-      alert('Cont creat cu succes! Vei fi redirecționat către dashboard.');
-      
-      // Reset form
-      this.registerForm.reset();
-      this.accountType = 'personal';
-      this.showPassword = false;
+      try {
+        await this.authService.register(registerData);
+        alert('Cont creat cu succes! Vei fi redirecționat către dashboard.');
+        this.registerForm.reset();
+        this.accountType = 'personal';
+        this.showPassword = false;
+      } catch (error: any) {
+        alert('A apărut o eroare la înregistrare. Încearcă din nou!');
+        console.error('Register error:', error);
+      }
     } else {
-      // Mark all fields as touched to show errors
       this.markFormGroupTouched(this.registerForm);
     }
   }

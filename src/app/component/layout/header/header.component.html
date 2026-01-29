@@ -11,17 +11,9 @@
       </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="nav">
+    <!-- Navigation (only when logged in) -->
+    <nav class="nav" *ngIf="isLoggedIn">
       <ul class="nav-list">
-        <li class="nav-item">
-          <a routerLink="" class="nav-link" routerLinkActive="active">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <span>Acasă</span>
-          </a>
-        </li>
         <li class="nav-item">
           <a routerLink="/dashboard" class="nav-link" routerLinkActive="active">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -67,116 +59,244 @@
       </ul>
     </nav>
 
-    <!-- User Menu & Actions -->
+    <!-- Header Actions -->
     <div class="header-actions">
-      <!-- Search Bar -->
-      <div class="search-bar">
+      <!-- Search Bar (only when logged in) -->
+      <div class="search-bar" *ngIf="isLoggedIn">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input type="text" class="search-input" placeholder="Caută bunuri, rapoarte..." />
       </div>
 
-      <!-- Notifications -->
-      <div class="notifications">
-        <button class="notifications-btn">
-          <svg class="notifications-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      <!-- Login/Register Buttons (when NOT logged in) -->
+      <div class="auth-buttons" *ngIf="!isLoggedIn">
+        <a routerLink="/login" class="auth-btn login-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
           </svg>
-          <span class="notifications-badge">3</span>
-        </button>
-        <div class="notifications-dropdown">
-          <div class="dropdown-header">
-            <h4>Notificări</h4>
-            <a href="#" class="mark-read">Marchează toate ca citite</a>
-          </div>
-          <div class="notifications-list">
-            <div class="notification-item urgent">
-              <div class="notification-icon">⚠️</div>
-              <div class="notification-content">
-                <div class="notification-title">Garantie expiră</div>
-                <div class="notification-desc">Server Rack #245 - Expiră în 7 zile</div>
-                <div class="notification-time">Acum 2 ore</div>
-              </div>
-            </div>
-            <div class="notification-item warning">
-              <div class="notification-icon">📋</div>
-              <div class="notification-content">
-                <div class="notification-title">Asigurare</div>
-                <div class="notification-desc">Mașină companie #3 - Expiră în 30 zile</div>
-                <div class="notification-time">Ieri, 14:30</div>
-              </div>
-            </div>
-            <div class="notification-item info">
-              <div class="notification-icon">📊</div>
-              <div class="notification-content">
-                <div class="notification-title">Raport lunar</div>
-                <div class="notification-desc">Generat automat pentru Octombrie</div>
-                <div class="notification-time">28 Oct, 09:00</div>
-              </div>
-            </div>
-          </div>
-          <div class="dropdown-footer">
-            <a routerLink="/notifications" class="view-all">Vezi toate notificările</a>
-          </div>
-        </div>
+          <span>Autentificare</span>
+        </a>
+        <a routerLink="/register" class="auth-btn register-btn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          <span>Înregistrare</span>
+        </a>
       </div>
 
-      <!-- User Menu -->
-      <div class="user-menu">
-        <button class="user-btn">
-          <div class="user-avatar">
-            <span>JS</span>
-          </div>
-          <div class="user-info">
-            <span class="user-name">John Smith</span>
-          </div>
-          <svg class="user-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        <div class="user-dropdown">
-          <div class="dropdown-header">
-            <div class="user-dropdown-info">
-              <div class="user-avatar large">
-                <span>LL</span>
-              </div>
-              <div class="user-dropdown-details">
-                <h4>John Smith</h4>
+      <!-- User Menu (when logged in) -->
+      <div class="user-menu-container" *ngIf="isLoggedIn">
+        <div class="user-menu">
+          <button class="user-menu-btn" (click)="toggleUserDropdown()">
+            <div class="user-avatar">
+              <span>JS</span>
+            </div>
+            <div class="user-info">
+              <span class="user-name">John Smith</span>
+              <span class="user-role">Administrator</span>
+            </div>
+            <svg class="user-arrow" [class.rotated]="isUserDropdownOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <div class="user-dropdown" [class.active]="isUserDropdownOpen">
+            <div class="dropdown-header">
+              <div class="user-dropdown-info">
+                <div class="user-avatar large">
+                  <span>JS</span>
+                </div>
+                <div class="user-dropdown-details">
+                  <h4>John Smith</h4>
+                  <p>john.smithcompany.com</p>
+                  <span class="user-role-badge">Administrator</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="dropdown-content">
-            <a href="#" class="dropdown-item">
-              <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span>Profil</span>
-            </a>
-            <a href="#" class="dropdown-item">
-              <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span>Setări cont</span>
-            </a>
-            <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item">
-              <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span>Deconectare</span>
-            </a>
+            
+            <div class="dropdown-content">
+              <a href="#" class="dropdown-item" (click)="closeAllDropdowns()">
+                <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Profil</span>
+              </a>
+              <a href="#" class="dropdown-item" (click)="closeAllDropdowns()">
+                <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Setări cont</span>
+              </a>
+              <a href="#" class="dropdown-item" (click)="closeAllDropdowns()">
+                <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Securitate</span>
+              </a>
+              
+              <div class="dropdown-divider"></div>
+              
+              <button class="dropdown-item logout-item" (click)="logout(); closeAllDropdowns()">
+                <svg class="dropdown-icon logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Deconectare</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Mobile Menu Toggle -->
-      <button class="mobile-menu-toggle">
+      <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
     </div>
   </div>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu-overlay" *ngIf="isMobileMenuOpen" (click)="toggleMobileMenu()"></div>
+  
+  <!-- Mobile Menu -->
+  <nav class="mobile-menu" [class.active]="isMobileMenuOpen">
+    <div class="mobile-menu-header">
+      <div class="logo">
+        <div class="logo-icon">AG</div>
+        <div class="logo-text">
+          <h1 class="logo-title">AssetGuard</h1>
+          <p class="logo-subtitle">Gestionare Bunuri</p>
+        </div>
+      </div>
+      <button class="mobile-menu-close" (click)="toggleMobileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="mobile-menu-content">
+      <!-- User Info (when logged in) -->
+      <div class="mobile-user-info" *ngIf="isLoggedIn">
+        <div class="mobile-user-avatar">
+          <span>JS</span>
+        </div>
+        <div class="mobile-user-details">
+          <h3>John Smith</h3>
+          <p>Administrator • john.smithcompany.com</p>
+        </div>
+      </div>
+      
+      <!-- Search Bar (when logged in) -->
+      <div class="mobile-search-bar" *ngIf="isLoggedIn">
+        <svg class="mobile-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" class="mobile-search-input" placeholder="Caută bunuri, rapoarte..." />
+      </div>
+      
+      <!-- Navigation Links -->
+      <ul class="mobile-nav-list">
+        <li *ngIf="isLoggedIn">
+          <a routerLink="/dashboard" class="mobile-nav-link" (click)="toggleMobileMenu()" routerLinkActive="active">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li *ngIf="isLoggedIn">
+          <a routerLink="/inventory" class="mobile-nav-link" (click)="toggleMobileMenu()" routerLinkActive="active">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span>Inventar</span>
+          </a>
+        </li>
+        <li *ngIf="isLoggedIn">
+          <a routerLink="/reports" class="mobile-nav-link" (click)="toggleMobileMenu()" routerLinkActive="active">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Rapoarte</span>
+          </a>
+        </li>
+        <li *ngIf="isLoggedIn">
+          <a routerLink="/locations" class="mobile-nav-link" (click)="toggleMobileMenu()" routerLinkActive="active">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Locații</span>
+          </a>
+        </li>
+        <li *ngIf="isLoggedIn">
+          <a routerLink="/settings" class="mobile-nav-link" (click)="toggleMobileMenu()" routerLinkActive="active">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Setări</span>
+          </a>
+        </li>
+        
+        <!-- Login/Register Links (when NOT logged in) -->
+        <li *ngIf="!isLoggedIn">
+          <a routerLink="/login" class="mobile-nav-link auth-link login" (click)="toggleMobileMenu()">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            <span>Autentificare</span>
+          </a>
+        </li>
+        <li *ngIf="!isLoggedIn">
+          <a routerLink="/register" class="mobile-nav-link auth-link register" (click)="toggleMobileMenu()">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <span>Înregistrare</span>
+          </a>
+        </li>
+        
+        <!-- User Menu Items (when logged in) -->
+        <li *ngIf="isLoggedIn">
+          <div class="mobile-user-menu-section">
+            <h4>Contul meu</h4>
+            <a href="#" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
+              <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span>Profil</span>
+            </a>
+            <a href="#" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
+              <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Setări cont</span>
+            </a>
+            <a href="#" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
+              <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>Securitate</span>
+            </a>
+          </div>
+        </li>
+        
+        <!-- Logout Button (when logged in) -->
+        <li *ngIf="isLoggedIn">
+          <button class="mobile-logout-btn" (click)="logout(); toggleMobileMenu()">
+            <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Deconectare</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </nav>
 </header>

@@ -1,0 +1,399 @@
+<div class="inventory-container">
+  <!-- Header -->
+  <div class="inventory-header">
+    <div class="header-left">
+      <h1>Inventar Bunuri</h1>
+      <p>Gestionează toate activele tale dintr-un singur loc</p>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" placeholder="Caută bunuri..." class="search-input" [(ngModel)]="searchQuery" (input)="filterAssets()">
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn-add" (click)="openAddModal()">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Adaugă bun
+        </button>
+        
+        <div class="filter-dropdown">
+          <button class="btn-filter" (click)="toggleFilter()">
+            <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filtre
+            <span class="filter-count" *ngIf="activeFilters > 0">{{activeFilters}}</span>
+          </button>
+          
+          <div class="filter-menu" [class.show]="showFilter">
+            <div class="filter-section">
+              <h4>Categorie</h4>
+              <div class="filter-options">
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.categories.electronics">
+                  <span class="filter-checkmark"></span>
+                  Electronice
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.categories.furniture">
+                  <span class="filter-checkmark"></span>
+                  Mobilier
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.categories.vehicles">
+                  <span class="filter-checkmark"></span>
+                  Vehicule
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.categories.documents">
+                  <span class="filter-checkmark"></span>
+                  Documente
+                </label>
+              </div>
+            </div>
+            
+            <div class="filter-section">
+              <h4>Stare</h4>
+              <div class="filter-options">
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.status.active">
+                  <span class="filter-checkmark"></span>
+                  Activat
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.status.inactive">
+                  <span class="filter-checkmark"></span>
+                  Dezactivat
+                </label>
+                <label class="filter-option">
+                  <input type="checkbox" [(ngModel)]="filters.status.maintenance">
+                  <span class="filter-checkmark"></span>
+                  În service
+                </label>
+              </div>
+            </div>
+            
+            <div class="filter-actions">
+              <button class="btn-clear" (click)="clearFilters()">Resetează</button>
+              <button class="btn-apply" (click)="applyFilters()">Aplică</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Stats Overview -->
+  <div class="stats-overview">
+    <div class="stat-card">
+      <div class="stat-icon total">📦</div>
+      <div class="stat-content">
+        <div class="stat-value">{{totalAssets}}</div>
+        <div class="stat-label">Total bunuri</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon active">✅</div>
+      <div class="stat-content">
+        <div class="stat-value">{{activeAssets}}</div>
+        <div class="stat-label">Bunuri active</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon value">💰</div>
+      <div class="stat-content">
+        <div class="stat-value">{{totalValue | currency:'EUR'}}</div>
+        <div class="stat-label">Valoare totală</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon expiring">⚠️</div>
+      <div class="stat-content">
+        <div class="stat-value">{{expiringSoon}}</div>
+        <div class="stat-label">Garanții expiră</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Assets List -->
+  <div class="assets-container">
+    <!-- View Toggle -->
+    <div class="view-toggle">
+      <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      </button>
+      <button class="view-btn" [class.active]="viewMode === 'list'" (click)="setViewMode('list')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Grid View -->
+    <div class="assets-grid" *ngIf="viewMode === 'grid'">
+      <div class="asset-card" *ngFor="let asset of filteredAssets" [class.expiring]="isExpiringSoon(asset)">
+        <div class="asset-header">
+          <div class="asset-category {{asset.category}}">
+            {{getCategoryIcon(asset.category)}}
+          </div>
+          <div class="asset-actions">
+            <button class="action-btn" (click)="editAsset(asset)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button class="action-btn" (click)="deleteAsset(asset)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="asset-content">
+          <h3 class="asset-name">{{asset.name}}</h3>
+          <p class="asset-description">{{asset.description}}</p>
+          
+          <div class="asset-details">
+            <div class="detail-item">
+              <span class="detail-label">ID:</span>
+              <span class="detail-value">{{asset.id}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Valoare:</span>
+              <span class="detail-value">{{asset.value | currency:'EUR'}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Locație:</span>
+              <span class="detail-value">{{asset.location}}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="asset-footer">
+          <div class="asset-status {{asset.status}}">
+            <span class="status-dot"></span>
+            {{getStatusText(asset.status || '')}}
+          </div>
+          
+          <div class="asset-dates">
+            <div class="date-item" *ngIf="asset.purchaseDate">
+              <span class="date-label">Achiziționat:</span>
+              <span class="date-value">{{asset.purchaseDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+            <div class="date-item" *ngIf="asset.warrantyEnd">
+              <span class="date-label" [class.warning]="isExpiringSoon(asset)">Garanție:</span>
+              <span class="date-value" [class.warning]="isExpiringSoon(asset)">
+                {{asset.warrantyEnd | date:'dd.MM.yyyy'}}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- List View -->
+    <div class="assets-list" *ngIf="viewMode === 'list'">
+      <div class="list-header">
+        <div class="list-column name">Nume bun</div>
+        <div class="list-column category">Categorie</div>
+        <div class="list-column value">Valoare</div>
+        <div class="list-column location">Locație</div>
+        <div class="list-column status">Stare</div>
+        <div class="list-column warranty">Garanție</div>
+        <div class="list-column actions">Acțiuni</div>
+      </div>
+      
+      <div class="list-items">
+        <div class="list-item" *ngFor="let asset of filteredAssets" [class.expiring]="isExpiringSoon(asset)">
+          <div class="list-cell name">
+            <div class="asset-info">
+              <div class="asset-icon {{asset.category}}">
+                {{getCategoryIcon(asset.category)}}
+              </div>
+              <div>
+                <div class="asset-title">{{asset.name}}</div>
+                <div class="asset-id">{{asset.id}}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="list-cell category">
+            <span class="category-badge {{asset.category}}">
+              {{getCategoryText(asset.category)}}
+            </span>
+          </div>
+          
+          <div class="list-cell value">
+            {{asset.value | currency:'EUR'}}
+          </div>
+          
+          <div class="list-cell location">
+            <div class="location-info">
+              <svg class="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>{{asset.location}}</span>
+            </div>
+          </div>
+          
+          <div class="list-cell status">
+            <span class="status-badge {{asset.status}}">
+              <span class="status-dot"></span>
+              {{getStatusText(asset.status || '')}}
+            </span>
+          </div>
+          
+          <div class="list-cell warranty">
+            <div class="warranty-info" [class.warning]="isExpiringSoon(asset)">
+              <span *ngIf="asset.warrantyEnd">{{asset.warrantyEnd | date:'dd.MM.yyyy'}}</span>
+              <span *ngIf="!asset.warrantyEnd">-</span>
+              <div class="warranty-days" *ngIf="getWarrantyDays(asset)">
+                {{getWarrantyDays(asset)}} zile
+              </div>
+            </div>
+          </div>
+          
+          <div class="list-cell actions">
+            <div class="action-buttons">
+              <button class="list-action-btn" (click)="viewAsset(asset)" title="Vezi detalii">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+              <button class="list-action-btn" (click)="editAsset(asset)" title="Editează">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button class="list-action-btn" (click)="deleteAsset(asset)" title="Șterge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- No Results -->
+  <div class="no-results" *ngIf="filteredAssets.length === 0">
+    <div class="no-results-icon">📦</div>
+    <h3>Nu s-au găsit bunuri</h3>
+    <p>Încearcă să modifici filtrele sau adaugă un nou bun</p>
+    <button class="btn-add-large" (click)="openAddModal()">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Adaugă primul bun
+    </button>
+  </div>
+</div>
+
+<!-- Add/Edit Asset Modal -->
+<div class="modal-overlay" [class.show]="showModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>{{editingAsset ? 'Editează bun' : 'Adaugă bun nou'}}</h2>
+      <button class="modal-close" (click)="closeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <form class="modal-form" [formGroup]="assetForm" (ngSubmit)="saveAsset()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nume bun *</label>
+          <input type="text" formControlName="name" placeholder="Ex: Laptop Dell XPS 15">
+        </div>
+        
+        <div class="form-group">
+          <label>Categorie *</label>
+          <select formControlName="category">
+            <option value="">Selectează categoria</option>
+            <option value="electronics">Electronice</option>
+            <option value="furniture">Mobilier</option>
+            <option value="vehicles">Vehicule</option>
+            <option value="documents">Documente</option>
+            <option value="other">Altele</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Descriere</label>
+        <textarea formControlName="description" placeholder="Descrierea bunului..." rows="3"></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Valoare (EUR) *</label>
+          <input type="number" formControlName="value" placeholder="0.00">
+        </div>
+        
+        <div class="form-group">
+          <label>ID unic</label>
+          <input type="text" formControlName="id" placeholder="AG-001">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Locație</label>
+          <input type="text" formControlName="location" placeholder="Ex: Birou, Depozit, Acasă">
+        </div>
+        
+        <div class="form-group">
+          <label>Stare</label>
+          <select formControlName="status">
+            <option value="active">Activat</option>
+            <option value="inactive">Dezactivat</option>
+            <option value="maintenance">În service</option>
+            <option value="sold">Vândut</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data achiziției</label>
+          <input type="date" formControlName="purchaseDate">
+        </div>
+        
+        <div class="form-group">
+          <label>Garanție până la</label>
+          <input type="date" formControlName="warrantyEnd">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Informații suplimentare</label>
+        <textarea formControlName="additionalInfo" placeholder="Alte informații relevante..." rows="2"></textarea>
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Anulează</button>
+        <button type="submit" class="btn-save" [disabled]="assetForm.invalid">
+          {{editingAsset ? 'Salvează modificări' : 'Adaugă bun'}}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
