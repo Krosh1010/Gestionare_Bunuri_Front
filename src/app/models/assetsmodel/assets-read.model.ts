@@ -1,8 +1,9 @@
 export interface AssetsReadModel {
     id: number;
     name: string;
+    spaceId: number;
     value: number;
-    location: string;
+    spaceName: string;
     purchaseDate: string;
     description: string;
     category: string;

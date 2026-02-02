@@ -1,0 +1,309 @@
+<div class="locations-page" (click)="closeMenuOnOutsideClick($event)">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">Locații</h1>
+      <p class="page-subtitle">Gestionează toate spațiile și locațiile din inventar</p>
+    </div>
+    <button class="btn-add" (click)="showCreateForm()">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Adaugă locație</span>
+    </button>
+  </div>
+
+  <!-- Formular de creare (ascuns/afisat) -->
+  <div class="create-form-container" *ngIf="showForm">
+    <div class="form-header">
+      <h2>{{ editingLocation ? 'Editare locație' : 'Creare locație nouă' }}</h2>
+      <button class="close-btn" (click)="hideCreateForm()">
+        <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <form [formGroup]="locationForm" (ngSubmit)="createLocation()" class="location-form">
+      <div class="form-grid">
+        <!-- Nume locație -->
+        <div class="form-field-group">
+          <label class="form-label">
+            <span class="label-text">Nume locație *</span>
+            <span class="label-hint">Numele unic pentru această locație</span>
+          </label>
+          <div class="input-group">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <input type="text" formControlName="name" placeholder="Ex: Camera 101" class="form-input" required>
+          </div>
+          <div class="error-message" *ngIf="locationForm.get('name')?.hasError('required') && locationForm.get('name')?.touched">
+            Numele locației este obligatoriu
+          </div>
+        </div>
+
+        <!-- Tip locație -->
+        <div class="form-field-group">
+          <label class="form-label">
+            <span class="label-text">Tip locație *</span>
+            <span class="label-hint">Selectează tipul de locație</span>
+          </label>
+          <div class="input-group">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <select formControlName="type" class="form-select" required>
+              <option value="">Selectează tipul</option>
+              <option *ngFor="let t of types" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+          <div class="error-message" *ngIf="locationForm.get('type')?.hasError('required') && locationForm.get('type')?.touched">
+            Tipul locației este obligatoriu
+          </div>
+        </div>
+
+        <!-- Dropdown-uri pe nivele pentru locație părinte -->
+        <div class="form-field-group">
+          <label class="form-label">
+            <span class="label-text">Locație părinte (opțional, pe nivele)</span>
+            <span class="label-hint">Selectează locația părinte, apoi sub-locația dacă există</span>
+          </label>
+          <ng-container *ngFor="let levelSpaces of parentLevels; let i = index">
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <select
+                class="form-select"
+                [(ngModel)]="selectedParentIds[i]"
+                (ngModelChange)="onParentSelected(i, $event)"
+                [ngModelOptions]="{standalone: true}"
+              >
+                <option [ngValue]="null">Nicio locație părinte</option>
+                <option *ngFor="let location of levelSpaces" [ngValue]="location.id" [disabled]="editingLocation && location.id === editingLocation.id">
+                  {{ location.name }} ({{ getTypeLabel(location.type) }})
+                </option>
+              </select>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Message Section -->
+      <div *ngIf="message" class="message-container" [ngClass]="messageType">
+        <svg class="message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path *ngIf="messageType === 'success'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path *ngIf="messageType === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ message }}</span>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" (click)="hideCreateForm()" class="cancel-btn">
+          Anulează
+        </button>
+        <button type="submit" [disabled]="isLoading || locationForm.invalid" class="submit-btn">
+          <svg *ngIf="!isLoading" class="submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div *ngIf="isLoading" class="spinner"></div>
+          <span>
+            {{ isLoading ? 'Se salvează...' : (editingLocation ? 'Salvează modificările' : 'Creează locația') }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de locații -->
+  <div class="locations-list-container" *ngIf="!showForm">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading && locations.length === 0">
+      <div class="spinner large"></div>
+      <p>Se încarcă locațiile...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="!isLoading && loadError && locations.length === 0">
+      <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3>Eroare la încărcare</h3>
+      <p>Nu s-au putut încărca locațiile. Încercați din nou.</p>
+      <button class="btn-outline" (click)="loadLocations()">
+        <svg class="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Reîncarcă</span>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!isLoading && !loadError">
+      <!-- Search and Filters -->
+      <div class="list-controls" *ngIf="locations.length > 0">
+        <div class="search-container">
+          <div class="input-group search-input">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" placeholder="Caută locații..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch()" class="form-input">
+          </div>
+          
+          <div class="input-group filter-input">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <select [(ngModel)]="selectedType" (change)="onFilterChange()" class="form-select">
+              <option value="">Toate tipurile</option>
+              <option *ngFor="let t of types" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="stats">
+          <span class="stat-item">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>{{ currentLocations.length }} locații</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Buton Înapoi la părinți -->
+      <div class="back-btn-container" *ngIf="navigationStack.length > 0">
+        <button class="btn-outline primary" (click)="goBack()">
+          <svg class="back-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Înapoi</span>
+        </button>
+      </div>
+
+      <!-- Locations Grid -->
+      <div class="locations-grid" *ngIf="filteredLocations.length > 0">
+        <div class="location-card" *ngFor="let location of filteredLocations">
+          <div class="card-header" (click)="$event.stopPropagation(); loadChildSpaces(location.id)">
+            <div class="location-icon" [ngClass]="getLocationTypeClass(location.type)">
+              <svg class="location-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path *ngIf="location.type === 'home'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <path *ngIf="location.type === 'office'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                <path *ngIf="location.type === 'room'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <path *ngIf="location.type === 'storage'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <div class="location-info">
+              <h3 class="location-name">{{ location.name }}</h3>
+              <span class="location-type">{{ getTypeLabel(location.type) }}</span>
+            </div>
+            <div class="card-actions" (click)="$event.stopPropagation()">
+              <button class="icon-btn" (click)="$event.stopPropagation(); toggleMenu(location.id)">
+                <svg class="more-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+              <div class="dropdown-menu" *ngIf="activeMenu === location.id">
+                <button class="dropdown-item" (click)="editLocation(location)">
+                  <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Editează</span>
+                </button>
+                <button class="dropdown-item delete" (click)="onDeleteLocation(location)">
+                  <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Șterge</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-content">
+            <p class="location-description" *ngIf="location.description">
+              {{ location.description }}
+            </p>
+            <div class="location-meta">
+              <div class="meta-item" *ngIf="location.parentSpace">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>Părinte: {{ location.parentSpace.name }}</span>
+              </div>
+              <div class="meta-item" *ngIf="location.createdAt">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Creat: {{ formatDate(location.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <div class="footer-stats">
+              <span class="stat">
+                <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <span>{{ location.assetsCount || 0 }} bunuri</span>
+              </span>
+              <span class="stat">
+                <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+                <span>{{ location.childrenCount || 0 }} sub-locații</span>
+              </span>
+            </div>
+            <button class="view-btn" (click)="viewLocationDetails(location)">
+              <span>Vezi detalii</span>
+              <svg class="view-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Child spaces section -->
+          <div class="child-spaces" *ngIf="childSpaces[location.id]">
+            <div *ngIf="loadingChildSpaces[location.id]" class="loading-child">
+              <div class="spinner small"></div>
+              <span>Se încarcă sub-locațiile...</span>
+            </div>
+            <div *ngIf="!loadingChildSpaces[location.id] && childSpaces[location.id].length > 0">
+              <h4>Sub-locații:</h4>
+              <ul>
+                <li *ngFor="let child of childSpaces[location.id]">
+                  {{ child.name }} ({{ getTypeLabel(child.type) }})
+                </li>
+              </ul>
+            </div>
+            <div *ngIf="!loadingChildSpaces[location.id] && childSpaces[location.id].length === 0">
+              <span>Nu există sub-locații.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="locations.length === 0 && !isLoading && !loadError">
+        <div class="empty-icon">
+          <svg class="empty-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3>Nu există locații</h3>
+        <p>Începe prin a adăuga prima ta locație în sistem</p>
+        <button class="btn-primary" (click)="showCreateForm()">
+          <svg class="add-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Adaugă prima locație</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

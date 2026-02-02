@@ -167,16 +167,16 @@
           
           <div class="asset-details">
             <div class="detail-item">
-              <span class="detail-label">ID:</span>
-              <span class="detail-value">{{asset.id}}</span>
-            </div>
-            <div class="detail-item">
               <span class="detail-label">Valoare:</span>
               <span class="detail-value">{{asset.value | currency:'EUR'}}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Locație:</span>
-              <span class="detail-value">{{asset.location}}</span>
+              <span class="detail-value">{{asset.spaceName}}</span>
+            </div>
+                        <div class="detail-item">
+              <span class="detail-label">Categorie:</span>
+              <span class="detail-value">{{getCategoryText(asset.category)}}</span>
             </div>
           </div>
         </div>
@@ -224,7 +224,6 @@
               </div>
               <div>
                 <div class="asset-title">{{asset.name}}</div>
-                <div class="asset-id">{{asset.id}}</div>
               </div>
             </div>
           </div>
@@ -245,7 +244,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span>{{asset.location}}</span>
+              <span>{{asset.spaceName}}</span>
             </div>
           </div>
           
@@ -347,27 +346,40 @@
           <label>Valoare (EUR) *</label>
           <input type="number" formControlName="value" placeholder="0.00">
         </div>
-        
-        <div class="form-group">
-          <label>ID unic</label>
-          <input type="text" formControlName="id" placeholder="AG-001">
-        </div>
       </div>
       
       <div class="form-row">
         <div class="form-group">
-          <label>Locație</label>
-          <input type="text" formControlName="location" placeholder="Ex: Birou, Depozit, Acasă">
-        </div>
-        
-        <div class="form-group">
-          <label>Stare</label>
-          <select formControlName="status">
-            <option value="active">Activat</option>
-            <option value="inactive">Dezactivat</option>
-            <option value="maintenance">În service</option>
-            <option value="sold">Vândut</option>
-          </select>
+          <label>Spațiu *</label>
+          <ng-container>
+            <ng-container *ngFor="let level of parentLevels; let i = index; trackBy: trackByLevel">
+  <div style="display:flex; align-items:center; gap:8px">
+
+    <select
+      class="space-dropdown"
+      [ngModel]="selectedParentIds[i]"
+      (ngModelChange)="onParentSelected(i, $event)"
+      [ngModelOptions]="{ standalone: true }"
+      [attr.aria-label]="'Spațiu nivel ' + (i + 1)"
+    >
+      <option [ngValue]="null">Alege spațiul...</option>
+      <option *ngFor="let space of level" [ngValue]="space.id">
+        {{ space.name }}
+      </option>
+    </select>
+
+    <span *ngIf="isLoadingSpaces && i === parentLevels.length - 1">
+      <span class="spinner"></span>
+    </span>
+
+  </div>
+</ng-container>
+
+          </ng-container>
+          <!-- Spinner CSS -->
+          <style>
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+          </style>
         </div>
       </div>
       
@@ -383,14 +395,11 @@
         </div>
       </div>
       
-      <div class="form-group">
-        <label>Informații suplimentare</label>
-        <textarea formControlName="additionalInfo" placeholder="Alte informații relevante..." rows="2"></textarea>
-      </div>
+
       
       <div class="modal-actions">
         <button type="button" class="btn-cancel" (click)="closeModal()">Anulează</button>
-        <button type="submit" class="btn-save" [disabled]="assetForm.invalid">
+        <button type="submit" class="btn-save" [disabled]="assetForm.invalid || !assetForm.value.spaceId">
           {{editingAsset ? 'Salvează modificări' : 'Adaugă bun'}}
         </button>
       </div>

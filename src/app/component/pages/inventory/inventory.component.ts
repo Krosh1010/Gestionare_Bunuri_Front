@@ -1,6 +1,6 @@
-
 import { AssetsReadModel } from '../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../services/ApiServices/assets.service';
+import { SpaceService } from '../../../services/ApiServices/space.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -15,6 +15,10 @@ import { NgFor } from '@angular/common';
   styleUrl: './inventory.component.scss'
 })
 export class InventoryComponent implements OnInit {
+    // Metodă pentru template: deschide editarea pe baza assetului
+    editAsset(asset: AssetsReadModel) {
+      this.editAssetById(asset.id);
+    }
   // Assets data
   assets: AssetsReadModel[] = [];
 
@@ -54,18 +58,23 @@ export class InventoryComponent implements OnInit {
   totalValue: number = 0;
   expiringSoon: number = 0;
 
-  constructor(private fb: FormBuilder, private assetsService: AssetsService) {
+  parentLevels: any[][] = [];
+  selectedParentIds: (number | null)[] = [];
+selectedSpaceName: string | null = null;
+  selectedSpaceId: number | null = null;
+  isLoadingSpaces = false;
+  isLeafSpaceSelected = false;
+
+  constructor(private fb: FormBuilder, private assetsService: AssetsService, private spaceService: SpaceService) {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
       category: ['', Validators.required],
       value: [0, [Validators.required, Validators.min(0)]],
-      id: [''],
       location: [''],
-      status: ['active'],
       purchaseDate: [''],
       warrantyEnd: [''],
-      additionalInfo: ['']
+      spaceId: [null, Validators.required]
     });
   }
 
@@ -81,7 +90,19 @@ export class InventoryComponent implements OnInit {
       this.updateStats();
     });
   }
-
+  
+    getSelectValue(event: Event): number {
+    const target = event.target as HTMLSelectElement | null;
+    if (target && target.value) {
+      return +target.value;
+    }
+    return 0;
+  }
+  // Pentru a preveni refresh-ul vizibil la dropdownuri (ca la locations)
+  // TrackBy pentru dropdown-uri de spații: folosește indexul nivelului
+  trackByLevel(index: number, _level: any[]) {
+    return index;
+  }
   // Filter and search
   filterAssets(): void {
     this.filteredAssets = this.assets.filter(asset => {
@@ -154,32 +175,136 @@ export class InventoryComponent implements OnInit {
   }
 
   // Asset operations
-  openAddModal(): void {
-    this.editingAsset = null;
-    this.assetForm.reset({
-      name: '',
-      description: '',
-      category: '',
-      value: 0,
-      id: '',
-      location: '',
-      status: 'active',
-      purchaseDate: '',
-      warrantyEnd: '',
-      additionalInfo: ''
-    });
-    this.showModal = true;
+async openAddModal() {
+  this.assetForm.reset({
+    name: '',
+    description: '',
+    category: '',
+    value: 0,
+    purchaseDate: '',
+    warrantyEnd: '',
+    spaceId: null
+  });
+
+  this.parentLevels = [];
+  this.selectedParentIds = [];
+  this.isLeafSpaceSelected = false;
+
+  this.isLoadingSpaces = true;
+  try {
+    const roots = await this.spaceService.getSpacesParents();
+    this.parentLevels.push(roots);
+  } finally {
+    this.isLoadingSpaces = false;
   }
 
-  editAsset(asset: AssetsReadModel): void {
-    this.editingAsset = asset;
-    this.assetForm.patchValue(asset);
-    this.showModal = true;
+  this.showModal = true;
+}
+
+
+  async onParentSelected(level: number, parentId: number | null) {
+  this.selectedParentIds[level] = parentId;
+  this.selectedParentIds.length = level + 1;
+  this.parentLevels.length = level + 1;
+
+  // Dacă nu e selectat nimic, resetează
+  if (!parentId) {
+    this.assetForm.patchValue({ spaceId: null });
+    this.isLeafSpaceSelected = false;
+    return;
+  }
+
+  this.isLoadingSpaces = true;
+
+  try {
+    const children = await this.spaceService.getSpaceByIdParents(parentId.toString());
+    // Setează spaceId pentru orice selecție validă
+    this.assetForm.patchValue({ spaceId: parentId });
+    // Permite adăugarea pe orice spațiu selectat
+    this.isLeafSpaceSelected = true;
+    if (children && children.length > 0) {
+      // Dacă există copii, adaugă nivel nou, dar spaceId rămâne setat
+      this.parentLevels.push(children);
+    }
+  } finally {
+    this.isLoadingSpaces = false;
+  }
+}
+
+
+
+  // Editare cu GET la asset și populare spații pe niveluri
+  async editAssetById(assetId: string | number): Promise<void> {
+    this.isLoadingSpaces = true;
+    try {
+      // 1. Ia asset-ul complet
+      const asset = await this.assetsService.getAssetById(assetId.toString()) as import('../../../models/assetsmodel/assets-read.model').AssetsReadModel;
+      this.editingAsset = asset;
+
+      // 2. Populează spațiile pe niveluri dacă există spaceId
+      this.parentLevels = [];
+      this.selectedParentIds = [];
+      this.isLeafSpaceSelected = false;
+      if (asset.spaceId) {
+        // Folosește getParentChain pentru a popula toate nivelurile
+        let parentChain: any[] = [];
+        try {
+          parentChain = await this.spaceService.getParentChain(asset.spaceId.toString());
+        } catch {
+          parentChain = [];
+        }
+        if (!parentChain || parentChain.length === 0) {
+          const roots = await this.spaceService.getSpacesParents();
+          this.parentLevels = [roots];
+        } else {
+          let currentLevelSpaces = await this.spaceService.getSpacesParents();
+          this.parentLevels = [currentLevelSpaces];
+          this.selectedParentIds = [];
+          for (let i = 0; i < parentChain.length; i++) {
+            const parent = parentChain[i];
+            this.selectedParentIds[i] = parent.id;
+            if (i < parentChain.length - 1) {
+              currentLevelSpaces = await this.spaceService.getSpaceByIdParents(parent.id.toString());
+              this.parentLevels.push(currentLevelSpaces);
+            }
+          }
+        }
+        this.assetForm.patchValue({ spaceId: asset.spaceId });
+        // După ce am setat dropdown-urile, dacă spațiul selectat are copii, adaugă încă un dropdown
+        const children = await this.spaceService.getSpaceByIdParents(asset.spaceId.toString());
+        if (children && children.length > 0) {
+          this.parentLevels.push(children);
+        }
+        this.isLeafSpaceSelected = true;
+      } else {
+        const roots = await this.spaceService.getSpacesParents();
+        this.parentLevels = [roots];
+      }
+
+      // 3. Populează formularul cu datele asset-ului (inclusiv datele pentru input type="date")
+      this.assetForm.patchValue({
+        ...asset,
+        purchaseDate: asset.purchaseDate ? this.formatDateForInput(asset.purchaseDate) : '',
+        warrantyEnd: asset.warrantyEnd ? this.formatDateForInput(asset.warrantyEnd) : '',
+      });
+      this.showModal = true;
+    } finally {
+      this.isLoadingSpaces = false;
+    }
+  }
+
+  // Util: formatează data pentru input type="date"
+  formatDateForInput(date: string | Date): string {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   viewAsset(asset: AssetsReadModel): void {
     // For demo, just show an alert
-    alert(`Detalii bun:\n\nNume: ${asset.name}\nID: ${asset.id}\nCategorie: ${this.getCategoryText(asset.category)}\nValoare: ${asset.value} EUR\nLocație: ${asset.location}\nStare: ${this.getStatusText(asset.status ?? '')}`);
+    alert(`Detalii bun:\n\nNume: ${asset.name}\nID: ${asset.id}\nCategorie: ${this.getCategoryText(asset.category)}\nValoare: ${asset.value} EUR\nLocație: ${asset.spaceName}\nStare: ${this.getStatusText(asset.status ?? '')}`);
   }
 
   deleteAsset(asset: AssetsReadModel): void {
@@ -197,28 +322,71 @@ export class InventoryComponent implements OnInit {
       }
   }
 
-  saveAsset(): void {
+  async saveAsset(): Promise<void> {
     if (this.assetForm.valid) {
       const formData = this.assetForm.value;
-      
-      // Generate ID if not provided
-      if (!formData.id) {
-        formData.id = 'AG-' + (this.assets.length + 1).toString().padStart(3, '0');
-      }
-
+      // Dacă editingAsset există, e editare, altfel e adăugare
       if (this.editingAsset) {
-        // Update existing asset
-        const index = this.assets.findIndex(a => a.id === this.editingAsset?.id);
-        if (index !== -1) {
-          this.assets[index] = { ...this.editingAsset, ...formData };
+        // Detectează ce s-a modificat
+        const patch: any = {};
+        if (formData.spaceId !== this.editingAsset.spaceId) {
+          patch.spaceId = formData.spaceId;
+        }
+        if (formData.name !== this.editingAsset.name) {
+          patch.name = formData.name;
+        }
+        if (formData.value !== this.editingAsset.value) {
+          patch.value = formData.value;
+        }
+        if (formData.category !== this.editingAsset.category) {
+          patch.category = formData.category;
+        }
+        if (formData.purchaseDate !== this.formatDateForInput(this.editingAsset.purchaseDate)) {
+          patch.purchaseDate = formData.purchaseDate;
+        }
+        if (formData.description !== this.editingAsset.description) {
+          patch.description = formData.description;
+        }
+        if (formData.warrantyEnd !== this.formatDateForInput(this.editingAsset.warrantyEnd ?? '')) {
+          patch.warrantyEnd = formData.warrantyEnd;
+        }
+        if (Object.keys(patch).length === 0) {
+          alert('Nu ai modificat nimic.');
+          return;
+        }
+        try {
+          await this.assetsService.updateAsset(this.editingAsset.id, patch);
+          // Reîncarcă lista de bunuri după editare
+          const data = await this.assetsService.getAssets();
+          this.assets = Array.isArray(data) ? data : [data];
+          this.filteredAssets = [...this.assets];
+          this.updateStats();
+          this.closeModal();
+        } catch (err) {
+          alert('Eroare la editarea bunului.');
         }
       } else {
-        // Add new asset
-        this.assets.push(formData);
+        // Adăugare nouă
+        const assetToSend = {
+          name: formData.name,
+          spaceId: formData.spaceId,
+          value: formData.value,
+          category: formData.category,
+          purchaseDate: formData.purchaseDate,
+          description: formData.description
+        };
+        try {
+          await this.assetsService.createAsset(assetToSend);
+          // Reîncarcă lista de bunuri după adăugare
+          const data = await this.assetsService.getAssets();
+          this.assets = Array.isArray(data) ? data : [data];
+          this.filteredAssets = [...this.assets];
+          this.updateStats();
+          this.closeModal();
+        } catch (err) {
+          alert('Eroare la adăugarea bunului.');
+        }
       }
-
-      this.filterAssets();
-      this.closeModal();
     }
   }
 
@@ -300,4 +468,5 @@ export class InventoryComponent implements OnInit {
     
     return diffDays > 0 ? diffDays : null;
   }
+
 }

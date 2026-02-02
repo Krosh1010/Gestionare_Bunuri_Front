@@ -6,6 +6,7 @@ import { LoginComponent } from './component/pages/auth/login/login.component';
 import { RegisterComponent } from './component/pages/auth/register/register.component';
 import { InventoryComponent } from './component/pages/inventory/inventory.component';
 import { ReportsComponent } from './component/pages/reports/reports.component';
+import { LocationsComponent } from './component/pages/locations/locations.component';
 
 
 export const routes: Routes = [
@@ -19,6 +20,9 @@ export const routes: Routes = [
     {   path: 'reports',
         canActivate: [AuthGuard],
         component: ReportsComponent},
+    {   path: 'locations',
+        canActivate: [AuthGuard],
+        component: LocationsComponent},
     {   path: 'login', component: LoginComponent},
     {   path: 'register', component: RegisterComponent}
 ];
