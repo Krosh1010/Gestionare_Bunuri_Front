@@ -192,10 +192,13 @@
               <span class="date-label">Achiziționat:</span>
               <span class="date-value">{{asset.purchaseDate | date:'dd.MM.yyyy'}}</span>
             </div>
-            <div class="date-item" *ngIf="asset.warrantyEnd">
-              <span class="date-label" [class.warning]="isExpiringSoon(asset)">Garanție:</span>
-              <span class="date-value" [class.warning]="isExpiringSoon(asset)">
-                {{asset.warrantyEnd | date:'dd.MM.yyyy'}}
+            <div class="date-item">
+              <span class="date-label">Garanție până la:</span>
+              <span class="date-value">
+                <ng-container *ngIf="asset.warrantyEndDate; else noWarrantyDate">
+                  {{asset.warrantyEndDate | date:'dd.MM.yyyy'}}
+                </ng-container>
+                <ng-template #noWarrantyDate>-</ng-template>
               </span>
             </div>
           </div>
@@ -257,8 +260,8 @@
           
           <div class="list-cell warranty">
             <div class="warranty-info" [class.warning]="isExpiringSoon(asset)">
-              <span *ngIf="asset.warrantyEnd">{{asset.warrantyEnd | date:'dd.MM.yyyy'}}</span>
-              <span *ngIf="!asset.warrantyEnd">-</span>
+              <span *ngIf="asset.warrantyEndDate">{{asset.warrantyEndDate | date:'dd.MM.yyyy'}}</span>
+              <span *ngIf="!asset.warrantyEndDate">-</span>
               <div class="warranty-days" *ngIf="getWarrantyDays(asset)">
                 {{getWarrantyDays(asset)}} zile
               </div>
@@ -316,7 +319,16 @@
       </button>
     </div>
     
-    <form class="modal-form" [formGroup]="assetForm" (ngSubmit)="saveAsset()">
+    <form class="modal-form" [formGroup]="assetForm" (ngSubmit)="saveAsset()" [class.form-disabled]="showWarrantySettingsModal">
+      <style>
+      .form-disabled {
+        pointer-events: none;
+        opacity: 0.6;
+      }
+      .modal-overlay[style*="display: block"] ~ .modal-overlay[style*="display: block"] {
+        z-index: 1100;
+      }
+      </style>
       <div class="form-row">
         <div class="form-group">
           <label>Nume bun *</label>
@@ -342,44 +354,33 @@
       </div>
       
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group" style="flex:1; min-width:180px;">
           <label>Valoare (EUR) *</label>
           <input type="number" formControlName="value" placeholder="0.00">
         </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
+        <div class="form-group" style="flex:1; min-width:220px;">
           <label>Spațiu *</label>
           <ng-container>
             <ng-container *ngFor="let level of parentLevels; let i = index; trackBy: trackByLevel">
-  <div style="display:flex; align-items:center; gap:8px">
-
-    <select
-      class="space-dropdown"
-      [ngModel]="selectedParentIds[i]"
-      (ngModelChange)="onParentSelected(i, $event)"
-      [ngModelOptions]="{ standalone: true }"
-      [attr.aria-label]="'Spațiu nivel ' + (i + 1)"
-    >
-      <option [ngValue]="null">Alege spațiul...</option>
-      <option *ngFor="let space of level" [ngValue]="space.id">
-        {{ space.name }}
-      </option>
-    </select>
-
-    <span *ngIf="isLoadingSpaces && i === parentLevels.length - 1">
-      <span class="spinner"></span>
-    </span>
-
-  </div>
-</ng-container>
-
+              <div style="display:flex; align-items:center; gap:8px">
+                <select
+                  class="space-dropdown"
+                  [ngModel]="selectedParentIds[i]"
+                  (ngModelChange)="onParentSelected(i, $event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  [attr.aria-label]="'Spațiu nivel ' + (i + 1)"
+                >
+                  <option [ngValue]="null">Alege spațiul...</option>
+                  <option *ngFor="let space of level" [ngValue]="space.id">
+                    {{ space.name }}
+                  </option>
+                </select>
+                <span *ngIf="isLoadingSpaces && i === parentLevels.length - 1">
+                  <span class="spinner"></span>
+                </span>
+              </div>
+            </ng-container>
           </ng-container>
-          <!-- Spinner CSS -->
-          <style>
-            @keyframes spin { 100% { transform: rotate(360deg); } }
-          </style>
         </div>
       </div>
       
@@ -388,15 +389,24 @@
           <label>Data achiziției</label>
           <input type="date" formControlName="purchaseDate">
         </div>
-        
-        <div class="form-group">
-          <label>Garanție până la</label>
-          <input type="date" formControlName="warrantyEnd">
-        </div>
-      </div>
-      
+        <!-- Buton pentru setări garanție/asigurare, doar la editare, pe același rând cu data achiziției -->
+        <div class="form-group" *ngIf="editingAsset">
+  <button type="button" class="warranty-settings-btn" (click)="openWarrantySettingsModal()">
+    <div class="btn-icon-container">
+      <svg class="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="3" stroke-width="2"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1.31.76 1.65 1.65 0 01-2.78 0A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-.76-1.31 1.65 1.65 0 010-2.78A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6c.29-.19.62-.3.97-.3s.68.11.97.3A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.31-.76 2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.19.29.3.62.3.97s-.11.68-.3.97A1.65 1.65 0 0019.4 15z"/>
+      </svg>
+    </div>
+    <span class="btn-text">Setări garanție/asigurare</span>
+    <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+  </button>
+</div>
 
-      
+      </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-cancel" (click)="closeModal()">Anulează</button>
         <button type="submit" class="btn-save" [disabled]="assetForm.invalid || !assetForm.value.spaceId">
@@ -404,5 +414,41 @@
         </button>
       </div>
     </form>
+  </div>
+<!-- Modal Warranty/Insurance după crearea bunului -->
+</div>
+<div class="modal-overlay" [class.show]="showWarrantyModal">
+  <!-- DEBUG: Afiseaza valorile pentru troubleshooting -->
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>Completează garanție și asigurare</h2>
+      <button class="modal-close" (click)="closeWarrantyModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <app-warranty-insurance-form
+      [assetId]="createdAssetId"
+      (close)="closeWarrantyModal()"
+    ></app-warranty-insurance-form>
+  </div>
+<!-- Modal Setări Garanție/Asigurare la editare asset -->
+
+</div>
+<div class="modal-overlay" [class.show]="showWarrantySettingsModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2></h2>
+      <button class="modal-close" (click)="closeWarrantySettingsModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <app-warranty-insurance-setings
+      [assetId]="editingAsset?.id ?? null"
+      (close)="closeWarrantySettingsModal()"
+    ></app-warranty-insurance-setings>
   </div>
 </div>

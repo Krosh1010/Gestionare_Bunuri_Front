@@ -1,3 +1,4 @@
+
 import { AssetsReadModel } from '../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../services/ApiServices/assets.service';
 import { SpaceService } from '../../../services/ApiServices/space.service';
@@ -5,15 +6,17 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgFor } from '@angular/common'; 
-
+import { WarrantyInsuranceFormComponent } from '../inventory/warranty-insurance-form/warranty-insurance-form.component';
+import { WarrantyInsuranceSetingsComponent } from '../inventory/warranty-insurance-setings/warranty-insurance-setings.component';
 
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [FormsModule,NgFor,CommonModule,ReactiveFormsModule],
+  imports: [FormsModule,NgFor,CommonModule,ReactiveFormsModule, WarrantyInsuranceFormComponent, WarrantyInsuranceSetingsComponent],
   templateUrl: './inventory.component.html',
   styleUrl: './inventory.component.scss'
 })
+
 export class InventoryComponent implements OnInit {
     // Metodă pentru template: deschide editarea pe baza assetului
     editAsset(asset: AssetsReadModel) {
@@ -65,6 +68,10 @@ selectedSpaceName: string | null = null;
   isLoadingSpaces = false;
   isLeafSpaceSelected = false;
 
+  // Modal pentru warranty/insurance
+  showWarrantyModal: boolean = false;
+  createdAssetId: number | null = null;
+
   constructor(private fb: FormBuilder, private assetsService: AssetsService, private spaceService: SpaceService) {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],
@@ -90,6 +97,16 @@ selectedSpaceName: string | null = null;
       this.updateStats();
     });
   }
+      // Modal pentru setări garanție/asigurare la editare
+    showWarrantySettingsModal: boolean = false;
+
+    openWarrantySettingsModal(): void {
+      this.showWarrantySettingsModal = true;
+    }
+
+    closeWarrantySettingsModal(): void {
+      this.showWarrantySettingsModal = false;
+    }
   
     getSelectValue(event: Event): number {
     const target = event.target as HTMLSelectElement | null;
@@ -325,38 +342,22 @@ async openAddModal() {
   async saveAsset(): Promise<void> {
     if (this.assetForm.valid) {
       const formData = this.assetForm.value;
-      // Dacă editingAsset există, e editare, altfel e adăugare
       if (this.editingAsset) {
-        // Detectează ce s-a modificat
+        // ...existing code for edit...
         const patch: any = {};
-        if (formData.spaceId !== this.editingAsset.spaceId) {
-          patch.spaceId = formData.spaceId;
-        }
-        if (formData.name !== this.editingAsset.name) {
-          patch.name = formData.name;
-        }
-        if (formData.value !== this.editingAsset.value) {
-          patch.value = formData.value;
-        }
-        if (formData.category !== this.editingAsset.category) {
-          patch.category = formData.category;
-        }
-        if (formData.purchaseDate !== this.formatDateForInput(this.editingAsset.purchaseDate)) {
-          patch.purchaseDate = formData.purchaseDate;
-        }
-        if (formData.description !== this.editingAsset.description) {
-          patch.description = formData.description;
-        }
-        if (formData.warrantyEnd !== this.formatDateForInput(this.editingAsset.warrantyEnd ?? '')) {
-          patch.warrantyEnd = formData.warrantyEnd;
-        }
+        if (formData.spaceId !== this.editingAsset.spaceId) patch.spaceId = formData.spaceId;
+        if (formData.name !== this.editingAsset.name) patch.name = formData.name;
+        if (formData.value !== this.editingAsset.value) patch.value = formData.value;
+        if (formData.category !== this.editingAsset.category) patch.category = formData.category;
+        if (formData.purchaseDate !== this.formatDateForInput(this.editingAsset.purchaseDate)) patch.purchaseDate = formData.purchaseDate;
+        if (formData.description !== this.editingAsset.description) patch.description = formData.description;
+        if (formData.warrantyEnd !== this.formatDateForInput(this.editingAsset.warrantyEnd ?? '')) patch.warrantyEnd = formData.warrantyEnd;
         if (Object.keys(patch).length === 0) {
           alert('Nu ai modificat nimic.');
           return;
         }
         try {
           await this.assetsService.updateAsset(this.editingAsset.id, patch);
-          // Reîncarcă lista de bunuri după editare
           const data = await this.assetsService.getAssets();
           this.assets = Array.isArray(data) ? data : [data];
           this.filteredAssets = [...this.assets];
@@ -376,18 +377,31 @@ async openAddModal() {
           description: formData.description
         };
         try {
-          await this.assetsService.createAsset(assetToSend);
-          // Reîncarcă lista de bunuri după adăugare
-          const data = await this.assetsService.getAssets();
-          this.assets = Array.isArray(data) ? data : [data];
-          this.filteredAssets = [...this.assets];
-          this.updateStats();
+          const created = await this.assetsService.createAsset(assetToSend);
+          // Obține id-ul bunului creat (din răspunsul backendului)
+          const createdId = created?.data?.id;
+          // NU reîncărca lista de bunuri aici!
+          // Deschide modalul pentru warranty/insurance dacă există id
+          if (createdId) {
+            this.createdAssetId = createdId;
+            this.showWarrantyModal = true;
+          }
           this.closeModal();
         } catch (err) {
           alert('Eroare la adăugarea bunului.');
         }
       }
     }
+  }
+
+  async closeWarrantyModal(): Promise<void> {
+    this.showWarrantyModal = false;
+    this.createdAssetId = null;
+    // Reîncarcă lista de bunuri și statistici după ce utilizatorul finalizează garanția/asigurarea
+    const data = await this.assetsService.getAssets();
+    this.assets = Array.isArray(data) ? data : [data];
+    this.filteredAssets = [...this.assets];
+    this.updateStats();
   }
 
   closeModal(): void {

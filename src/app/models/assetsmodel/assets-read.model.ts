@@ -10,4 +10,5 @@ export interface AssetsReadModel {
     status?: 'active' | 'inactive' | 'maintenance' | 'sold';
     warrantyEnd?: string;
     additionalInfo?: string;
+    warrantyEndDate?: string;
 }
