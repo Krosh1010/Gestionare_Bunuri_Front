@@ -98,30 +98,112 @@
         <div class="stat-label">Total bunuri</div>
       </div>
     </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon active">✅</div>
+
+    <!-- Card statistici asigurări -->
+    <div class="stat-card insurance-stats-card" (mouseenter)="showInsuranceTooltip = true" (mouseleave)="showInsuranceTooltip = false">
+      <div class="stat-icon insurance">📄</div>
       <div class="stat-content">
-        <div class="stat-value">{{activeAssets}}</div>
-        <div class="stat-label">Bunuri active</div>
+        <div class="stat-value">{{totalInsurances}}</div>
+        <div class="stat-label">Asigurări total</div>
+      </div>
+      <div class="warranty-details-tooltip" [class.show]="showInsuranceTooltip">
+        <div class="tooltip-header">
+          <h4>Detalii asigurări</h4>
+          <span class="tooltip-close" (click)="showInsuranceTooltip = false">×</span>
+        </div>
+        <div class="warranty-stats-list">
+          <div class="warranty-stat-item">
+            <span class="stat-indicator expired"></span>
+            <div class="stat-details">
+              <span class="stat-name">Asigurări expirate</span>
+              <span class="stat-count">{{insuranceStats.expired || 0}}</span>
+            </div>
+          </div>
+          <div class="warranty-stat-item">
+            <span class="stat-indicator expiring-soon"></span>
+            <div class="stat-details">
+              <span class="stat-name">Expiră în 30 zile</span>
+              <span class="stat-count">{{insuranceStats.expiringSoon || 0}}</span>
+            </div>
+          </div>
+          <div class="warranty-stat-item">
+            <span class="stat-indicator expiring-later"></span>
+            <div class="stat-details">
+              <span class="stat-name">Expiră peste 30 zile</span>
+              <span class="stat-count">{{insuranceStats.expiringLater || 0}}</span>
+            </div>
+          </div>
+          <div class="warranty-stat-item">
+            <span class="stat-indicator no-warranty"></span>
+            <div class="stat-details">
+              <span class="stat-name">Fără asigurare</span>
+              <span class="stat-count">{{insuranceStats.noInsurance || 0}}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
+<!-- Înlocuiește stat-card-ul pentru garanții cu: -->
+<div class="stat-card warranty-stats-card" (mouseenter)="showWarrantyTooltip = true" 
+     (mouseleave)="showWarrantyTooltip = false">
+  <div class="stat-icon expiring">🛡️</div>
+  <div class="stat-content">
+    <div class="stat-value">{{totalWarranties}}</div>
+    <div class="stat-label">Garanții total</div>
+  </div>
+  
+  <!-- Tooltip pentru detalii garanții -->
+  <div class="warranty-details-tooltip" [class.show]="showWarrantyTooltip">
+    <div class="tooltip-header">
+      <h4>Detalii garanții</h4>
+      <span class="tooltip-close" (click)="showWarrantyTooltip = false">×</span>
+    </div>
+    
+    <div class="warranty-stats-list">
+      <div class="warranty-stat-item">
+        <span class="stat-indicator expired"></span>
+        <div class="stat-details">
+          <span class="stat-name">Garanții expirate</span>
+          <span class="stat-count">{{warrantyStats.expired || 0}}</span>
+        </div>
+      </div>
+      
+      <div class="warranty-stat-item">
+        <span class="stat-indicator expiring-soon"></span>
+        <div class="stat-details">
+          <span class="stat-name">Expiră în 30 zile</span>
+          <span class="stat-count">{{warrantyStats.expiringSoon || 0}}</span>
+        </div>
+      </div>
+      
+      <div class="warranty-stat-item">
+        <span class="stat-indicator expiring-later"></span>
+        <div class="stat-details">
+          <span class="stat-name">Expiră peste 30 zile</span>
+          <span class="stat-count">{{warrantyStats.expiringLater || 0}}</span>
+        </div>
+      </div>
+      
+      <div class="warranty-stat-item">
+        <span class="stat-indicator no-warranty"></span>
+        <div class="stat-details">
+          <span class="stat-name">Fără garanție</span>
+          <span class="stat-count">{{warrantyStats.noWarranty || 0}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     <div class="stat-card">
       <div class="stat-icon value">💰</div>
       <div class="stat-content">
-        <div class="stat-value">{{totalValue | currency:'EUR'}}</div>
+        <div class="stat-value">{{totalValue | currency:'USD'}}</div>
         <div class="stat-label">Valoare totală</div>
       </div>
     </div>
     
-    <div class="stat-card">
-      <div class="stat-icon expiring">⚠️</div>
-      <div class="stat-content">
-        <div class="stat-value">{{expiringSoon}}</div>
-        <div class="stat-label">Garanții expiră</div>
-      </div>
-    </div>
+
   </div>
   
   <!-- Assets List -->
@@ -142,7 +224,7 @@
     
     <!-- Grid View -->
     <div class="assets-grid" *ngIf="viewMode === 'grid'">
-      <div class="asset-card" *ngFor="let asset of filteredAssets" [class.expiring]="isExpiringSoon(asset)">
+      <div class="asset-card" *ngFor="let asset of filteredAssets" >
         <div class="asset-header">
           <div class="asset-category {{asset.category}}">
             {{getCategoryIcon(asset.category)}}
@@ -182,11 +264,19 @@
         </div>
         
         <div class="asset-footer">
-          <div class="asset-status {{asset.status}}">
-            <span class="status-dot"></span>
-            {{getStatusText(asset.status || '')}}
-          </div>
-          
+
+<div class="status-badges-container">
+  <span class="status-badge warranty-badge" 
+        [ngClass]="getWarrantyStatusClass(asset.warrantyStatus)">
+    <span class="badge-icon">🛡️</span>
+    <span class="badge-text">{{getWarrantyStatusText(asset.warrantyStatus)}}</span>
+  </span>
+  <span class="status-badge insurance-badge" 
+        [ngClass]="getInsuranceStatusClass(asset.insuranceStatus)">
+    <span class="badge-icon">📄</span>
+    <span class="badge-text">{{getInsuranceStatusText(asset.insuranceStatus)}}</span>
+  </span>
+</div>
           <div class="asset-dates">
             <div class="date-item" *ngIf="asset.purchaseDate">
               <span class="date-label">Achiziționat:</span>
@@ -199,6 +289,15 @@
                   {{asset.warrantyEndDate | date:'dd.MM.yyyy'}}
                 </ng-container>
                 <ng-template #noWarrantyDate>-</ng-template>
+              </span>
+            </div>
+            <div class="date-item">
+              <span class="date-label">Asigurat până la:</span>
+              <span class="date-value">
+                <ng-container *ngIf="asset.insuranceEndDate; else noInsuranceDate">
+                  {{asset.insuranceEndDate | date:'dd.MM.yyyy'}}
+                </ng-container>
+                <ng-template #noInsuranceDate>-</ng-template>
               </span>
             </div>
           </div>
@@ -219,7 +318,7 @@
       </div>
       
       <div class="list-items">
-        <div class="list-item" *ngFor="let asset of filteredAssets" [class.expiring]="isExpiringSoon(asset)">
+        <div class="list-item" *ngFor="let asset of filteredAssets" >
           <div class="list-cell name">
             <div class="asset-info">
               <div class="asset-icon {{asset.category}}">
@@ -251,20 +350,34 @@
             </div>
           </div>
           
-          <div class="list-cell status">
-            <span class="status-badge {{asset.status}}">
-              <span class="status-dot"></span>
-              {{getStatusText(asset.status || '')}}
-            </span>
-          </div>
+         <div class="list-cell status">
+  <div class="status-badges-container">
+    <span class="status-badge warranty-badge" 
+          [ngClass]="getWarrantyStatusClass(asset.warrantyStatus)"
+          >
+      <span class="badge-dot" [class.pulse]="asset.warrantyStatus === 0"></span>
+      <span class="badge-text">Garanție: {{getWarrantyStatusText(asset.warrantyStatus)}}</span>
+    </span>
+    
+    <span class="status-badge insurance-badge" 
+          [ngClass]="getInsuranceStatusClass(asset.insuranceStatus)">
+      <span class="badge-text">Asigurare: {{getInsuranceStatusText(asset.insuranceStatus)}}</span>
+    </span>
+  </div>
+</div>
           
           <div class="list-cell warranty">
-            <div class="warranty-info" [class.warning]="isExpiringSoon(asset)">
+            <div class="warranty-info" >
               <span *ngIf="asset.warrantyEndDate">{{asset.warrantyEndDate | date:'dd.MM.yyyy'}}</span>
               <span *ngIf="!asset.warrantyEndDate">-</span>
               <div class="warranty-days" *ngIf="getWarrantyDays(asset)">
                 {{getWarrantyDays(asset)}} zile
               </div>
+            </div>
+            <div class="insurance-info">
+              <span class="insurance-label">Asigurat până la:</span>
+              <span *ngIf="asset.insuranceEndDate">{{asset.insuranceEndDate | date:'dd.MM.yyyy'}}</span>
+              <span *ngIf="!asset.insuranceEndDate">-</span>
             </div>
           </div>
           

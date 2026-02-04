@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 
 @Component({
@@ -24,11 +24,10 @@ export class WarrantyInsuranceFormComponent {
     notes: ''
   };
   insurance = {
-    number: '',
-    end: '',
-    amount: null as number | null,
-    provider: '',
-    details: ''
+    company: '',
+    insuredValue: null as number | null,
+    start: '',
+    end: ''
   };
   // Calculează zilele rămase până la expirarea garanției (frontend only)
   calculateWarrantyDays(): number | null {
@@ -66,6 +65,7 @@ export class WarrantyInsuranceFormComponent {
   }
 
   private warrantySrv = inject(warrantyService);
+  private insuranceSrv = inject(InsuranceService);
 
   // Reset forms when assetId changes
   ngOnChanges() {
@@ -87,13 +87,13 @@ export class WarrantyInsuranceFormComponent {
   }
   selectInsurance() {
     this.mode = 'insurance';
-    this.insurance = { number: '', end: '', amount: null, provider: '', details: '' };
+    this.insurance = { company: '', insuredValue: null, start: '', end: '' };
     this.message = '';
   }
 
   resetForms() {
     this.warranty = { provider: '', start: '', end: '', notes: '' };
-    this.insurance = { number: '', end: '', amount: null, provider: '', details: '' };
+    this.insurance = { company: '', insuredValue: null, start: '', end: '' };
     this.message = '';
     this.loading = false;
     this.mode = 'choose';
@@ -123,9 +123,29 @@ export class WarrantyInsuranceFormComponent {
       this.loading = false;
     }
   }
-  submitInsurance() {
-    // TODO: trimite datele la backend
-    this.close.emit();
+  async submitInsurance() {
+    if (!this.assetId || !this.insurance.company || !this.insurance.insuredValue || !this.insurance.start || !this.insurance.end) return;
+    const payload = {
+      assetId: this.assetId,
+      company: this.insurance.company,
+      insuredValue: this.insurance.insuredValue,
+      startDate: this.insurance.start,
+      endDate: this.insurance.end
+    };
+    this.loading = true;
+    this.message = '';
+    try {
+      await this.insuranceSrv.createInsurance(payload);
+      this.message = 'Asigurarea a fost adăugată cu succes!';
+      setTimeout(() => {
+        this.backToChoose();
+        this.message = 'Asigurarea a fost adăugată cu succes!';
+      }, 800);
+    } catch (err) {
+      this.message = 'Eroare la salvare asigurare!';
+    } finally {
+      this.loading = false;
+    }
   }
   onClose() {
     this.close.emit();

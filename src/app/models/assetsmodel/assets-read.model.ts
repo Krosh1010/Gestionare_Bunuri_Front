@@ -11,4 +11,7 @@ export interface AssetsReadModel {
     warrantyEnd?: string;
     additionalInfo?: string;
     warrantyEndDate?: string;
+    insuranceEndDate?: string;
+    warrantyStatus?: 0 | 1 | null | undefined;
+    insuranceStatus?: 0 | 1 | 2 | null | undefined;
 }

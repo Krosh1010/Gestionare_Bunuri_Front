@@ -21,4 +21,7 @@ export class warrantyService {
     async updateWarranty(assetId: string, warrantyData: any): Promise<any> {
         return this.apiService.patchData(`api/Warranty/by-asset/${assetId}`, warrantyData);
     }
+    async getExpiringWarranties(): Promise<any> {
+        return this.apiService.getData('api/Warranty/warranty-summary');
+    }
 }

@@ -2,6 +2,8 @@
 import { AssetsReadModel } from '../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../services/ApiServices/assets.service';
 import { SpaceService } from '../../../services/ApiServices/space.service';
+import { warrantyService } from '../../../services/ApiServices/warranty.service';
+import { InsuranceService } from '../../../services/ApiServices/insurance.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -18,6 +20,40 @@ import { WarrantyInsuranceSetingsComponent } from '../inventory/warranty-insuran
 })
 
 export class InventoryComponent implements OnInit {
+        // Pentru tooltip asigurări
+        showInsuranceTooltip: boolean = false;
+
+        // Structură pentru insuranceStats (expirate, expiringSoon, expiringLater, noInsurance)
+        insuranceStats: {
+          expired: number;
+          expiringSoon: number;
+          expiringLater: number;
+          noInsurance: number;
+        } = {
+          expired: 0,
+          expiringSoon: 0,
+          expiringLater: 0,
+          noInsurance: 0,
+        };
+
+        totalInsurances: number = 0;
+      // Pentru tooltip garanții
+      showWarrantyTooltip: boolean = false;
+
+      // Structură pentru warrantyStats (expirate, expiringSoon, expiringLater, noWarranty, lastUpdate)
+      warrantyStats: {
+        expired: number;
+        expiringSoon: number;
+        expiringLater: number;
+        noWarranty: number;
+
+      } = {
+        expired: 0,
+        expiringSoon: 0,
+        expiringLater: 0,
+        noWarranty: 0,
+
+      };
     // Metodă pentru template: deschide editarea pe baza assetului
     editAsset(asset: AssetsReadModel) {
       this.editAssetById(asset.id);
@@ -60,6 +96,7 @@ export class InventoryComponent implements OnInit {
   activeAssets: number = 0;
   totalValue: number = 0;
   expiringSoon: number = 0;
+  totalWarranties: number = 0;
 
   parentLevels: any[][] = [];
   selectedParentIds: (number | null)[] = [];
@@ -72,7 +109,13 @@ selectedSpaceName: string | null = null;
   showWarrantyModal: boolean = false;
   createdAssetId: number | null = null;
 
-  constructor(private fb: FormBuilder, private assetsService: AssetsService, private spaceService: SpaceService) {
+  constructor(
+    private fb: FormBuilder,
+    private assetsService: AssetsService,
+    private spaceService: SpaceService,
+    private warrantyService: warrantyService,
+    private insuranceService: InsuranceService
+  ) {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
@@ -87,7 +130,6 @@ selectedSpaceName: string | null = null;
 
   ngOnInit(): void {
     this.assetsService.getAssets().then((data: any) => {
-      // dacă backendul returnează array, folosește-l direct
       this.assets = Array.isArray(data) ? data : [data];
       this.filteredAssets = [...this.assets];
       this.updateStats();
@@ -95,6 +137,46 @@ selectedSpaceName: string | null = null;
       this.assets = [];
       this.filteredAssets = [];
       this.updateStats();
+    });
+
+    // Ia statistici garanții din backend (adaptează la structura nouă)
+    this.warrantyService.getExpiringWarranties().then((res: any) => {
+      // Backend: { totalCount, expiredCount, expiringSoonCount, validMoreThanMonthCount, assetsWithoutWarrantyCount }
+      this.totalWarranties = res?.totalCount ?? 0;
+      this.warrantyStats = {
+        expired: res?.expiredCount ?? 0,
+        expiringSoon: res?.expiringSoonCount ?? 0,
+        expiringLater: res?.validMoreThanMonthCount ?? 0,
+        noWarranty: res?.assetsWithoutWarrantyCount ?? 0,
+      };
+    }).catch(() => {
+      this.totalWarranties = 0;
+      this.warrantyStats = {
+        expired: 0,
+        expiringSoon: 0,
+        expiringLater: 0,
+        noWarranty: 0,
+      };
+    });
+
+    // Ia statistici asigurări din backend (structură similară)
+    this.insuranceService.getExpiringInsurances().then((res: any) => {
+      // Backend: { totalCount, expiredCount, expiringSoonCount, validMoreThanMonthCount, assetsWithoutInsuranceCount }
+      this.totalInsurances = res?.totalCount ?? 0;
+      this.insuranceStats = {
+        expired: res?.expiredCount ?? 0,
+        expiringSoon: res?.expiringSoonCount ?? 0,
+        expiringLater: res?.validMoreThanMonthCount ?? 0,
+        noInsurance: res?.assetsWithoutInsuranceCount ?? 0,
+      };
+    }).catch(() => {
+      this.totalInsurances = 0;
+      this.insuranceStats = {
+        expired: 0,
+        expiringSoon: 0,
+        expiringLater: 0,
+        noInsurance: 0,
+      };
     });
   }
       // Modal pentru setări garanție/asigurare la editare
@@ -461,16 +543,7 @@ async openAddModal() {
     return texts[status] || 'Necunoscut';
   }
 
-  isExpiringSoon(asset: AssetsReadModel): boolean {
-    if (!asset.warrantyEnd) return false;
-    
-    const warrantyDate = new Date(asset.warrantyEnd);
-    const today = new Date();
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(today.getDate() + 30);
-    
-    return warrantyDate >= today && warrantyDate <= thirtyDaysFromNow;
-  }
+
 
   getWarrantyDays(asset: AssetsReadModel): number | null {
     if (!asset.warrantyEnd) return null;
@@ -482,5 +555,63 @@ async openAddModal() {
     
     return diffDays > 0 ? diffDays : null;
   }
+    // Warranty status helpers
+
+  // --- Status helpers (clean version) ---
+  private warrantyStatusTextMap: { [key: string]: string } = {
+    '0': 'Activă',
+    '1': 'Expira degraba',
+    '2': 'Expirata',
+    'null': 'Lipsa',
+    'undefined': 'Necunoscut',
+  };
+  private warrantyStatusClassMap: { [key: string]: string } = {
+    '0': 'active',
+    '1': 'expiredsoon', // Expiră degrabă - orange
+    '2': 'expired',     // Expirată - roșu
+    'null': 'unknown',
+    'undefined': 'unknown',
+  };
+  getWarrantyStatusText(status: number | null | undefined): string {
+    const key = String(status);
+    return this.warrantyStatusTextMap.hasOwnProperty(key)
+      ? this.warrantyStatusTextMap[key]
+      : 'Necunoscut';
+  }
+  getWarrantyStatusClass(status: number | null | undefined): string {
+    const key = String(status);
+    return this.warrantyStatusClassMap.hasOwnProperty(key)
+      ? this.warrantyStatusClassMap[key]
+      : 'unknown';
+  }
+
+  private insuranceStatusTextMap: { [key: string]: string } = {
+    '0': 'Neîncepută',
+    '1': 'Activă',
+    '2': 'Expiră degrabă',
+    '3': 'Expirata',
+    'null': 'Lipsa',
+    'undefined': 'Necunoscut',
+  };
+  private insuranceStatusClassMap: { [key: string]: string } = {
+    '0': 'notstarted',
+    '1': 'active',
+    '2': 'expiredsoon',
+    '3': 'expired',
+    'null': 'unknown',
+    'undefined': 'unknown',
+  };
+  getInsuranceStatusText(status: number | null | undefined): string {
+    const key = String(status);
+    return this.insuranceStatusTextMap.hasOwnProperty(key)
+      ? this.insuranceStatusTextMap[key]
+      : 'Necunoscut';
+  }
+  getInsuranceStatusClass(status: number | null | undefined): string {
+    const key = String(status);
+    return this.insuranceStatusClassMap.hasOwnProperty(key)
+      ? this.insuranceStatusClassMap[key]
+      : 'unknown';
+  } 
 
 }
