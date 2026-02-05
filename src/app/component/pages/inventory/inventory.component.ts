@@ -20,40 +20,7 @@ import { WarrantyInsuranceSetingsComponent } from '../inventory/warranty-insuran
 })
 
 export class InventoryComponent implements OnInit {
-        // Pentru tooltip asigurări
-        showInsuranceTooltip: boolean = false;
-
-        // Structură pentru insuranceStats (expirate, expiringSoon, expiringLater, noInsurance)
-        insuranceStats: {
-          expired: number;
-          expiringSoon: number;
-          expiringLater: number;
-          noInsurance: number;
-        } = {
-          expired: 0,
-          expiringSoon: 0,
-          expiringLater: 0,
-          noInsurance: 0,
-        };
-
-        totalInsurances: number = 0;
-      // Pentru tooltip garanții
-      showWarrantyTooltip: boolean = false;
-
-      // Structură pentru warrantyStats (expirate, expiringSoon, expiringLater, noWarranty, lastUpdate)
-      warrantyStats: {
-        expired: number;
-        expiringSoon: number;
-        expiringLater: number;
-        noWarranty: number;
-
-      } = {
-        expired: 0,
-        expiringSoon: 0,
-        expiringLater: 0,
-        noWarranty: 0,
-
-      };
+        // ...existing code...
     // Metodă pentru template: deschide editarea pe baza assetului
     editAsset(asset: AssetsReadModel) {
       this.editAssetById(asset.id);
@@ -113,8 +80,6 @@ selectedSpaceName: string | null = null;
     private fb: FormBuilder,
     private assetsService: AssetsService,
     private spaceService: SpaceService,
-    private warrantyService: warrantyService,
-    private insuranceService: InsuranceService
   ) {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],
@@ -139,45 +104,7 @@ selectedSpaceName: string | null = null;
       this.updateStats();
     });
 
-    // Ia statistici garanții din backend (adaptează la structura nouă)
-    this.warrantyService.getExpiringWarranties().then((res: any) => {
-      // Backend: { totalCount, expiredCount, expiringSoonCount, validMoreThanMonthCount, assetsWithoutWarrantyCount }
-      this.totalWarranties = res?.totalCount ?? 0;
-      this.warrantyStats = {
-        expired: res?.expiredCount ?? 0,
-        expiringSoon: res?.expiringSoonCount ?? 0,
-        expiringLater: res?.validMoreThanMonthCount ?? 0,
-        noWarranty: res?.assetsWithoutWarrantyCount ?? 0,
-      };
-    }).catch(() => {
-      this.totalWarranties = 0;
-      this.warrantyStats = {
-        expired: 0,
-        expiringSoon: 0,
-        expiringLater: 0,
-        noWarranty: 0,
-      };
-    });
-
-    // Ia statistici asigurări din backend (structură similară)
-    this.insuranceService.getExpiringInsurances().then((res: any) => {
-      // Backend: { totalCount, expiredCount, expiringSoonCount, validMoreThanMonthCount, assetsWithoutInsuranceCount }
-      this.totalInsurances = res?.totalCount ?? 0;
-      this.insuranceStats = {
-        expired: res?.expiredCount ?? 0,
-        expiringSoon: res?.expiringSoonCount ?? 0,
-        expiringLater: res?.validMoreThanMonthCount ?? 0,
-        noInsurance: res?.assetsWithoutInsuranceCount ?? 0,
-      };
-    }).catch(() => {
-      this.totalInsurances = 0;
-      this.insuranceStats = {
-        expired: 0,
-        expiringSoon: 0,
-        expiringLater: 0,
-        noInsurance: 0,
-      };
-    });
+    // ...existing code...
   }
       // Modal pentru setări garanție/asigurare la editare
     showWarrantySettingsModal: boolean = false;

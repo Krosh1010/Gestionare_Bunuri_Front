@@ -66,15 +66,15 @@
         <div class="action-arrow">→</div>
       </a>
       
-      <a routerLink="/notifications" class="action-card">
+      <a routerLink="/coveragestatus" class="action-card">
         <div class="action-icon notifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <div class="action-content">
-          <h3>Notificări</h3>
-          <p>Expirare garanții/asigurări</p>
+          <h3>Stare</h3>
+          <p>Gestionarea garanțiilor/asigurărilor</p>
         </div>
         <div class="action-arrow">→</div>
       </a>
@@ -86,100 +86,49 @@
     <!-- Left Column -->
     <div class="dashboard-column">
       <!-- Statistics Cards -->
-      <div class="stats-grid">
-        <div class="stat-card total">
-          <div class="stat-header">
-            <h3>Total Bunuri</h3>
-            <div class="stat-trend up">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
-              <span>12%</span>
-            </div>
-          </div>
-          <div class="stat-content">
-            <p class="stat-number">1,245</p>
-            <p class="stat-change">+134 față de luna trecută</p>
-          </div>
-          <div class="stat-chart">
-            <div class="chart-line" style="height: 60%"></div>
-            <div class="chart-line" style="height: 80%"></div>
-            <div class="chart-line" style="height: 70%"></div>
-            <div class="chart-line" style="height: 90%"></div>
-            <div class="chart-line" style="height: 85%"></div>
-          </div>
-        </div>
-        
-        <div class="stat-card in-stock">
-          <div class="stat-header">
-            <h3>Bunuri în Stoc</h3>
-            <div class="stat-trend up">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
-              <span>8%</span>
-            </div>
-          </div>
-          <div class="stat-content">
-            <p class="stat-number">980</p>
-            <p class="stat-change">+72 față de luna trecută</p>
-          </div>
-          <div class="stat-progress">
-            <div class="progress-bar" style="width: 78%">
-              <div class="progress-fill"></div>
-            </div>
-            <div class="progress-label">78% din total</div>
-          </div>
-        </div>
-        
+      <div class="stats-grid">        
         <div class="stat-card value">
           <div class="stat-header">
-            <h3>Valoare Totală</h3>
-            <div class="stat-trend up">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
-              <span>15%</span>
-            </div>
+            <h3>Status Asigurări</h3>
           </div>
           <div class="stat-content">
-            <p class="stat-number">€542,850</p>
-            <p class="stat-change">+€70,850 față de luna trecută</p>
+            <p class="stat-number">{{ totalInsurance }}</p>
           </div>
-          <div class="stat-details">
-            <div class="detail-item">
-              <span class="detail-label">Valoare medie/bun</span>
-              <span class="detail-value">€436</span>
+          <div class="stat-breakdown">
+            <div class="breakdown-item urgent">
+              <span class="breakdown-label">Expirate</span>
+              <span class="breakdown-value">{{ expiredInsurance }}</span>
+            </div>
+            <div class="breakdown-item warning">
+              <span class="breakdown-label">Aproape de expirare</span>
+              <span class="breakdown-value">{{ expiringSoonInsurance }}</span>
+            </div>
+            <div class="breakdown-item info">
+              <span class="breakdown-label">Active</span>
+              <span class="breakdown-value">{{ activeInsurance }}</span>
             </div>
           </div>
         </div>
         
         <div class="stat-card alerts">
           <div class="stat-header">
-            <h3>Alerte Active</h3>
-            <div class="stat-trend down">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-              <span>5%</span>
-            </div>
+            <h3>Status Garanții</h3>
           </div>
           <div class="stat-content">
-            <p class="stat-number">18</p>
-            <p class="stat-change">-2 față de săptămâna trecută</p>
+            <p class="stat-number">{{ totalWarranty }}</p>
           </div>
           <div class="stat-breakdown">
             <div class="breakdown-item urgent">
-              <span class="breakdown-label">Urgente</span>
-              <span class="breakdown-value">5</span>
+              <span class="breakdown-label">Expirate</span>
+              <span class="breakdown-value">{{ expiredWarranty }}</span>
             </div>
             <div class="breakdown-item warning">
-              <span class="breakdown-label">Avertismente</span>
-              <span class="breakdown-value">8</span>
+              <span class="breakdown-label">Aproape de expirare</span>
+              <span class="breakdown-value">{{ expiringSoonWarranty }}</span>
             </div>
             <div class="breakdown-item info">
-              <span class="breakdown-label">Informative</span>
-              <span class="breakdown-value">5</span>
+              <span class="breakdown-label">Active</span>
+              <span class="breakdown-value">{{ activeWarranty }}</span>
             </div>
           </div>
         </div>
@@ -258,131 +207,36 @@
           <h3>Notificări Recente</h3>
           <a routerLink="/notifications" class="view-all">Vezi toate →</a>
         </div>
-        <div class="notifications-list">
-          <div class="notification-item urgent">
-            <div class="notification-icon">⚠️</div>
-            <div class="notification-content">
-              <div class="notification-title">Garantie expiră</div>
-              <div class="notification-desc">Server Rack #245 - Expiră în 7 zile</div>
-              <div class="notification-time">Acum 2 ore</div>
-            </div>
-            <button class="notification-action">Rezolvă</button>
-          </div>
-          
-          <div class="notification-item warning">
-            <div class="notification-icon">📋</div>
-            <div class="notification-content">
-              <div class="notification-title">Asigurare</div>
-              <div class="notification-desc">Mașină companie #3 - Expiră în 30 zile</div>
-              <div class="notification-time">Ieri, 14:30</div>
-            </div>
-            <button class="notification-action">Amână</button>
-          </div>
-          
-          <div class="notification-item info">
-            <div class="notification-icon">📊</div>
-            <div class="notification-content">
-              <div class="notification-title">Raport lunar</div>
-              <div class="notification-desc">Generat automat pentru Octombrie</div>
-              <div class="notification-time">28 Oct, 09:00</div>
-            </div>
-            <button class="notification-action">Vezi</button>
-          </div>
-          
-          <div class="notification-item warning">
-            <div class="notification-icon">🔧</div>
-            <div class="notification-content">
-              <div class="notification-title">Întreținere</div>
-              <div class="notification-desc">UPS Backup System - Revizie programată</div>
-              <div class="notification-time">26 Oct, 11:15</div>
-            </div>
-            <button class="notification-action">Planifică</button>
-          </div>
-          
-          <div class="notification-item info">
-            <div class="notification-icon">📍</div>
-            <div class="notification-content">
-              <div class="notification-title">Mutare bun</div>
-              <div class="notification-desc">Imprimantă #45 mutată la etajul 2</div>
-              <div class="notification-time">25 Oct, 16:45</div>
-            </div>
-            <button class="notification-action">Confirmă</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Reports -->
-      <div class="reports-card">
-        <div class="card-header">
-          <h3>Rapoarte Recente</h3>
-          <a routerLink="/reports" class="view-all">Toate rapoartele →</a>
-        </div>
-        <div class="reports-list">
-          <div class="report-item">
-            <div class="report-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div class="report-content">
-              <div class="report-title">Inventar Lunar - Octombrie 2024</div>
-              <div class="report-meta">Generat automat • 245 bunuri</div>
-            </div>
-            <div class="report-actions">
-              <button class="action-btn" title="Descarcă PDF">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+        <div class="notifications-list" style="max-height: 400px; overflow-y: auto;">
+          <ng-container *ngIf="notifications.length > 0; else noNotifications">
+            <div *ngFor="let notif of notifications" [ngClass]="{
+              'notification-item': true,
+              'urgent': notif.type === 0,
+              'warning': notif.type === 1
+            }">
+              <div class="notification-icon">
+                {{ notif.type === 0 ? '⚠️' : '📋' }}
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">
+                  {{ notif.type === 0 ? 'Garantie expiră' : 'Asigurare expiră' }}
+                </div>
+                <div class="notification-desc">{{ notif.message }}</div>
+              </div>
+              <button class="notification-action" (click)="markAsRead(notif.id)">
+                Citește/Șterge
               </button>
             </div>
-          </div>
-          
-          <div class="report-item">
-            <div class="report-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+          </ng-container>
+          <ng-template #noNotifications>
+            <div class="notification-item info">
+              <div class="notification-icon">ℹ️</div>
+              <div class="notification-content">
+                <div class="notification-title">Nicio notificare</div>
+                <div class="notification-desc">Nu există notificări active.</div>
+              </div>
             </div>
-            <div class="report-content">
-              <div class="report-title">Analiză Valoare Active - Q3 2024</div>
-              <div class="report-meta">Generat manual • Analiză detaliată</div>
-            </div>
-            <div class="report-actions">
-              <button class="action-btn" title="Descarcă Excel">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          <div class="report-item">
-            <div class="report-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div class="report-content">
-              <div class="report-title">Raport Costuri Întreținere</div>
-              <div class="report-meta">Septembrie 2024 • 18 înregistrări</div>
-            </div>
-            <div class="report-actions">
-              <button class="action-btn" title="Partajează">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="reports-actions">
-          <button class="btn-generate-report" routerLink="/reports/new">
-            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Generează raport nou
-          </button>
+          </ng-template>
         </div>
       </div>
 
@@ -394,14 +248,9 @@
         </div>
         <div class="categories-chart">
           <div class="chart-visual">
-            <div class="pie-chart">
-              <div class="pie-segment" style="--percentage: 35; --color: #667eea;"></div>
-              <div class="pie-segment" style="--percentage: 25; --color: #764ba2;"></div>
-              <div class="pie-segment" style="--percentage: 20; --color: #f59e0b;"></div>
-              <div class="pie-segment" style="--percentage: 15; --color: #10b981;"></div>
-              <div class="pie-segment" style="--percentage: 5; --color: #ef4444;"></div>
+            <div class="pie-chart" [style.background]="getPieChartGradient()">
               <div class="chart-center">
-                <div class="chart-total">245</div>
+                <div class="chart-total">{{ totalCount }}</div>
                 <div class="chart-label">bunuri</div>
               </div>
             </div>
@@ -409,28 +258,28 @@
           <div class="categories-legend">
             <div class="legend-item">
               <span class="legend-color" style="background-color: #667eea;"></span>
-              <span class="legend-label">Tehnologie</span>
-              <span class="legend-value">35%</span>
+              <span class="legend-label">Electronice</span>
+              <span class="legend-value">{{ electronicsCount }}</span>
             </div>
             <div class="legend-item">
               <span class="legend-color" style="background-color: #764ba2;"></span>
               <span class="legend-label">Mobilier</span>
-              <span class="legend-value">25%</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-color" style="background-color: #f59e0b;"></span>
-              <span class="legend-label">Echipamente</span>
-              <span class="legend-value">20%</span>
+              <span class="legend-value">{{ furnitureCount }}</span>
             </div>
             <div class="legend-item">
               <span class="legend-color" style="background-color: #10b981;"></span>
               <span class="legend-label">Vehicule</span>
-              <span class="legend-value">15%</span>
+              <span class="legend-value">{{ vehiclesCount }}</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: #f59e0b;"></span>
+              <span class="legend-label">Documente</span>
+              <span class="legend-value">{{ documentsCount }}</span>
             </div>
             <div class="legend-item">
               <span class="legend-color" style="background-color: #ef4444;"></span>
               <span class="legend-label">Altele</span>
-              <span class="legend-value">5%</span>
+              <span class="legend-value">{{ otherCount }}</span>
             </div>
           </div>
         </div>

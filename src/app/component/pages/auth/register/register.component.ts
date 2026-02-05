@@ -1,7 +1,7 @@
 import { Component,OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthenticationService } from '../../../../services/ApiServices/authentication.service';
 
 @Component({
@@ -16,7 +16,7 @@ export class RegisterComponent {
   showPassword = false;
   accountType: 'personal' | 'company' = 'personal';
 
-  constructor(private fb: FormBuilder, private authService: AuthenticationService) {
+  constructor(private fb: FormBuilder, private authService: AuthenticationService, private router: Router) {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -52,10 +52,11 @@ export class RegisterComponent {
       };
       try {
         await this.authService.register(registerData);
-        alert('Cont creat cu succes! Vei fi redirecționat către dashboard.');
+        alert('Cont creat cu succes!');
         this.registerForm.reset();
         this.accountType = 'personal';
         this.showPassword = false;
+        this.router.navigate(['/login']);
       } catch (error: any) {
         alert('A apărut o eroare la înregistrare. Încearcă din nou!');
         console.error('Register error:', error);
