@@ -5,11 +5,6 @@
       <h1 class="main-title">🏷️ Status Garanții & Asigurări</h1>
       <p class="subtitle">Monitorizează și gestionează garanțiile și asigurările bunurilor tale</p>
     </div>
-    
-    <div class="last-update">
-      <span class="update-icon">🔄</span>
-      <span class="update-text">Actualizat: {{lastUpdate | date:'dd.MM.yyyy HH:mm'}}</span>
-    </div>
   </div>
 
   <!-- Main Controls -->
@@ -28,7 +23,7 @@
       </div>
     </div>
 
-    <div class="control-group">
+    <div class="control-group" *ngIf="selectedType">
       <h3 class="control-title">2. Alege statusul</h3>
       <div class="status-selector">
         <button class="status-btn" [class.active]="selectedStatus === 'expired'" (click)="selectStatus('expired')">
@@ -46,11 +41,16 @@
           <span class="status-text">Active (>30 zile)</span>
           <span class="status-count">{{getStatusCount('active')}}</span>
         </button>
+        <button class="status-btn" [class.active]="selectedStatus === 'no-coverage'" (click)="selectStatus('no-coverage')">
+          <span class="status-indicator no-coverage"></span>
+          <span class="status-text">{{selectedType === 'warranty' ? 'Fără garanție' : 'Fără asigurare'}}</span>
+          <span class="status-count">{{getStatusCount('no-coverage')}}</span>
+        </button>
       </div>
     </div>
 
   <!-- Stats Overview -->
-  <div class="stats-overview">
+  <div class="stats-overview" *ngIf="selectedType">
     <div class="stat-card total">
       <div class="stat-icon">📊</div>
       <div class="stat-content">
@@ -83,7 +83,15 @@
       </div>
     </div>
     
-    <div class="stat-card value">
+    <div class="stat-card no-coverage">
+      <div class="stat-icon">❌</div>
+      <div class="stat-content">
+        <div class="stat-value">{{getStatusCount('no-coverage')}}</div>
+        <div class="stat-label">{{selectedType === 'warranty' ? 'Fără garanție' : 'Fără asigurare'}}</div>
+      </div>
+    </div>
+    
+    <div class="stat-card value" *ngIf="selectedType === 'insurance'">
       <div class="stat-icon">💰</div>
       <div class="stat-content">
         <div class="stat-value">{{totalValue | currency:'EUR'}}</div>
@@ -93,78 +101,84 @@
   </div>
 
   <!-- Items List -->
-  <div class="items-container">
+  <div class="items-container" *ngIf="selectedType && selectedStatus">
     <div class="items-header">
       <h2>{{getTitle()}}</h2>
-      <div class="items-count">{{filteredItems.length}} {{selectedType === 'warranty' ? 'garanții' : 'asigurări'}} găsite</div>
+      <div class="items-count" *ngIf="selectedStatus !== 'expired' && selectedStatus !== 'no-coverage'">{{filteredItems.length}} {{selectedType === 'warranty' ? 'garanții' : 'asigurări'}} găsite</div>
+    </div>
+    
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="loading-spinner">🔄</div>
+      <p>Se încarcă datele...</p>
     </div>
     
     <!-- Table View -->
-    <div class="items-table" *ngIf="filteredItems.length > 0">
-      <div class="table-header">
+    <div class="items-table" *ngIf="filteredItems.length > 0 && !isLoading">
+      <div class="table-header" [class.no-value]="selectedType === 'warranty'">
         <div class="table-col name">Nume bun</div>
         <div class="table-col category">Categorie</div>
-        <div class="table-col value">Valoare</div>
-        <div class="table-col dates">Date relevante</div>
-        <div class="table-col status">Status</div>
-        <div class="table-col days">Zile rămase</div>
+        <div class="table-col value" *ngIf="selectedType === 'insurance' && selectedStatus !== 'no-coverage'">Valoare</div>
+          <div class="table-col dates" *ngIf="selectedStatus !== 'no-coverage'">Date relevante</div>
+          <div class="table-col status">Status</div>
+          <div class="table-col days" *ngIf="selectedStatus !== 'no-coverage' && selectedStatus !== 'expired'">Zile rămase</div>
       </div>
       
       <div class="table-body">
-        <div class="table-row" *ngFor="let item of filteredItems" [class.expiring-soon]="isExpiringSoon(item)">
-          <div class="table-col name">
-            <div class="item-name">
-              <span class="item-icon">{{getCategoryIcon(item.category)}}</span>
-              {{item.name}}
+          <div class="table-row" *ngFor="let item of filteredItems" [class.expiring-soon]="isExpiringSoon(item)" [class.no-value]="selectedType === 'warranty'">
+            <div class="table-col name">
+              <div class="item-name">
+                <span class="item-icon">{{getCategoryIcon(item.category)}}</span>
+                {{item.name}}
+              </div>
             </div>
-            <div class="item-id">ID: {{item.id}}</div>
-          </div>
           
-          <div class="table-col category">
-            <span class="category-badge" [ngClass]="item.category">
-              {{getCategoryText(item.category)}}
-            </span>
-          </div>
-          
-          <div class="table-col value">
-            {{item.value | currency:'EUR'}}
-          </div>
-          
-          <div class="table-col dates">
-            <div class="date-item">
-              <span class="date-label">Achiziționat:</span>
-              <span class="date-value">{{item.purchaseDate | date:'dd.MM.yyyy'}}</span>
-            </div>
-            <div class="date-item">
-              <span class="date-label" *ngIf="selectedType === 'warranty'">Garanție până:</span>
-              <span class="date-label" *ngIf="selectedType === 'insurance'">Asigurat până:</span>
-              <span class="date-value" [class.warning]="isExpiringSoon(item)">
-                {{getExpirationDate(item) | date:'dd.MM.yyyy'}}
+            <div class="table-col category">
+              <span class="category-badge" [ngClass]="item.category">
+                {{getCategoryText(item.category)}}
               </span>
             </div>
-          </div>
           
-          <div class="table-col status">
-            <span class="status-badge" [ngClass]="getItemStatusClass(item)">
-              {{getItemStatusText(item)}}
-            </span>
-          </div>
+            <div class="table-col value" *ngIf="selectedType === 'insurance' && selectedStatus !== 'no-coverage'">
+              {{item.value | currency:'EUR'}}
+            </div>
           
-          <div class="table-col days">
-            <div class="days-count" [class.warning]="isExpiringSoon(item)">
-              {{getDaysRemaining(item)}}
-              <span class="days-text">zile</span>
+            <div class="table-col dates" *ngIf="selectedStatus !== 'no-coverage'">
+              <div class="date-item">
+                <span class="date-label" *ngIf="selectedType === 'warranty'">Garanție de la:</span>
+                <span class="date-label" *ngIf="selectedType === 'insurance'">Asigurat de la:</span>
+                <span class="date-value">{{item.warrantyStartDate| date:'dd.MM.yyyy'}}</span>
+              </div>
+              <div class="date-item">
+                <span class="date-label" *ngIf="selectedType === 'warranty'">Garanție până:</span>
+                <span class="date-label" *ngIf="selectedType === 'insurance'">Asigurat până:</span>
+                <span class="date-value" [class.warning]="isExpiringSoon(item)">
+                  {{getExpirationDate(item) | date:'dd.MM.yyyy'}}
+                </span>
+              </div>
             </div>
-            <div class="days-progress">
-              <div class="progress-bar" [style.width.%]="getProgressPercentage(item)"></div>
+          
+            <div class="table-col status">
+              <span class="status-badge" [ngClass]="getItemStatusClass(item)">
+                {{getItemStatusText(item)}}
+              </span>
+            </div>
+          
+            <div class="table-col days" *ngIf="selectedStatus !== 'no-coverage' && selectedStatus !== 'expired'">
+              <div class="days-count" [class.warning]="isExpiringSoon(item)">
+                {{getDaysRemaining(item)}}
+                <span class="days-text">zile</span>
+              </div>
+              <div class="days-progress">
+                <div class="progress-bar" [style.width.%]="getProgressPercentage(item)"></div>
+              </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
     
     <!-- No Results -->
-    <div class="no-results" *ngIf="filteredItems.length === 0">
+    <div class="no-results" *ngIf="filteredItems.length === 0 && !isLoading">
       <div class="no-results-icon">
         {{selectedType === 'warranty' ? '🛡️' : '📄'}}
       </div>

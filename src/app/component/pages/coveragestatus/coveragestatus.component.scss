@@ -175,6 +175,12 @@
     background: rgba(16, 185, 129, 0.05);
     color: #059669;
   }
+  
+  &.active.no-coverage {
+    border-color: #6b7280;
+    background: rgba(107, 114, 128, 0.05);
+    color: #4b5563;
+  }
 }
 
 .status-indicator {
@@ -196,6 +202,11 @@
   &.active {
     background: #10b981;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+  
+  &.no-coverage {
+    background: #6b7280;
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
   }
 }
 
@@ -444,6 +455,10 @@
     .stat-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
   }
   
+  &.no-coverage {
+    .stat-icon { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+  }
+  
   &.value {
     .stat-icon { background: rgba(217, 119, 6, 0.1); color: #d97706; }
   }
@@ -528,6 +543,10 @@
   color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  
+  &.no-value {
+    grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr 120px;
+  }
 }
 
 .table-col {
@@ -546,6 +565,10 @@
   border-bottom: 1px solid #f3f4f6;
   transition: all 0.3s ease;
   align-items: center;
+  
+  &.no-value {
+    grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr 120px;
+  }
   
   &:hover {
     background: #f9fafb;
@@ -657,6 +680,11 @@
     background: rgba(16, 185, 129, 0.1);
     color: #059669;
   }
+  
+  &.no-coverage {
+    background: rgba(107, 114, 128, 0.1);
+    color: #4b5563;
+  }
 }
 
 .days-count {
@@ -731,6 +759,29 @@
     background: rgba(139, 92, 246, 0.1);
     border-color: #8b5cf6;
   }
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  
+  .loading-spinner {
+    font-size: 48px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* No Results */
@@ -960,6 +1011,10 @@
   .table-header,
   .table-row {
     grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 120px;
+    
+    &.no-value {
+      grid-template-columns: 2fr 1fr 1.5fr 1fr 120px;
+    }
   }
   
   .table-header .table-col.days,
@@ -986,6 +1041,10 @@
   .table-header,
   .table-row {
     grid-template-columns: 2fr 1fr 1fr 1.5fr 120px;
+    
+    &.no-value {
+      grid-template-columns: 2fr 1fr 1.5fr 120px;
+    }
   }
   
   .table-header .table-col.dates,

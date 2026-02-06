@@ -1,74 +1,317 @@
-
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { WarrantyStatusService } from '../../../services/ApiServices/coveragestatus/warranty.status.sservice';
+import { InsuranceStatusService } from '../../../services/ApiServices/coveragestatus/insurance.status.service';
+import { WarrantyItem } from '../../../models/statusmodel/warranty.insurance.model';
 
-interface WarrantyItem {
-  id: number;
-  name: string;
-  category: string;
-  value: number;
-  purchaseDate: Date;
-  warrantyEndDate?: Date;
-  insuranceEndDate?: Date;
-  status: 'expired' | 'expiring-soon' | 'active';
-  daysRemaining: number;
-}
 
 @Component({
   selector: 'app-coveragestatus',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './coveragestatus.component.html',
   styleUrl: './coveragestatus.component.scss'
 })
 export class CoveragestatusComponent {
-  selectedType: 'warranty' | 'insurance' = 'warranty';
-  selectedStatus: 'expired' | 'expiring-soon' | 'active' = 'expired';
+  selectedType: 'warranty' | 'insurance' | null = null;
+  selectedStatus: 'expired' | 'expiring-soon' | 'active' | 'no-coverage' | null = null;
   warrantyItems: WarrantyItem[] = [];
   insuranceItems: WarrantyItem[] = [];
   filteredItems: WarrantyItem[] = [];
   totalItems = 0;
   totalValue = 0;
-  lastUpdate = new Date();
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  isLoading = false;
 
-  private mockWarrantyData: WarrantyItem[] = [
-    { id: 1, name: 'Laptop Dell XPS 15', category: 'electronics', value: 1500, purchaseDate: new Date('2023-01-15'), warrantyEndDate: new Date('2024-01-15'), status: 'expired', daysRemaining: -30 },
-    { id: 2, name: 'iPhone 14 Pro', category: 'electronics', value: 1200, purchaseDate: new Date('2023-06-01'), warrantyEndDate: new Date('2024-06-01'), status: 'active', daysRemaining: 150 },
-    { id: 3, name: 'Scaun ergonomic', category: 'furniture', value: 450, purchaseDate: new Date('2023-11-01'), warrantyEndDate: new Date('2024-02-01'), status: 'expiring-soon', daysRemaining: 25 },
-    { id: 4, name: 'Monitor Samsung 27"', category: 'electronics', value: 350, purchaseDate: new Date('2022-12-15'), warrantyEndDate: new Date('2023-12-15'), status: 'expired', daysRemaining: -45 },
-    { id: 5, name: 'Imprimantă Canon', category: 'electronics', value: 250, purchaseDate: new Date('2023-03-20'), warrantyEndDate: new Date('2025-03-20'), status: 'active', daysRemaining: 430 },
-  ];
+  // Warranty summary statistics
+  warrantyStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0 };
+  // Insurance summary statistics
+  insuranceStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0, totalValue: 0 };
 
-  private mockInsuranceData: WarrantyItem[] = [
-    { id: 6, name: 'Mașină personală', category: 'vehicles', value: 15000, purchaseDate: new Date('2022-05-10'), insuranceEndDate: new Date('2024-02-28'), status: 'expiring-soon', daysRemaining: 15 },
-    { id: 7, name: 'Apartament', category: 'documents', value: 120000, purchaseDate: new Date('2020-01-15'), insuranceEndDate: new Date('2024-12-31'), status: 'active', daysRemaining: 320 },
-    { id: 8, name: 'Bijuterii', category: 'other', value: 5000, purchaseDate: new Date('2023-08-01'), insuranceEndDate: new Date('2024-08-01'), status: 'active', daysRemaining: 210 },
-  ];
+  constructor(
+    private warrantyStatusService: WarrantyStatusService,
+    private insuranceStatusService: InsuranceStatusService
+  ) {}
 
   ngOnInit() {
-    this.loadData();
   }
 
-  loadData() {
-    this.warrantyItems = [...this.mockWarrantyData];
-    this.insuranceItems = [...this.mockInsuranceData];
-    this.applyFilters();
-    this.updateStats();
-    this.lastUpdate = new Date();
+
+  async loadWarrantySummary() {
+    this.isLoading = true;
+    try {
+      const summary = await this.warrantyStatusService.getWarrantyStatusSummary();
+      this.warrantyStats = {
+        total: summary.totalCount || 0,
+        expired: summary.expiredCount || 0,
+        expiringSoon: summary.expiringSoonCount || 0,
+        active: summary.validMoreThanMonthCount || 0,
+        noCoverage: summary.assetsWithoutWarrantyCount || 0
+      };
+      this.warrantyItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.warrantyStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0 };
+      this.warrantyItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  selectType(type: 'warranty' | 'insurance') {
+  async loadInsuranceSummary() {
+    this.isLoading = true;
+    try {
+      const insuranceSummary = await this.insuranceStatusService.getInsuranceStatusSummary();
+      this.insuranceStats = {
+        total: insuranceSummary.totalCount || 0,
+        expired: insuranceSummary.expiredCount || 0,
+        expiringSoon: insuranceSummary.expiringSoonCount || 0,
+        active: insuranceSummary.validMoreThanMonthCount || 0,
+        noCoverage: insuranceSummary.assetsWithoutInsuranceCount || 0,
+        totalValue: insuranceSummary.totalInsuredValue || 0
+      };
+      this.insuranceItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } catch (err) {
+      this.insuranceStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0, totalValue: 0 };
+      this.insuranceItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async selectType(type: 'warranty' | 'insurance') {
+    // If clicking on the same type, reset status selection
+    if (this.selectedType === type) {
+      this.selectedStatus = null;
+      this.filteredItems = [];
+      return;
+    }
+    
     this.selectedType = type;
-    this.applyFilters();
+    this.selectedStatus = null; // Reset status when changing type
+    this.filteredItems = [];
+    
+    if (type === 'warranty') {
+      await this.loadWarrantySummary();
+    } else if (type === 'insurance') {
+      await this.loadInsuranceSummary();
+    }
   }
 
-  selectStatus(status: 'expired' | 'expiring-soon' | 'active') {
+  async selectStatus(status: 'expired' | 'expiring-soon' | 'active' | 'no-coverage') {
     this.selectedStatus = status;
-    this.applyFilters();
+    if (this.selectedType === 'warranty' && status === 'expired') {
+      await this.loadExpiredWarranties();
+    } else if (this.selectedType === 'warranty' && status === 'expiring-soon') {
+      await this.loadExpiringWarranties();
+    } else if (this.selectedType === 'warranty' && status === 'active') {
+      await this.loadValidWarranties();
+    } else if (this.selectedType === 'warranty' && status === 'no-coverage') {
+      await this.loadWithoutWarranties();
+    } else if (this.selectedType === 'insurance' && status === 'expired') {
+      await this.loadExpiredInsurances();
+    } else if (this.selectedType === 'insurance' && status === 'expiring-soon') {
+      await this.loadExpiringInsurances();
+    } else if (this.selectedType === 'insurance' && status === 'active') {
+      await this.loadValidInsurances();
+    } else if (this.selectedType === 'insurance' && status === 'no-coverage') {
+      await this.loadWithoutInsurances();
+    } else {
+      this.applyFilters();
+    }
+  }
+
+  private async loadWithoutInsurances() {
+    this.isLoading = true;
+    try {
+      const without = await this.insuranceStatusService.getWithoutInsurances();
+      this.insuranceItems = (without || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        status: 'no-coverage',
+        value: 0,
+        daysRemaining: 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.insuranceItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadValidInsurances() {
+    this.isLoading = true;
+    try {
+      const valid = await this.insuranceStatusService.getValidInsurances();
+      this.insuranceItems = (valid || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        value: item.value || item.assetValue || 0,
+        insuranceEndDate: item.endDate ? new Date(item.endDate) : (item.insuranceEndDate ? new Date(item.insuranceEndDate) : undefined),
+        warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
+        status: 'active',
+        daysRemaining: item.daysLeft || 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.insuranceItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadExpiringInsurances() {
+    this.isLoading = true;
+    try {
+      const expiring = await this.insuranceStatusService.getExpiringInsurances();
+      this.insuranceItems = (expiring || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        value: item.value || item.assetValue || 0,
+        insuranceEndDate: item.endDate ? new Date(item.endDate) : (item.insuranceEndDate ? new Date(item.insuranceEndDate) : undefined),
+        warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
+        status: 'expiring-soon',
+        daysRemaining: item.daysLeft || 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.insuranceItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadExpiredInsurances() {
+    this.isLoading = true;
+    try {
+      const expired = await this.insuranceStatusService.getExpiredInsurances();
+      this.insuranceItems = (expired || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        value: item.value || item.assetValue || 0,
+        insuranceEndDate: item.endDate ? new Date(item.endDate) : (item.insuranceEndDate ? new Date(item.insuranceEndDate) : undefined),
+        warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
+        status: 'expired',
+        daysRemaining: 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.insuranceItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadExpiredWarranties() {
+    this.isLoading = true;
+    try {
+      const expired = await this.warrantyStatusService.getExpiredWarranties();
+      this.warrantyItems = (expired || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
+        warrantyEndDate: item.endDate ? new Date(item.endDate) : (item.warrantyEndDate ? new Date(item.warrantyEndDate) : undefined),
+        status: 'expired',
+        daysRemaining: 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.warrantyItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadExpiringWarranties() {
+    this.isLoading = true;
+    try {
+      const expiring = await this.warrantyStatusService.getExpiringWarranties();
+      this.warrantyItems = (expiring || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
+        warrantyEndDate: item.endDate ? new Date(item.endDate) : (item.warrantyEndDate ? new Date(item.warrantyEndDate) : undefined),
+        status: 'expiring-soon',
+        daysRemaining: item.daysLeft || 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.warrantyItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadValidWarranties() {
+    this.isLoading = true;
+    try {
+      const valid = await this.warrantyStatusService.getValidWarranties();
+      this.warrantyItems = (valid || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
+        warrantyEndDate: item.endDate ? new Date(item.endDate) : (item.warrantyEndDate ? new Date(item.warrantyEndDate) : undefined),
+        status: 'active',
+        daysRemaining: item.daysLeft || 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.warrantyItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadWithoutWarranties() {
+    this.isLoading = true;
+    try {
+      const without = await this.warrantyStatusService.getWithoutWarranties();
+      this.warrantyItems = (without || []).map((item: any) => ({
+        name: item.name || item.assetName,
+        category: item.category?.toLowerCase() || 'other',
+        status: 'no-coverage',
+        daysRemaining: 0
+      }));
+      this.applyFilters();
+      this.updateStats();
+    } catch (error) {
+      this.warrantyItems = [];
+      this.applyFilters();
+      this.updateStats();
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   applyFilters() {
@@ -78,15 +321,22 @@ export class CoveragestatusComponent {
   }
 
   clearFilters() {
-    this.selectedType = 'warranty';
-    this.selectedStatus = 'expired';
-    this.applyFilters();
+    this.selectedType = null;
+    this.selectedStatus = null;
+    this.filteredItems = [];
+    this.warrantyStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0 };
+    this.insuranceStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0, totalValue: 0 };
+    this.updateStats();
   }
 
   updateStats() {
-    const items = this.selectedType === 'warranty' ? this.warrantyItems : this.insuranceItems;
-    this.totalItems = items.length;
-    this.totalValue = items.reduce((sum, item) => sum + item.value, 0);
+    if (this.selectedType === 'warranty') {
+      this.totalItems = this.warrantyStats.total;
+      this.totalValue = 0;
+    } else {
+      this.totalItems = this.insuranceStats.total;
+      this.totalValue = this.insuranceStats.totalValue;
+    }
   }
 
   updatePagination() {
@@ -95,18 +345,39 @@ export class CoveragestatusComponent {
   }
 
   getStatusCount(status: string): number {
-    const items = this.selectedType === 'warranty' ? this.warrantyItems : this.insuranceItems;
-    return items.filter(item => item.status === status).length;
+    if (this.selectedType === 'warranty') {
+      switch (status) {
+        case 'expired': return this.warrantyStats.expired;
+        case 'expiring-soon': return this.warrantyStats.expiringSoon;
+        case 'active': return this.warrantyStats.active;
+        case 'no-coverage': return this.warrantyStats.noCoverage;
+        case 'total': return this.warrantyStats.total;
+        default: return 0;
+      }
+    } else {
+      switch (status) {
+        case 'expired': return this.insuranceStats.expired;
+        case 'expiring-soon': return this.insuranceStats.expiringSoon;
+        case 'active': return this.insuranceStats.active;
+        case 'no-coverage': return this.insuranceStats.noCoverage;
+        case 'total': return this.insuranceStats.total;
+        default: return 0;
+      }
+    }
   }
 
   getTitle(): string {
+    if (!this.selectedType || !this.selectedStatus) {
+      return 'Selectează tipul și statusul';
+    }
     const typeText = this.selectedType === 'warranty' ? 'Garanții' : 'Asigurări';
-    const statusText = {
+    const statusText: { [key: string]: string } = {
       'expired': 'Expirate',
       'expiring-soon': 'Aproape expiră',
-      'active': 'Active'
-    }[this.selectedStatus];
-    return `${typeText} ${statusText}`;
+      'active': 'Active',
+      'no-coverage': this.selectedType === 'warranty' ? 'Fără garanție' : 'Fără asigurare'
+    };
+    return `${typeText} - ${statusText[this.selectedStatus]}`;
   }
 
   getCategoryIcon(category: string): string {
@@ -140,10 +411,11 @@ export class CoveragestatusComponent {
   }
 
   getItemStatusText(item: WarrantyItem): string {
-    const texts = {
+    const texts: { [key: string]: string } = {
       'expired': 'Expirată',
       'expiring-soon': 'Expiră curând',
-      'active': 'Activă'
+      'active': 'Activă',
+      'no-coverage': this.selectedType === 'warranty' ? 'Fără garanție' : 'Fără asigurare'
     };
     return texts[item.status];
   }
