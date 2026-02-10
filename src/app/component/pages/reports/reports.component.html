@@ -1,1 +1,301 @@
-<p>reports works!</p>
+<div class="export-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1 class="main-title">📤 Export Date</h1>
+      <p class="subtitle">Exportă datele tale în formate CSV, Excel sau PDF pentru backup și analiză</p>
+    </div>
+  </div>
+
+  <!-- Quick Export Cards -->
+  <div class="quick-export-section">
+    <h2 class="section-title">⚡ Export rapid</h2>
+    <p class="section-subtitle">Exportează rapid cele mai solicitate rapoarte</p>
+    
+    <div class="quick-cards">
+      <!-- Toate bunurile -->
+      <div class="quick-card" [class.selected]="selectedQuickExport === 'all'" (click)="selectQuickExport('all')">
+        <div class="card-icon total">📦</div>
+        <div class="card-content">
+          <h3 class="card-title">Toate bunurile</h3>
+          <p class="card-description">Exportă toate bunurile din inventar</p>
+        </div>
+        <div class="card-check">
+          <div class="checkmark" [class.checked]="selectedQuickExport === 'all'"></div>
+        </div>
+      </div>
+      
+      <!-- Asigurări aproape expirate -->
+      <div class="quick-card" [class.selected]="selectedQuickExport === 'insurance-expired'" (click)="selectQuickExport('insurance-expired')">
+        <div class="card-icon expired">⚠️</div>
+        <div class="card-content">
+          <h3 class="card-title">Asigurări aproape expirate</h3>
+          <p class="card-description">Bunuri cu asigurări care expiră în &lt;30 zile</p>
+        </div>
+        <div class="card-check">
+          <div class="checkmark" [class.checked]="selectedQuickExport === 'insurance-expired'"></div>
+        </div>
+      </div>
+      
+      <!-- Garanții care expiră curând -->
+      <div class="quick-card" [class.selected]="selectedQuickExport === 'warranty-soon'" (click)="selectQuickExport('warranty-soon')">
+        <div class="card-icon warning">⏰</div>
+        <div class="card-content">
+          <h3 class="card-title">Garanții aproape expirate</h3>
+          <p class="card-description">Garanții care expiră în următoarele 30 de zile</p>
+        </div>
+        <div class="card-check">
+          <div class="checkmark" [class.checked]="selectedQuickExport === 'warranty-soon'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Export Builder -->
+  <div class="custom-export-section">
+    <h2 class="section-title">🔧 Export personalizat</h2>
+    <p class="section-subtitle">Configurează propriul export cu coloane și filtre personalizate</p>
+    
+    <div class="custom-builder">
+      <!-- Left: Filters -->
+      <div class="builder-filters">
+        <h3 class="builder-title">Filtre</h3>
+        
+        <div class="filter-group">
+          <label class="filter-label">Categorie bun</label>
+          <div class="category-filters">
+            <label class="checkbox-option" *ngFor="let category of categories">
+              <input type="checkbox" [checked]="selectedCategories.includes(category.value)" 
+                     (change)="toggleCategory(category.value)">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">
+                <span class="category-icon">{{category.icon}}</span>
+                {{category.name}}
+              </span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Status asigurare</label>
+          <div class="status-filters">
+            <label class="radio-option">
+              <input type="radio" name="insuranceStatus" value="all" 
+                     [checked]="insuranceStatus === 'all'" (change)="setInsuranceStatus('all')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Toate</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="insuranceStatus" value="expired" 
+                     [checked]="insuranceStatus === 'expired'" (change)="setInsuranceStatus('expired')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Expirate</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="insuranceStatus" value="expiring-soon" 
+                     [checked]="insuranceStatus === 'expiring-soon'" (change)="setInsuranceStatus('expiring-soon')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Expiră curând (&lt;30 zile)</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="insuranceStatus" value="active" 
+                     [checked]="insuranceStatus === 'active'" (change)="setInsuranceStatus('active')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Active</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Status garanție</label>
+          <div class="status-filters">
+            <label class="radio-option">
+              <input type="radio" name="warrantyStatus" value="all" 
+                     [checked]="warrantyStatus === 'all'" (change)="setWarrantyStatus('all')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Toate</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="warrantyStatus" value="expired" 
+                     [checked]="warrantyStatus === 'expired'" (change)="setWarrantyStatus('expired')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Expirate</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="warrantyStatus" value="expiring-soon" 
+                     [checked]="warrantyStatus === 'expiring-soon'" (change)="setWarrantyStatus('expiring-soon')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Expiră curând (&lt;30 zile)</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="warrantyStatus" value="active" 
+                     [checked]="warrantyStatus === 'active'" (change)="setWarrantyStatus('active')">
+              <span class="radio-custom"></span>
+              <span class="radio-text">Active</span>
+            </label>
+          </div>
+        </div>
+        
+
+        
+
+      </div>
+      
+      <!-- Middle: Columns Selection -->
+      <div class="builder-columns">
+        <h3 class="builder-title">Coloane de export</h3>
+        
+        <div class="columns-list">
+          <div class="column-section">
+            <h4 class="section-sub">Informații de bază</h4>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.name" (change)="updateCustomExport()" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Nume bun</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.description" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Descriere</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.category" (change)="updateCustomExport()" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Categorie</span>
+            </label>
+          </div>
+          
+          <div class="column-section">
+            <h4 class="section-sub">Valoare și locație</h4>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.value" (change)="updateCustomExport()" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Valoare (EUR)</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.space" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Locație/Spațiu</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.purchaseDate" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Data achiziției</span>
+            </label>
+          </div>
+          
+          <div class="column-section">
+            <h4 class="section-sub">Garanție</h4>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.warrantyProvider" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Furnizor garanție</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.warrantyStart" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Garanție de la</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.warrantyEnd" (change)="updateCustomExport()" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Garanție până la</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.warrantyStatus" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Status garanție</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.warrantyDays" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Zile rămase garanție</span>
+            </label>
+          </div>
+          
+          <div class="column-section">
+            <h4 class="section-sub">Asigurare</h4>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.insuranceCompany" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Compania de asigurare</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.insuranceValue" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Valoare asigurare</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.insuranceStart" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Asigurare de la</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.insuranceEnd" (change)="updateCustomExport()" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Asigurare până la</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.insuranceStatus" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Status asigurare</span>
+            </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.insuranceDays" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Zile rămase asigurare</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="column-actions">
+          <button class="btn-select-all" (click)="selectAllColumns()">Selectează toate</button>
+          <button class="btn-deselect-all" (click)="deselectAllColumns()">Deselectează toate</button>
+        </div>
+      </div>
+      
+      <!-- Right: Preview & Export -->
+      <div class="builder-export">
+        <h3 class="builder-title">Export</h3>
+        
+        <div class="export-options">
+          <h4>Opțiuni export</h4>
+          
+          <div class="format-selector">
+            <label class="format-option" *ngFor="let format of exportFormats">
+              <input type="radio" name="exportFormat" [value]="format.value" 
+                     [(ngModel)]="selectedFormat" (change)="updateExport()">
+              <span class="format-icon">{{format.icon}}</span>
+              <span class="format-name">{{format.name}}</span>
+              <span class="format-desc">{{format.description}}</span>
+            </label>
+          </div>
+          
+          <div class="export-actions">
+            <button class="btn-export-now" (click)="performExport()" [disabled]="isExporting">
+              <span class="export-icon" *ngIf="!isExporting">📤</span>
+              <span class="export-spinner" *ngIf="isExporting"></span>
+              {{isExporting ? 'Se exportă...' : 'Exportă acum'}}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Info -->
+  <div class="footer-info">
+    <div class="info-card">
+      <div class="info-icon">💡</div>
+      <div class="info-content">
+        <h4>Sfaturi pentru export</h4>
+        <ul>
+          <li>Exportă regulat pentru backup</li>
+          <li>Folosește filtre pentru exporturi mai mici</li>
+          <li>CSV este cel mai bun pentru import în Excel</li>
+          <li>PDF este ideal pentru documente oficiale</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

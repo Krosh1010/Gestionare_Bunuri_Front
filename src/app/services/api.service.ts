@@ -6,6 +6,18 @@ import axios, { AxiosInstance } from 'axios';
   providedIn: 'root',
 })
 export class ApiService {
+    // Cerere GET pentru fișiere (blob)
+    async getFile(endpoint: string): Promise<Blob> {
+      try {
+        const response = await this.axiosClient.get(endpoint, {
+          responseType: 'blob'
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Eroare la descărcarea fișierului:', error);
+        throw error;
+      }
+    }
   private axiosClient: AxiosInstance;
 
   constructor() {
@@ -64,6 +76,19 @@ async getDataWithParams(endpoint: string, params: any): Promise<any> {
       return response;
     } catch (error) {
       console.error('Eroare la cererea POST:', error);
+      throw error;
+    }
+  }
+
+  // Cerere POST pentru fișiere (blob)
+  async postFile(endpoint: string, payload: any): Promise<Blob> {
+    try {
+      const response = await this.axiosClient.post(endpoint, payload, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Eroare la cererea POST pentru fișier:', error);
       throw error;
     }
   }
