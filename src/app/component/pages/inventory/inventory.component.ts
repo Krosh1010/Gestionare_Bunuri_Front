@@ -2,8 +2,6 @@
 import { AssetsReadModel } from '../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../services/ApiServices/assets.service';
 import { SpaceService } from '../../../services/ApiServices/space.service';
-import { warrantyService } from '../../../services/ApiServices/warranty.service';
-import { InsuranceService } from '../../../services/ApiServices/insurance.service';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -43,12 +41,16 @@ export class InventoryComponent implements OnInit {
       vehicles: false,
       documents: false
     },
-    status: {
-      active: false,
-      inactive: false,
-      maintenance: false
-    }
+    priceMin: null as number | null,
+    priceMax: null as number | null,
+    spaceId: null as number | null
   };
+
+  // Spaces for filter dropdown
+  filterSpaces: any[] = [];
+  filterParentLevels: any[][] = [];
+  filterSelectedParentIds: (number | null)[] = [];
+  filterSelectedSpaceName: string | null = null;
 
   // View mode
   viewMode: 'grid' | 'list' = 'grid';
@@ -143,21 +145,31 @@ selectedSpaceName: string | null = null;
       const matchesCategory = categories.length === 0 || 
         categories.includes(asset.category);
 
-      // Status filter: dacă nu există status pe model, ignoră
-      let matchesStatus = true;
-      if ('status' in asset && asset.status) {
-        const statuses = Object.entries(this.filters.status)
-          .filter(([_, value]) => value)
-          .map(([key, _]) => key);
-        matchesStatus = statuses.length === 0 || statuses.includes((asset as any).status);
+      // Price range filter
+      let matchesPrice = true;
+      if (this.filters.priceMin !== null && this.filters.priceMin !== undefined) {
+        matchesPrice = asset.value >= this.filters.priceMin;
       }
-      return matchesSearch && matchesCategory && matchesStatus;
+      if (matchesPrice && this.filters.priceMax !== null && this.filters.priceMax !== undefined) {
+        matchesPrice = asset.value <= this.filters.priceMax;
+      }
+
+      // Space filter
+      let matchesSpace = true;
+      if (this.filters.spaceId !== null && this.filters.spaceId !== undefined) {
+        matchesSpace = asset.spaceId === this.filters.spaceId;
+      }
+
+      return matchesSearch && matchesCategory && matchesPrice && matchesSpace;
     });
     this.updateStats();
   }
 
   toggleFilter(): void {
     this.showFilter = !this.showFilter;
+    if (this.showFilter) {
+      this.loadFilterSpaces();
+    }
   }
 
   applyFilters(): void {
@@ -173,11 +185,12 @@ selectedSpaceName: string | null = null;
       vehicles: false,
       documents: false
     };
-    this.filters.status = {
-      active: false,
-      inactive: false,
-      maintenance: false
-    };
+    this.filters.priceMin = null;
+    this.filters.priceMax = null;
+    this.filters.spaceId = null;
+    this.filterSelectedSpaceName = null;
+    this.filterParentLevels = [];
+    this.filterSelectedParentIds = [];
     this.activeFilters = 0;
     this.filterAssets();
     this.showFilter = false;
@@ -189,10 +202,52 @@ selectedSpaceName: string | null = null;
     // Count category filters
     count += Object.values(this.filters.categories).filter(v => v).length;
     
-    // Count status filters
-    count += Object.values(this.filters.status).filter(v => v).length;
+    // Count price filters
+    if (this.filters.priceMin !== null && this.filters.priceMin !== undefined) count++;
+    if (this.filters.priceMax !== null && this.filters.priceMax !== undefined) count++;
+    
+    // Count space filter
+    if (this.filters.spaceId !== null && this.filters.spaceId !== undefined) count++;
     
     return count;
+  }
+
+  // Filter space selection
+  async loadFilterSpaces(): Promise<void> {
+    if (this.filterParentLevels.length > 0) return;
+    try {
+      const roots = await this.spaceService.getSpacesParents();
+      this.filterParentLevels = [roots];
+    } catch (e) {
+      this.filterParentLevels = [];
+    }
+  }
+
+  async onFilterSpaceSelected(level: number, parentId: number | null): Promise<void> {
+    this.filterSelectedParentIds[level] = parentId;
+    this.filterSelectedParentIds.length = level + 1;
+    this.filterParentLevels.length = level + 1;
+
+    if (!parentId) {
+      this.filters.spaceId = null;
+      this.filterSelectedSpaceName = null;
+      return;
+    }
+
+    this.filters.spaceId = parentId;
+    // Find name from current level
+    const currentLevel = this.filterParentLevels[level];
+    const selected = currentLevel?.find((s: any) => s.id === parentId);
+    this.filterSelectedSpaceName = selected?.name || null;
+
+    try {
+      const children = await this.spaceService.getSpaceByIdParents(parentId.toString());
+      if (children && children.length > 0) {
+        this.filterParentLevels.push(children);
+      }
+    } catch (e) {
+      // no children
+    }
   }
 
   // View mode

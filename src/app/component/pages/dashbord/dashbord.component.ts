@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { DatePipe,CommonModule } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NotificationsService } from '../../../services/ApiServices/notifications.service';
 import { DashboardService } from '../../../services/ApiServices/dashboard.service';
-
+import { SpaceService } from '../../../services/ApiServices/space.service';
+import { LocationNode } from '../../../models/dashboard/location.model';
 
 @Component({
   selector: 'app-dashbord',
@@ -36,15 +37,28 @@ export class DashbordComponent implements OnInit {
   expiringSoonInsurance: number = 0;
   activeInsurance: number = 0;
 
+  // Locations tree
+  locationTree: LocationNode[] = [];
+  locationsLoading: boolean = false;
+  totalLocations: number = 0;
+
+  types = [
+    { label: 'HOME', value: 0 },
+    { label: 'OFFICE', value: 1 },
+    { label: 'ROOM', value: 2 },
+    { label: 'STORAGE', value: 3 }
+  ];
 
   constructor(
     private notificationsService: NotificationsService,
-    private dashboardService: DashboardService
+    private dashboardService: DashboardService,
+    private spaceService: SpaceService
   ) {}
 
   ngOnInit(): void {
     this.loadNotifications();
     this.loadDashboardData();
+    this.loadLocationsTree();
   }
   loadDashboardData(): void {
     this.dashboardService.getDashboardData().then(
@@ -98,6 +112,80 @@ export class DashbordComponent implements OnInit {
         console.error('Eroare la ștergerea notificării:', error);
       }
     );
+  }
+
+  // --- Locations tree methods ---
+  async loadLocationsTree(): Promise<void> {
+    this.locationsLoading = true;
+    try {
+      const roots = await this.spaceService.getSpacesParents();
+      this.locationTree = (roots || []).map((loc: any) => ({
+        ...loc,
+        expanded: false,
+        childrenLoaded: false,
+        loadingChildren: false,
+        children: []
+      }));
+      this.totalLocations = this.locationTree.length;
+    } catch (error) {
+      console.error('Eroare la încărcarea locațiilor:', error);
+      this.locationTree = [];
+    } finally {
+      this.locationsLoading = false;
+    }
+  }
+
+  async toggleExpand(node: LocationNode): Promise<void> {
+    if (node.expanded) {
+      node.expanded = false;
+      return;
+    }
+    node.expanded = true;
+    if (!node.childrenLoaded) {
+      node.loadingChildren = true;
+      try {
+        const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+        node.children = (children || []).map((child: any) => ({
+          ...child,
+          expanded: false,
+          childrenLoaded: false,
+          loadingChildren: false,
+          children: []
+        }));
+        node.childrenLoaded = true;
+        this.totalLocations += node.children!.length;
+      } catch (error) {
+        console.error('Eroare la încărcarea sub-locațiilor:', error);
+        node.children = [];
+      } finally {
+        node.loadingChildren = false;
+      }
+    }
+  }
+
+  getTypeLabel(typeValue: number): string {
+    const type = this.types.find(t => t.value === typeValue);
+    return type ? type.label : 'N/A';
+  }
+
+  getTypeEmoji(type: number): string {
+    switch (type) {
+      case 0: return '🏠';
+      case 1: return '🏢';
+      case 2: return '🚪';
+      case 3: return '📦';
+      default: return '📍';
+    }
+  }
+
+  getTypeClass(type: number): string {
+    switch (type) {
+      case 0: return 'home';
+      case 1: return 'office';
+      case 2: return 'room';
+      case 3: return 'storage';
+      default: return 'home';
+    }
   }
 
   getPieChartGradient(): string {

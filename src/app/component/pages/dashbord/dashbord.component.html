@@ -141,57 +141,64 @@
           <a routerLink="/locations" class="view-all">Vezi toate →</a>
         </div>
         <div class="locations-content">
-          <div class="locations-map">
-            <div class="building-map">
-              <div class="floor" data-floor="3">
-                <div class="floor-label">Etaj 3</div>
-                <div class="rooms">
-                  <div class="room occupied" data-room="301" data-count="12"></div>
-                  <div class="room" data-room="302"></div>
-                  <div class="room occupied" data-room="303" data-count="8"></div>
-                  <div class="room" data-room="304"></div>
-                </div>
-              </div>
-              <div class="floor" data-floor="2">
-                <div class="floor-label">Etaj 2</div>
-                <div class="rooms">
-                  <div class="room" data-room="201"></div>
-                  <div class="room occupied" data-room="202" data-count="15"></div>
-                  <div class="room occupied" data-room="203" data-count="6"></div>
-                  <div class="room occupied" data-room="204" data-count="10"></div>
-                </div>
-              </div>
-              <div class="floor" data-floor="1">
-                <div class="floor-label">Etaj 1</div>
-                <div class="rooms">
-                  <div class="room occupied" data-room="101" data-count="25"></div>
-                  <div class="room occupied" data-room="102" data-count="18"></div>
-                  <div class="room" data-room="103"></div>
-                  <div class="room occupied" data-room="104" data-count="14"></div>
-                </div>
-              </div>
+          <div class="locations-tree-container">
+            <!-- Loading -->
+            <div *ngIf="locationsLoading" class="tree-loading">
+              <div class="spinner-small"></div>
+              <span>Se încarcă locațiile...</span>
             </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!locationsLoading && locationTree.length === 0" class="tree-empty">
+              <span class="empty-icon">📍</span>
+              <p>Nu există locații definite.</p>
+              <a routerLink="/locations" class="btn-add-location">Adaugă locație</a>
+            </div>
+
+            <!-- Tree -->
+            <div *ngIf="!locationsLoading && locationTree.length > 0" class="location-tree">
+              <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: locationTree, level: 0 }"></ng-container>
+            </div>
+
+            <ng-template #treeNodes let-nodes let-level="level">
+              <div *ngFor="let node of nodes" class="tree-node" [style.padding-left.px]="level * 20">
+                <div class="tree-node-header" (click)="toggleExpand(node)" [ngClass]="getTypeClass(node.type)">
+                  <span class="tree-expand-icon" [class.expanded]="node.expanded" [class.has-potential-children]="true">
+                    <svg *ngIf="!node.loadingChildren" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                    <div *ngIf="node.loadingChildren" class="spinner-tiny"></div>
+                  </span>
+                  <span class="tree-node-emoji">{{ getTypeEmoji(node.type) }}</span>
+                  <span class="tree-node-name" [title]="node.name">{{ node.name }}</span>
+                  <span class="tree-node-type-badge" [ngClass]="getTypeClass(node.type)">{{ getTypeLabel(node.type) }}</span>
+                  <span *ngIf="node.childrenLoaded && node.children && node.children.length > 0" class="tree-node-count">
+                    {{ node.children.length }} sub-locații
+                  </span>
+                </div>
+                <div *ngIf="node.expanded && node.children && node.children.length > 0" class="tree-node-children">
+                  <ng-container *ngTemplateOutlet="treeNodes; context: { $implicit: node.children, level: level + 1 }"></ng-container>
+                </div>
+                <div *ngIf="node.expanded && node.childrenLoaded && (!node.children || node.children.length === 0)" class="tree-node-empty" [style.padding-left.px]="(level + 1) * 20">
+                  <span class="empty-leaf">— Fără sub-locații</span>
+                </div>
+              </div>
+            </ng-template>
           </div>
+
           <div class="locations-stats">
             <div class="location-stat">
               <div class="stat-icon">📍</div>
               <div class="stat-info">
-                <div class="stat-value">8</div>
-                <div class="stat-label">Locații ocupate</div>
+                <div class="stat-value">{{ totalLocations }}</div>
+                <div class="stat-label">Locații încărcate</div>
               </div>
             </div>
             <div class="location-stat">
-              <div class="stat-icon">📦</div>
+              <div class="stat-icon">🏠</div>
               <div class="stat-info">
-                <div class="stat-value">98</div>
-                <div class="stat-label">Bunuri în depozit</div>
-              </div>
-            </div>
-            <div class="location-stat">
-              <div class="stat-icon">🏢</div>
-              <div class="stat-info">
-                <div class="stat-value">3</div>
-                <div class="stat-label">Etaje active</div>
+                <div class="stat-value">{{ locationTree.length }}</div>
+                <div class="stat-label">Locații principale</div>
               </div>
             </div>
           </div>
@@ -244,7 +251,6 @@
       <div class="categories-card">
         <div class="card-header">
           <h3>Distribuție pe Categorii</h3>
-          <a routerLink="/inventory/categories" class="view-all">Detalii →</a>
         </div>
         <div class="categories-chart">
           <div class="chart-visual">

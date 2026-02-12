@@ -23,7 +23,7 @@
         </button>
         
         <div class="filter-dropdown">
-          <button class="btn-filter" (click)="toggleFilter()">
+          <button class="btn-filter" [class.active]="showFilter" (click)="toggleFilter()">
             <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
@@ -31,57 +31,111 @@
             <span class="filter-count" *ngIf="activeFilters > 0">{{activeFilters}}</span>
           </button>
           
-          <div class="filter-menu" [class.show]="showFilter">
-            <div class="filter-section">
-              <h4>Categorie</h4>
-              <div class="filter-options">
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.categories.electronics">
-                  <span class="filter-checkmark"></span>
-                  Electronice
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.categories.furniture">
-                  <span class="filter-checkmark"></span>
-                  Mobilier
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.categories.vehicles">
-                  <span class="filter-checkmark"></span>
-                  Vehicule
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.categories.documents">
-                  <span class="filter-checkmark"></span>
-                  Documente
-                </label>
+          <div class="filter-panel" [class.show]="showFilter">
+            <div class="filter-panel-header">
+              <div class="filter-panel-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <span>Filtre avansate</span>
+              </div>
+              <button class="filter-panel-close" (click)="toggleFilter()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="filter-panel-body">
+              <div class="filter-section">
+                <h4 class="filter-section-title">
+                  <span class="section-icon">📊</span>Categorie
+                </h4>
+                <div class="filter-chips">
+                  <label class="filter-chip" [class.selected]="filters.categories.electronics">
+                    <input type="checkbox" [(ngModel)]="filters.categories.electronics">
+                    <span class="chip-emoji">💻</span>
+                    <span class="chip-label">Electronice</span>
+                  </label>
+                  <label class="filter-chip" [class.selected]="filters.categories.furniture">
+                    <input type="checkbox" [(ngModel)]="filters.categories.furniture">
+                    <span class="chip-emoji">🛋️</span>
+                    <span class="chip-label">Mobilier</span>
+                  </label>
+                  <label class="filter-chip" [class.selected]="filters.categories.vehicles">
+                    <input type="checkbox" [(ngModel)]="filters.categories.vehicles">
+                    <span class="chip-emoji">🚗</span>
+                    <span class="chip-label">Vehicule</span>
+                  </label>
+                  <label class="filter-chip" [class.selected]="filters.categories.documents">
+                    <input type="checkbox" [(ngModel)]="filters.categories.documents">
+                    <span class="chip-emoji">📄</span>
+                    <span class="chip-label">Documente</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="filter-divider"></div>
+
+              <div class="filter-section">
+                <h4 class="filter-section-title">
+                  <span class="section-icon">💰</span>Preț (RON)
+                </h4>
+                <div class="price-range-inputs">
+                  <div class="price-input-group">
+                    <label class="price-label">Min</label>
+                    <input type="number" class="price-input" placeholder="0" [(ngModel)]="filters.priceMin" min="0">
+                  </div>
+                  <span class="price-separator">—</span>
+                  <div class="price-input-group">
+                    <label class="price-label">Max</label>
+                    <input type="number" class="price-input" placeholder="∞" [(ngModel)]="filters.priceMax" min="0">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="filter-divider"></div>
+
+              <div class="filter-section">
+                <h4 class="filter-section-title">
+                  <span class="section-icon">📍</span>Spațiu / Locație
+                </h4>
+                <div class="space-filter-selects">
+                  <div class="space-select-wrapper" *ngFor="let level of filterParentLevels; let i = index; trackBy: trackByLevel">
+                    <select class="space-select" 
+                      [ngModel]="filterSelectedParentIds[i]" 
+                      (ngModelChange)="onFilterSpaceSelected(i, $event)">
+                      <option [ngValue]="null">{{ i === 0 ? '— Alege spațiu —' : '— Sub-spațiu —' }}</option>
+                      <option *ngFor="let space of level" [ngValue]="space.id">{{ space.name }}</option>
+                    </select>
+                  </div>
+                  <div class="selected-space-badge" *ngIf="filterSelectedSpaceName">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    {{ filterSelectedSpaceName }}
+                    <button class="clear-space-btn" (click)="filters.spaceId = null; filterSelectedSpaceName = null; filterParentLevels = []; filterSelectedParentIds = []; loadFilterSpaces()">
+                      ✕
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div class="filter-section">
-              <h4>Stare</h4>
-              <div class="filter-options">
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.status.active">
-                  <span class="filter-checkmark"></span>
-                  Activat
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.status.inactive">
-                  <span class="filter-checkmark"></span>
-                  Dezactivat
-                </label>
-                <label class="filter-option">
-                  <input type="checkbox" [(ngModel)]="filters.status.maintenance">
-                  <span class="filter-checkmark"></span>
-                  În service
-                </label>
-              </div>
-            </div>
-            
-            <div class="filter-actions">
-              <button class="btn-clear" (click)="clearFilters()">Resetează</button>
-              <button class="btn-apply" (click)="applyFilters()">Aplică</button>
+            <div class="filter-panel-footer">
+              <button class="btn-filter-reset" (click)="clearFilters()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Resetează
+              </button>
+              <button class="btn-filter-apply" (click)="applyFilters()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Aplică filtre
+              </button>
             </div>
           </div>
         </div>
@@ -217,89 +271,97 @@
         <div class="list-column category">Categorie</div>
         <div class="list-column value">Valoare</div>
         <div class="list-column location">Locație</div>
-        <div class="list-column status">Stare</div>
-        <div class="list-column warranty">Garanție</div>
+        <div class="list-column status">Status</div>
+        <div class="list-column warranty">Garanție / Asigurare</div>
         <div class="list-column actions">Acțiuni</div>
       </div>
       
       <div class="list-items">
-        <div class="list-item" *ngFor="let asset of filteredAssets" >
+        <div class="list-item" *ngFor="let asset of filteredAssets; let i = index" [class.alt-row]="i % 2 === 1">
+          <!-- Nume -->
           <div class="list-cell name">
             <div class="asset-info">
-              <div class="asset-icon {{asset.category}}">
-                {{getCategoryIcon(asset.category)}}
+              <div class="asset-icon-wrapper {{asset.category}}">
+                <span class="asset-icon-emoji">{{getCategoryIcon(asset.category)}}</span>
               </div>
-              <div>
+              <div class="asset-text">
                 <div class="asset-title">{{asset.name}}</div>
+                <div class="asset-subtitle" *ngIf="asset.description">{{asset.description}}</div>
               </div>
             </div>
           </div>
           
+          <!-- Categorie -->
           <div class="list-cell category">
-            <span class="category-badge {{asset.category}}">
+            <span class="category-pill {{asset.category}}">
               {{getCategoryText(asset.category)}}
             </span>
           </div>
           
+          <!-- Valoare -->
           <div class="list-cell value">
-            {{asset.value | currency:'EUR'}}
+            <span class="value-amount">{{asset.value | currency:'EUR'}}</span>
           </div>
           
+          <!-- Locatie -->
           <div class="list-cell location">
-            <div class="location-info">
-              <svg class="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <div class="location-chip">
+              <svg class="location-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span>{{asset.spaceName}}</span>
+              <span>{{asset.spaceName || '—'}}</span>
             </div>
           </div>
           
-         <div class="list-cell status">
-  <div class="status-badges-container">
-    <span class="status-badge warranty-badge" 
-          [ngClass]="getWarrantyStatusClass(asset.warrantyStatus)"
-          >
-      <span class="badge-dot" [class.pulse]="asset.warrantyStatus === 0"></span>
-      <span class="badge-text">Garanție: {{getWarrantyStatusText(asset.warrantyStatus)}}</span>
-    </span>
-    
-    <span class="status-badge insurance-badge" 
-          [ngClass]="getInsuranceStatusClass(asset.insuranceStatus)">
-      <span class="badge-text">Asigurare: {{getInsuranceStatusText(asset.insuranceStatus)}}</span>
-    </span>
-  </div>
-</div>
+          <!-- Status -->
+          <div class="list-cell status">
+            <div class="status-stack">
+              <span class="status-tag warranty-tag" 
+                    [ngClass]="getWarrantyStatusClass(asset.warrantyStatus)">
+                <span class="tag-dot"></span>
+                🛡️ {{getWarrantyStatusText(asset.warrantyStatus)}}
+              </span>
+              <span class="status-tag insurance-tag" 
+                    [ngClass]="getInsuranceStatusClass(asset.insuranceStatus)">
+                <span class="tag-dot"></span>
+                📄 {{getInsuranceStatusText(asset.insuranceStatus)}}
+              </span>
+            </div>
+          </div>
           
+          <!-- Garantie / Asigurare -->
           <div class="list-cell warranty">
-            <div class="warranty-info" >
-              <span *ngIf="asset.warrantyEndDate">{{asset.warrantyEndDate | date:'dd.MM.yyyy'}}</span>
-              <span *ngIf="!asset.warrantyEndDate">-</span>
-              <div class="warranty-days" *ngIf="getWarrantyDays(asset)">
-                {{getWarrantyDays(asset)}} zile
+            <div class="dates-stack">
+              <div class="date-row">
+                <span class="date-label-text">Garanție până la:</span>
+                <span class="date-text" *ngIf="asset.warrantyEndDate">{{asset.warrantyEndDate | date:'dd.MM.yyyy'}}</span>
+                <span class="date-text muted" *ngIf="!asset.warrantyEndDate">—</span>
+                <span class="days-left" *ngIf="getWarrantyDays(asset)">{{getWarrantyDays(asset)}}z</span>
+              </div>
+              <div class="date-row">
+                <span class="date-label-text">Asigurare până la :</span>
+                <span class="date-text" *ngIf="asset.insuranceEndDate">{{asset.insuranceEndDate | date:'dd.MM.yyyy'}}</span>
+                <span class="date-text muted" *ngIf="!asset.insuranceEndDate">—</span>
               </div>
             </div>
-            <div class="insurance-info">
-              <span class="insurance-label">Asigurat până la:</span>
-              <span *ngIf="asset.insuranceEndDate">{{asset.insuranceEndDate | date:'dd.MM.yyyy'}}</span>
-              <span *ngIf="!asset.insuranceEndDate">-</span>
-            </div>
           </div>
           
+          <!-- Actiuni -->
           <div class="list-cell actions">
-            <div class="action-buttons">
-              <button class="list-action-btn" (click)="viewAsset(asset)" title="Vezi detalii">
+            <div class="actions-row">
+              <button class="action-pill view" (click)="viewAsset(asset)" title="Vezi detalii">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               </button>
-              <button class="list-action-btn" (click)="editAsset(asset)" title="Editează">
+              <button class="action-pill edit" (click)="editAsset(asset)" title="Editează">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
-              <button class="list-action-btn" (click)="deleteAsset(asset)" title="Șterge">
+              <button class="action-pill delete" (click)="deleteAsset(asset)" title="Șterge">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
