@@ -8,4 +8,6 @@ export interface WarrantyItem {
   insuranceEndDate?: Date;
   status: 'expired' | 'expiring-soon' | 'active' | 'no-coverage';
   daysRemaining: number;
+  provider?: string;
+  company?: string;
 }

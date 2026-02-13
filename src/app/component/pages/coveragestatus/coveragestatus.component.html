@@ -118,6 +118,8 @@
       <div class="table-header" [class.no-value]="selectedType === 'warranty'">
         <div class="table-col name">Nume bun</div>
         <div class="table-col category">Categorie</div>
+        <div class="table-col provider" *ngIf="selectedType === 'warranty' && selectedStatus !== 'no-coverage'">Provider</div>
+        <div class="table-col provider" *ngIf="selectedType === 'insurance' && selectedStatus !== 'no-coverage'">Companie</div>
         <div class="table-col value" *ngIf="selectedType === 'insurance' && selectedStatus !== 'no-coverage'">Valoare</div>
           <div class="table-col dates" *ngIf="selectedStatus !== 'no-coverage'">Date relevante</div>
           <div class="table-col status">Status</div>
@@ -137,6 +139,13 @@
               <span class="category-badge" [ngClass]="item.category">
                 {{getCategoryText(item.category)}}
               </span>
+            </div>
+
+            <div class="table-col provider" *ngIf="selectedType === 'warranty' && selectedStatus !== 'no-coverage'">
+              {{item.provider || '—'}}
+            </div>
+            <div class="table-col provider" *ngIf="selectedType === 'insurance' && selectedStatus !== 'no-coverage'">
+              {{item.company || '—'}}
             </div>
           
             <div class="table-col value" *ngIf="selectedType === 'insurance' && selectedStatus !== 'no-coverage'">

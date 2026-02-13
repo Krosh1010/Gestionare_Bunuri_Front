@@ -103,7 +103,7 @@
                 <div class="space-filter-selects">
                   <div class="space-select-wrapper" *ngFor="let level of filterParentLevels; let i = index; trackBy: trackByLevel">
                     <select class="space-select" 
-                      [ngModel]="filterSelectedParentIds[i]" 
+                      [ngModel]="filterSelectedParentIds[i] ?? null" 
                       (ngModelChange)="onFilterSpaceSelected(i, $event)">
                       <option [ngValue]="null">{{ i === 0 ? '— Alege spațiu —' : '— Sub-spațiu —' }}</option>
                       <option *ngFor="let space of level" [ngValue]="space.id">{{ space.name }}</option>
@@ -445,12 +445,12 @@
               <div style="display:flex; align-items:center; gap:8px">
                 <select
                   class="space-dropdown"
-                  [ngModel]="selectedParentIds[i]"
+                  [ngModel]="selectedParentIds[i] ?? null"
                   (ngModelChange)="onParentSelected(i, $event)"
                   [ngModelOptions]="{ standalone: true }"
                   [attr.aria-label]="'Spațiu nivel ' + (i + 1)"
                 >
-                  <option [ngValue]="null">Alege spațiul...</option>
+                  <option [ngValue]="null">{{ i === 0 ? 'Alege spațiul...' : 'Alege sub-spațiul...' }}</option>
                   <option *ngFor="let space of level" [ngValue]="space.id">
                     {{ space.name }}
                   </option>

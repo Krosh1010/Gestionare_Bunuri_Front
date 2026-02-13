@@ -534,7 +534,7 @@
 
 .table-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 120px;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1fr 1fr 120px;
   padding: 16px 20px;
   background: #f9fafb;
   border-bottom: 2px solid #e5e7eb;
@@ -545,7 +545,7 @@
   letter-spacing: 0.5px;
   
   &.no-value {
-    grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr 120px;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 120px;
   }
 }
 
@@ -560,14 +560,14 @@
 
 .table-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 120px;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1fr 1fr 120px;
   padding: 16px 20px;
   border-bottom: 1px solid #f3f4f6;
   transition: all 0.3s ease;
   align-items: center;
   
   &.no-value {
-    grid-template-columns: 2fr 1fr 1.5fr 1fr 1fr 120px;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 120px;
   }
   
   &:hover {
@@ -634,6 +634,12 @@
     background: rgba(139, 92, 246, 0.1);
     color: #8b5cf6;
   }
+}
+
+.table-col.provider {
+  font-size: 13px;
+  color: #374151;
+  font-weight: 700;
 }
 
 .date-item {
@@ -1010,10 +1016,10 @@
 @media (max-width: 1200px) {
   .table-header,
   .table-row {
-    grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 120px;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 1fr 120px;
     
     &.no-value {
-      grid-template-columns: 2fr 1fr 1.5fr 1fr 120px;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 120px;
     }
   }
   
@@ -1040,10 +1046,10 @@
   
   .table-header,
   .table-row {
-    grid-template-columns: 2fr 1fr 1fr 1.5fr 120px;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr 120px;
     
     &.no-value {
-      grid-template-columns: 2fr 1fr 1.5fr 120px;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr 120px;
     }
   }
   
@@ -1075,8 +1081,10 @@
   
   .table-header .table-col.value,
   .table-header .table-col.category,
+  .table-header .table-col.provider,
   .table-row .table-col.value,
-  .table-row .table-col.category {
+  .table-row .table-col.category,
+  .table-row .table-col.provider {
     display: none;
   }
   

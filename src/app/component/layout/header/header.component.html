@@ -80,12 +80,12 @@
       <!-- User Menu (when logged in) -->
       <div class="user-menu-container" *ngIf="isLoggedIn">
         <div class="user-menu">
-          <button class="user-menu-btn" (click)="toggleUserDropdown()">
+          <button class="user-menu-btn" (click)="toggleUserDropdown(); $event.stopPropagation()">
             <div class="user-avatar">
-              <span>JS</span>
+              <span>{{ userInitials }}</span>
             </div>
             <div class="user-info">
-              <span class="user-name">John Smith</span>
+              <span class="user-name">{{ userName }}</span>
             </div>
             <svg class="user-arrow" [class.rotated]="isUserDropdownOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -93,36 +93,54 @@
           </button>
           
           <div class="user-dropdown" [class.active]="isUserDropdownOpen">
-            <div class="dropdown-header">
-              <div class="user-dropdown-info">
-                <div class="user-avatar large">
-                  <span>JS</span>
-                </div>
-                <div class="user-dropdown-details">
-                  <h4>John Smith</h4>
-                </div>
+            <!-- User Info Header -->
+            <div class="dropdown-user-header">
+              <div class="dropdown-avatar">
+                <span>{{ userInitials }}</span>
+              </div>
+              <div class="dropdown-user-info">
+                <span class="dropdown-user-name">{{ userName }}</span>
+                
               </div>
             </div>
             
-            <div class="dropdown-content">
-              <a href="#" class="dropdown-item" (click)="closeAllDropdowns()">
-                <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <!-- Menu Items -->
+            <div class="dropdown-menu-items">
+              <a routerLink="/profile" class="dropdown-menu-item" (click)="closeAllDropdowns()">
+                <div class="dropdown-item-icon profile-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div class="dropdown-item-text">
+                  <span class="dropdown-item-label">Profil</span>
+                  <span class="dropdown-item-desc">Vizualizează profilul tău</span>
+                </div>
+                <svg class="dropdown-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span>Profil</span>
               </a>
-              <a href="#" class="dropdown-item" (click)="closeAllDropdowns()">
-                <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <a routerLink="/profile" class="dropdown-menu-item" (click)="closeAllDropdowns()">
+                <div class="dropdown-item-icon settings-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div class="dropdown-item-text">
+                  <span class="dropdown-item-label">Setări cont</span>
+                  <span class="dropdown-item-desc">Preferințe și securitate</span>
+                </div>
+                <svg class="dropdown-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
-                <span>Setări cont</span>
               </a>
-              
-              <div class="dropdown-divider"></div>
-              
-              <button class="dropdown-item logout-item" (click)="logout(); closeAllDropdowns()">
-                <svg class="dropdown-icon logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            </div>
+            
+            <!-- Logout -->
+            <div class="dropdown-footer">
+              <button class="dropdown-logout-btn" (click)="logout(); closeAllDropdowns()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 <span>Deconectare</span>
@@ -140,12 +158,13 @@
       </button>
     </div>
   </div>
+</header>
 
-  <!-- Mobile Menu Overlay -->
-  <div class="mobile-menu-overlay" *ngIf="isMobileMenuOpen" (click)="toggleMobileMenu()"></div>
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" *ngIf="isMobileMenuOpen" (click)="toggleMobileMenu()"></div>
   
-  <!-- Mobile Menu -->
-  <nav class="mobile-menu" [class.active]="isMobileMenuOpen">
+<!-- Mobile Menu -->
+<nav class="mobile-menu" [class.active]="isMobileMenuOpen">
     <div class="mobile-menu-header">
       <div class="logo">
         <div class="logo-icon">AG</div>
@@ -165,21 +184,15 @@
       <!-- User Info (when logged in) -->
       <div class="mobile-user-info" *ngIf="isLoggedIn">
         <div class="mobile-user-avatar">
-          <span>JS</span>
+          <span>{{ userInitials }}</span>
         </div>
         <div class="mobile-user-details">
-          <h3>John Smith</h3>
-          <p>Administrator • john.smithcompany.com</p>
+          <h3>{{ userName }}</h3>
+          <p *ngIf="userEmail">{{ userEmail }}</p>
         </div>
       </div>
       
-      <!-- Search Bar (when logged in) -->
-      <div class="mobile-search-bar" *ngIf="isLoggedIn">
-        <svg class="mobile-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" class="mobile-search-input" placeholder="Caută bunuri, rapoarte..." />
-      </div>
+    
       
       <!-- Navigation Links -->
       <ul class="mobile-nav-list">
@@ -248,20 +261,20 @@
         <li *ngIf="isLoggedIn">
           <div class="mobile-user-menu-section">
             <h4>Contul meu</h4>
-            <a href="#" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
+            <a routerLink="/profile" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
               <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <span>Profil</span>
             </a>
-            <a href="#" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
+            <a routerLink="/profile" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
               <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span>Setări cont</span>
             </a>
-            <a href="#" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
+            <a routerLink="/profile" class="mobile-user-menu-item" (click)="toggleMobileMenu()">
               <svg class="mobile-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -282,4 +295,3 @@
       </ul>
     </div>
   </nav>
-</header>

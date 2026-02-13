@@ -1,26 +1,61 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostBinding, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthStateService } from '../../../services/auth-state.service';
+import { UserService } from '../../../services/ApiServices/user.service';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink,NgIf,CommonModule],
+  imports: [RouterLink, RouterLinkActive, NgIf, CommonModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnDestroy {
-  isLoggedIn = true; // Schimbă în funcție de autentificare
-  isMobileMenuOpen = false;
+  isLoggedIn = false;
+  @HostBinding('class.mobile-menu-open') isMobileMenuOpen = false;
   isUserDropdownOpen = false;
+  userName = '';
+  userEmail = '';
+  userInitials = '';
   private sub: Subscription;
 
-  constructor(private authState: AuthStateService, private router: Router) {
+  constructor(
+    private authState: AuthStateService,
+    private router: Router,
+    private userService: UserService
+  ) {
     this.sub = this.authState.loggedIn$.subscribe(val => {
       this.isLoggedIn = val;
+      if (val) {
+        this.loadUserInfo();
+      } else {
+        this.userName = '';
+        this.userEmail = '';
+        this.userInitials = '';
+      }
     });
+  }
+
+  private async loadUserInfo(): Promise<void> {
+    try {
+      const user = await this.userService.getInfoUser();
+      this.userName = user.fullName || user.name || '';
+      this.userEmail = user.email || '';
+      this.userInitials = this.getInitials(this.userName);
+    } catch (error) {
+      console.error('Eroare la încărcarea datelor utilizatorului:', error);
+    }
+  }
+
+  private getInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
   }
 
   // Comută meniul mobil
@@ -66,11 +101,6 @@ export class HeaderComponent implements OnDestroy {
     // Închide dropdown-ul userului dacă se face click în afara
     if (!target.closest('.user-menu-container')) {
       this.isUserDropdownOpen = false;
-    }
-    
-    // Închide meniul mobil dacă se face click pe overlay
-    if (target.classList.contains('mobile-menu-overlay')) {
-      this.toggleMobileMenu();
     }
   }
 

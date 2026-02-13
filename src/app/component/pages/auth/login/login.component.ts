@@ -16,14 +16,13 @@ export class LoginComponent {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
-  loginMessage = '';
-  loginSuccess = false;
-  showDemoInfo = true;
+  loginErrorMessage = '';
+  showSuccessNotification = false;
 
   constructor(private fb: FormBuilder, private authService: AuthenticationService, private authState: AuthStateService, private router: Router) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(3)]]
+      password: ['', [Validators.required, Validators.minLength(8)]]
     });
   }
 
@@ -34,40 +33,47 @@ export class LoginComponent {
   async onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading = true;
-      this.loginMessage = '';
+      this.loginErrorMessage = '';
       const { email, password } = this.loginForm.value;
       try {
         const loginData = { Email: email, Password: password };
         const response = await this.authService.login(loginData);
-        console.log('Login response:', response);
-        // Dacă răspunsul este un obiect Axios, token-ul e în response.data.token
         const token = response && response.data && response.data.token;
-        console.log('Token extras:', token);
         if (token) {
           localStorage.setItem('authToken', JSON.stringify({ token }));
           this.authState.refresh();
-          this.loginSuccess = true;
-          this.loginMessage = 'Login successful! Redirecting to dashboard...';
-          this.router.navigate(['/dashboard']);
+          this.isLoading = false;
+          this.showSuccessNotification = true;
+
+          setTimeout(() => {
+            this.showSuccessNotification = false;
+            this.router.navigate(['/dashboard']);
+          }, 2000);
         } else {
-          this.loginSuccess = false;
-          this.loginMessage = 'Invalid credentials. Please try again.';
+          this.isLoading = false;
+          this.loginErrorMessage = 'Email sau parolă incorectă. Încearcă din nou.';
         }
       } catch (error) {
-        this.loginSuccess = false;
-        this.loginMessage = 'A apărut o eroare la autentificare. Încearcă din nou!';
+        this.isLoading = false;
+        this.loginErrorMessage = 'A apărut o eroare la autentificare. Încearcă din nou!';
         console.error('Login error:', error);
       }
-      this.isLoading = false;
     } else {
-      this.loginMessage = 'Please fill in all required fields correctly.';
-      this.loginSuccess = false;
+      this.markFormGroupTouched(this.loginForm);
     }
   }
 
-  onForgotPassword(event: Event) {
+  onForgotPassword(event: Event): void {
     event.preventDefault();
-    // Handle forgot password logic here
-    alert('Forgot password functionality not implemented yet.');
+    this.router.navigate(['/forgot-password']);
+  }
+
+  markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 }

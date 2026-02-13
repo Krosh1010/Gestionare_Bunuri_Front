@@ -163,7 +163,8 @@ export class CoveragestatusComponent {
         insuranceEndDate: item.endDate ? new Date(item.endDate) : (item.insuranceEndDate ? new Date(item.insuranceEndDate) : undefined),
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
         status: 'active',
-        daysRemaining: item.daysLeft || 0
+        daysRemaining: item.daysLeft || 0,
+        company: item.company || ''
       }));
       this.applyFilters();
       this.updateStats();
@@ -187,7 +188,8 @@ export class CoveragestatusComponent {
         insuranceEndDate: item.endDate ? new Date(item.endDate) : (item.insuranceEndDate ? new Date(item.insuranceEndDate) : undefined),
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
         status: 'expiring-soon',
-        daysRemaining: item.daysLeft || 0
+        daysRemaining: item.daysLeft || 0,
+        company: item.company || ''
       }));
       this.applyFilters();
       this.updateStats();
@@ -211,7 +213,8 @@ export class CoveragestatusComponent {
         insuranceEndDate: item.endDate ? new Date(item.endDate) : (item.insuranceEndDate ? new Date(item.insuranceEndDate) : undefined),
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
         status: 'expired',
-        daysRemaining: 0
+        daysRemaining: 0,
+        company: item.company || ''
       }));
       this.applyFilters();
       this.updateStats();
@@ -234,7 +237,8 @@ export class CoveragestatusComponent {
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
         warrantyEndDate: item.endDate ? new Date(item.endDate) : (item.warrantyEndDate ? new Date(item.warrantyEndDate) : undefined),
         status: 'expired',
-        daysRemaining: 0
+        daysRemaining: 0,
+        provider: item.provider || ''
       }));
       this.applyFilters();
       this.updateStats();
@@ -257,7 +261,8 @@ export class CoveragestatusComponent {
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
         warrantyEndDate: item.endDate ? new Date(item.endDate) : (item.warrantyEndDate ? new Date(item.warrantyEndDate) : undefined),
         status: 'expiring-soon',
-        daysRemaining: item.daysLeft || 0
+        daysRemaining: item.daysLeft || 0,
+        provider: item.provider || ''
       }));
       this.applyFilters();
       this.updateStats();
@@ -280,7 +285,8 @@ export class CoveragestatusComponent {
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
         warrantyEndDate: item.endDate ? new Date(item.endDate) : (item.warrantyEndDate ? new Date(item.warrantyEndDate) : undefined),
         status: 'active',
-        daysRemaining: item.daysLeft || 0
+        daysRemaining: item.daysLeft || 0,
+        provider: item.provider || ''
       }));
       this.applyFilters();
       this.updateStats();

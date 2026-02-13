@@ -1,4 +1,4 @@
-import { Component,OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -14,28 +14,16 @@ import { AuthenticationService } from '../../../../services/ApiServices/authenti
 export class RegisterComponent {
   registerForm: FormGroup;
   showPassword = false;
-  accountType: 'personal' | 'company' = 'personal';
+  showSuccessNotification = false;
+  isSubmitting = false;
 
   constructor(private fb: FormBuilder, private authService: AuthenticationService, private router: Router) {
     this.registerForm = this.fb.group({
-      fullName: ['', Validators.required],
+      fullName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZăâîșțĂÂÎȘȚ\s\-]+$/)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      companyName: [''],
       acceptTerms: [false, Validators.requiredTrue]
     });
-  }
-
-  selectAccountType(type: 'personal' | 'company'): void {
-    this.accountType = type;
-    
-    if (type === 'company') {
-      this.registerForm.get('companyName')?.setValidators(Validators.required);
-    } else {
-      this.registerForm.get('companyName')?.clearValidators();
-    }
-    
-    this.registerForm.get('companyName')?.updateValueAndValidity();
   }
 
   togglePasswordVisibility(): void {
@@ -44,7 +32,7 @@ export class RegisterComponent {
 
   async onSubmit(): Promise<void> {
     if (this.registerForm.valid) {
-      // Map form data to RegisterModel (for home use, only personal account)
+      this.isSubmitting = true;
       const registerData = {
         FullName: this.registerForm.value.fullName,
         Email: this.registerForm.value.email,
@@ -52,13 +40,17 @@ export class RegisterComponent {
       };
       try {
         await this.authService.register(registerData);
-        alert('Cont creat cu succes!');
+        this.isSubmitting = false;
+        this.showSuccessNotification = true;
         this.registerForm.reset();
-        this.accountType = 'personal';
         this.showPassword = false;
-        this.router.navigate(['/login']);
+        
+        setTimeout(() => {
+          this.showSuccessNotification = false;
+          this.router.navigate(['/login']);
+        }, 3000);
       } catch (error: any) {
-        alert('A apărut o eroare la înregistrare. Încearcă din nou!');
+        this.isSubmitting = false;
         console.error('Register error:', error);
       }
     } else {
