@@ -283,48 +283,61 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   showAddWarrantyForm = false;
   
 
-  // Returns a status class for warranty badge (e.g., 'active', 'expired', 'soon')
+  // Status maps (same as InventoryComponent)
+  private warrantyStatusTextMap: { [key: string]: string } = {
+    '0': 'Activă',
+    '1': 'Aproape de expirare',
+    '2': 'Expirată',
+    'null': 'Lipsă',
+    'undefined': 'Necunoscut',
+  };
+  private warrantyStatusClassMap: { [key: string]: string } = {
+    '0': 'active',
+    '1': 'soon',
+    '2': 'expired',
+    'null': 'unknown',
+    'undefined': 'unknown',
+  };
   getWarrantyStatus(warranty: any): string {
-    if (!warranty || !warranty.endDate) return 'unknown';
-    const today = new Date();
-    const end = new Date(warranty.endDate);
-    const diff = (end.getTime() - today.getTime()) / (1000 * 3600 * 24);
-    if (diff < 0) return 'expired';
-    if (diff <= 30) return 'soon';
-    return 'active';
+    const key = String(warranty?.status);
+    return this.warrantyStatusClassMap.hasOwnProperty(key)
+      ? this.warrantyStatusClassMap[key]
+      : 'unknown';
   }
-
-  // Returns a human-readable status text for warranty
   getWarrantyStatusText(warranty: any): string {
-    if (!warranty || !warranty.endDate) return 'Necunoscut';
-    const today = new Date();
-    const end = new Date(warranty.endDate);
-    const diff = (end.getTime() - today.getTime()) / (1000 * 3600 * 24);
-    if (diff < 0) return 'Expirată';
-    if (diff <= 30) return 'Aproape de expirare';
-    return 'Activă';
+    const key = String(warranty?.status);
+    return this.warrantyStatusTextMap.hasOwnProperty(key)
+      ? this.warrantyStatusTextMap[key]
+      : 'Necunoscut';
   }
 
-  // Returns a status class for insurance badge (e.g., 'active', 'expired', 'soon')
+  private insuranceStatusTextMap: { [key: string]: string } = {
+    '0': 'Neîncepută',
+    '1': 'Activă',
+    '2': 'Aproape de expirare',
+    '3': 'Expirată',
+    'null': 'Lipsă',
+    'undefined': 'Necunoscut',
+  };
+  private insuranceStatusClassMap: { [key: string]: string } = {
+    '0': 'notstarted',
+    '1': 'active',
+    '2': 'soon',
+    '3': 'expired',
+    'null': 'unknown',
+    'undefined': 'unknown',
+  };
   getInsuranceStatus(insurance: any): string {
-    if (!insurance || !insurance.endDate) return 'unknown';
-    const today = new Date();
-    const end = new Date(insurance.endDate);
-    const diff = (end.getTime() - today.getTime()) / (1000 * 3600 * 24);
-    if (diff < 0) return 'expired';
-    if (diff <= 30) return 'soon';
-    return 'active';
+    const key = String(insurance?.status);
+    return this.insuranceStatusClassMap.hasOwnProperty(key)
+      ? this.insuranceStatusClassMap[key]
+      : 'unknown';
   }
-
-  // Returns a human-readable status text for insurance
   getInsuranceStatusText(insurance: any): string {
-    if (!insurance || !insurance.endDate) return 'Necunoscut';
-    const today = new Date();
-    const end = new Date(insurance.endDate);
-    const diff = (end.getTime() - today.getTime()) / (1000 * 3600 * 24);
-    if (diff < 0) return 'Expirată';
-    if (diff <= 30) return 'Aproape de expirare';
-    return 'Activă';
+    const key = String(insurance?.status);
+    return this.insuranceStatusTextMap.hasOwnProperty(key)
+      ? this.insuranceStatusTextMap[key]
+      : 'Necunoscut';
   }
 
   // Formats a date string as 'DD.MM.YYYY'

@@ -1,4 +1,5 @@
 export interface AssetsCreateModel {
+    data: any;
     name: string;
     spaceId: number;
     value: number;

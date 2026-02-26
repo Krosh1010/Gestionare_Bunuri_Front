@@ -40,3 +40,13 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+############################################
+# ANGULAR / NODE
+############################################
+node_modules/
+dist/
+coverage/
+.angular/cache/
+npm-debug.log
+yarn-error.log

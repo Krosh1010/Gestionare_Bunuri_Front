@@ -524,7 +524,7 @@
       <div class="form-row">
         <div class="form-group">
           <label>Data achiziției</label>
-          <input type="date" formControlName="purchaseDate">
+          <input type="date" formControlName="purchaseDate" [max]="todayString">
         </div>
         <!-- Buton pentru setări garanție/asigurare, doar la editare, pe același rând cu data achiziției -->
         <div class="form-group" *ngIf="editingAsset">

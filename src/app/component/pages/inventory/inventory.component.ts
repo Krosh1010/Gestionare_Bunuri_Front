@@ -1,11 +1,10 @@
-
+import { AssetFilterService } from '../../../services/asset-filter.service';
 import { AssetsReadModel } from '../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../services/ApiServices/assets.service';
 import { SpaceService } from '../../../services/ApiServices/space.service';
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { NgFor } from '@angular/common'; 
 import { WarrantyInsuranceFormComponent } from '../inventory/warranty-insurance-form/warranty-insurance-form.component';
 import { WarrantyInsuranceSetingsComponent } from '../inventory/warranty-insurance-setings/warranty-insurance-setings.component';
 
@@ -18,13 +17,11 @@ import { WarrantyInsuranceSetingsComponent } from '../inventory/warranty-insuran
 })
 
 export class InventoryComponent implements OnInit {
-        // ...existing code...
-    // Metodă pentru template: deschide editarea pe baza assetului
-    editAsset(asset: AssetsReadModel) {
-      this.editAssetById(asset.id);
-    }
-  // Assets data
+  todayString: string = '';
+
   assets: AssetsReadModel[] = [];
+    // Pentru a păstra filtrele active între pagini
+  activeFiltersParams: any = null;
 
   // Filtered assets
   filteredAssets: AssetsReadModel[] = [];
@@ -62,10 +59,9 @@ export class InventoryComponent implements OnInit {
 
   // Stats
   totalAssets: number = 0;
-  activeAssets: number = 0;
+
   totalValue: number = 0;
   expiringSoon: number = 0;
-  totalWarranties: number = 0;
 
   parentLevels: any[][] = [];
   selectedParentIds: (number | null)[] = [];
@@ -76,7 +72,7 @@ selectedSpaceName: string | null = null;
 
   // Pagination
   currentPage: number = 1;
-  pageSize: number = 8;
+  pageSize: number = 4;
   totalPages: number = 1;
   totalItems: number = 0;
   isLoadingAssets: boolean = false;
@@ -89,6 +85,7 @@ selectedSpaceName: string | null = null;
     private fb: FormBuilder,
     private assetsService: AssetsService,
     private spaceService: SpaceService,
+    public assetFilterService: AssetFilterService
   ) {
     this.assetForm = this.fb.group({
       name: ['', Validators.required],
@@ -100,18 +97,25 @@ selectedSpaceName: string | null = null;
       warrantyEnd: [''],
       spaceId: [null, Validators.required]
     });
+    this.filters = this.assetFilterService.getDefaultFilter();
   }
 
   ngOnInit(): void {
+    this.todayString = this.formatDate(new Date());
     this.loadAssets();
   }
 
-  async loadAssets(page: number = 1): Promise<void> {
+  async loadAssets(page: number = 1, filters?: any): Promise<void> {
     this.isLoadingAssets = true;
     this.currentPage = page;
+    // Folosește filtrele active dacă nu se dau explicit
+    const params = filters !== undefined ? filters : this.activeFiltersParams;
     try {
-      const data = await this.assetsService.getAssets(this.currentPage, this.pageSize);
-      // Backend-ul paginat returnează { items, totalCount } sau direct array
+      const data = await this.assetsService.getAssets(
+        this.currentPage,
+        this.pageSize,
+        params
+      );
       if (data && data.items) {
         this.assets = data.items;
         this.totalItems = data.totalCount ?? data.items.length;
@@ -121,7 +125,6 @@ selectedSpaceName: string | null = null;
       } else if (Array.isArray(data)) {
         this.assets = data;
         this.totalItems = data.length;
-        // Dacă nu vine din back, calculează local
         this.totalValue = this.assets.reduce((sum, asset) => sum + asset.value, 0);
       } else {
         this.assets = [data];
@@ -169,7 +172,6 @@ selectedSpaceName: string | null = null;
     }
     return pages;
   }
-      // Modal pentru setări garanție/asigurare la editare
     showWarrantySettingsModal: boolean = false;
 
     openWarrantySettingsModal(): void {
@@ -187,43 +189,15 @@ selectedSpaceName: string | null = null;
     }
     return 0;
   }
-  // Pentru a preveni refresh-ul vizibil la dropdownuri (ca la locations)
-  // TrackBy pentru dropdown-uri de spații: folosește indexul nivelului
+
   trackByLevel(index: number, _level: any[]) {
     return index;
   }
   // Filter and search
-  filterAssets(): void {
-    this.filteredAssets = this.assets.filter(asset => {
-      const matchesSearch = this.searchQuery === '' || 
-        asset.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        asset.description.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        asset.id.toString().toLowerCase().includes(this.searchQuery.toLowerCase());
-
-      const categories = Object.entries(this.filters.categories)
-        .filter(([_, value]) => value)
-        .map(([key, _]) => key);
-      const matchesCategory = categories.length === 0 || 
-        categories.includes(asset.category);
-
-      // Price range filter
-      let matchesPrice = true;
-      if (this.filters.priceMin !== null && this.filters.priceMin !== undefined) {
-        matchesPrice = asset.value >= this.filters.priceMin;
-      }
-      if (matchesPrice && this.filters.priceMax !== null && this.filters.priceMax !== undefined) {
-        matchesPrice = asset.value <= this.filters.priceMax;
-      }
-
-      // Space filter
-      let matchesSpace = true;
-      if (this.filters.spaceId !== null && this.filters.spaceId !== undefined) {
-        matchesSpace = asset.spaceId === this.filters.spaceId;
-      }
-
-      return matchesSearch && matchesCategory && matchesPrice && matchesSpace;
-    });
-    this.updateStats();
+  async filterAssets(): Promise<void> {
+    const backendFilters = this.assetFilterService.buildBackendFilter(this.filters, this.searchQuery);
+    this.activeFiltersParams = backendFilters;
+    await this.loadAssets(1, backendFilters);
   }
 
   toggleFilter(): void {
@@ -233,27 +207,20 @@ selectedSpaceName: string | null = null;
     }
   }
 
-  applyFilters(): void {
+  async applyFilters(): Promise<void> {
     this.activeFilters = this.countActiveFilters();
-    this.filterAssets();
+    await this.filterAssets();
     this.showFilter = false;
   }
 
-  clearFilters(): void {
-    this.filters.categories = {
-      electronics: false,
-      furniture: false,
-      vehicles: false,
-      documents: false
-    };
-    this.filters.priceMin = null;
-    this.filters.priceMax = null;
-    this.filters.spaceId = null;
+  async clearFilters(): Promise<void> {
+    this.filters = this.assetFilterService.resetFilter();
     this.filterSelectedSpaceName = null;
     this.filterParentLevels = [];
     this.filterSelectedParentIds = [];
     this.activeFilters = 0;
-    this.filterAssets();
+    this.activeFiltersParams = null;
+    await this.loadAssets(1);
     this.showFilter = false;
   }
 
@@ -307,7 +274,7 @@ selectedSpaceName: string | null = null;
         this.filterParentLevels.push(children);
       }
     } catch (e) {
-      // no children
+      
     }
   }
 
@@ -343,7 +310,6 @@ async openAddModal() {
   this.showModal = true;
 }
 
-
   async onParentSelected(level: number, parentId: number | null) {
   this.selectedParentIds[level] = parentId;
   this.selectedParentIds.length = level + 1;
@@ -373,22 +339,22 @@ async openAddModal() {
   }
 }
 
-
+    editAsset(asset: AssetsReadModel) {
+      this.editAssetById(asset.id);
+    }
 
   // Editare cu GET la asset și populare spații pe niveluri
   async editAssetById(assetId: string | number): Promise<void> {
     this.isLoadingSpaces = true;
     try {
-      // 1. Ia asset-ul complet
+      
       const asset = await this.assetsService.getAssetById(assetId.toString()) as import('../../../models/assetsmodel/assets-read.model').AssetsReadModel;
       this.editingAsset = asset;
 
-      // 2. Populează spațiile pe niveluri dacă există spaceId
       this.parentLevels = [];
       this.selectedParentIds = [];
       this.isLeafSpaceSelected = false;
       if (asset.spaceId) {
-        // Folosește getParentChain pentru a popula toate nivelurile
         let parentChain: any[] = [];
         try {
           parentChain = await this.spaceService.getParentChain(asset.spaceId.toString());
@@ -412,7 +378,6 @@ async openAddModal() {
           }
         }
         this.assetForm.patchValue({ spaceId: asset.spaceId });
-        // După ce am setat dropdown-urile, dacă spațiul selectat are copii, adaugă încă un dropdown
         const children = await this.spaceService.getSpaceByIdParents(asset.spaceId.toString());
         if (children && children.length > 0) {
           this.parentLevels.push(children);
@@ -422,21 +387,17 @@ async openAddModal() {
         const roots = await this.spaceService.getSpacesParents();
         this.parentLevels = [roots];
       }
-
-      // 3. Populează formularul cu datele asset-ului (inclusiv datele pentru input type="date")
       this.assetForm.patchValue({
         ...asset,
-        purchaseDate: asset.purchaseDate ? this.formatDateForInput(asset.purchaseDate) : '',
-        warrantyEnd: asset.warrantyEnd ? this.formatDateForInput(asset.warrantyEnd) : '',
+        purchaseDate: asset.purchaseDate ? this.formatDate(asset.purchaseDate) : '',
+        warrantyEnd: asset.warrantyEnd ? this.formatDate(asset.warrantyEnd) : '',
       });
       this.showModal = true;
     } finally {
       this.isLoadingSpaces = false;
     }
   }
-
-  // Util: formatează data pentru input type="date"
-  formatDateForInput(date: string | Date): string {
+  private formatDate(date: string | Date): string {
     const d = new Date(date);
     const year = d.getFullYear();
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -445,7 +406,6 @@ async openAddModal() {
   }
 
   viewAsset(asset: AssetsReadModel): void {
-    // For demo, just show an alert
     alert(`Detalii bun:\n\nNume: ${asset.name}\nID: ${asset.id}\nCategorie: ${this.getCategoryText(asset.category)}\nValoare: ${asset.value} EUR\nLocație: ${asset.spaceName}\nStare: ${this.getStatusText(asset.status ?? '')}`);
   }
 
@@ -470,9 +430,9 @@ async openAddModal() {
         if (formData.name !== this.editingAsset.name) patch.name = formData.name;
         if (formData.value !== this.editingAsset.value) patch.value = formData.value;
         if (formData.category !== this.editingAsset.category) patch.category = formData.category;
-        if (formData.purchaseDate !== this.formatDateForInput(this.editingAsset.purchaseDate)) patch.purchaseDate = formData.purchaseDate;
+        if (formData.purchaseDate !== this.formatDate(this.editingAsset.purchaseDate)) patch.purchaseDate = formData.purchaseDate;
         if (formData.description !== this.editingAsset.description) patch.description = formData.description;
-        if (formData.warrantyEnd !== this.formatDateForInput(this.editingAsset.warrantyEnd ?? '')) patch.warrantyEnd = formData.warrantyEnd;
+        if (formData.warrantyEnd !== this.formatDate(this.editingAsset.warrantyEnd ?? '')) patch.warrantyEnd = formData.warrantyEnd;
         if (Object.keys(patch).length === 0) {
           alert('Nu ai modificat nimic.');
           return;
@@ -527,7 +487,6 @@ async openAddModal() {
   // Stats
   updateStats(): void {
     this.totalAssets = this.filteredAssets.length;
-    this.activeAssets = this.filteredAssets.filter(a => a.status === 'active').length;
     // totalValue nu se mai calculează aici, vine din backend
     
     // Count assets with warranty expiring in the next 30 days
@@ -588,9 +547,7 @@ async openAddModal() {
     
     return diffDays > 0 ? diffDays : null;
   }
-    // Warranty status helpers
 
-  // --- Status helpers (clean version) ---
   private warrantyStatusTextMap: { [key: string]: string } = {
     '0': 'Activă',
     '1': 'Expira degraba',
@@ -600,8 +557,8 @@ async openAddModal() {
   };
   private warrantyStatusClassMap: { [key: string]: string } = {
     '0': 'active',
-    '1': 'expiredsoon', // Expiră degrabă - orange
-    '2': 'expired',     // Expirată - roșu
+    '1': 'expiredsoon', 
+    '2': 'expired',     
     'null': 'unknown',
     'undefined': 'unknown',
   };
