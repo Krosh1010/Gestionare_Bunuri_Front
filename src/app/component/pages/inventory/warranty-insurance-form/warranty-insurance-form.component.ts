@@ -147,6 +147,7 @@ export class WarrantyInsuranceFormComponent {
     this.loading = true;
     this.message = '';
     try {
+      
       await this.insuranceSrv.createInsurance(payload);
       this.message = 'Asigurarea a fost adăugată cu succes!';
       setTimeout(() => {
