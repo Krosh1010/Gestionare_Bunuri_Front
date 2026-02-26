@@ -11,16 +11,16 @@ export class WarrantyStatusService {
     async getWarrantyStatusSummary(): Promise<any> {
         return this.apiService.getData('api/coverage-status/warranty/summary');
     }
-    async getExpiredWarranties(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/warranty/expired-assets');
+    async getExpiredWarranties(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/warranty/expired-assets', { page, pageSize });
     }
-    async getExpiringWarranties(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/warranty/expiring-assets');
+    async getExpiringWarranties(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/warranty/expiring-assets', { page, pageSize });
     }
-    async getValidWarranties(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/warranty/valid-assets');
+    async getValidWarranties(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/warranty/valid-assets', { page, pageSize });
     }
-    async getWithoutWarranties(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/warranty/assets-without-warranty');
+    async getWithoutWarranties(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/warranty/assets-without-warranty', { page, pageSize });
     }
 }

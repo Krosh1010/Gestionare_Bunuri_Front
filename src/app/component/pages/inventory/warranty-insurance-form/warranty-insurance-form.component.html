@@ -10,7 +10,6 @@
 			<h3>Ce dorești să adaugi pentru bunul #{{assetId}}?</h3>
 			<p class="choose-subtitle">Selectează tipul de document pe care vrei să îl adaugi</p>
 		</div>
-		
 		<div class="choose-cards">
 			<div class="option-card" (click)="selectWarranty()">
 				<div class="card-icon warranty">
@@ -41,7 +40,6 @@
 					</div>
 				</div>
 			</div>
-			
 			<div class="option-card" (click)="selectInsurance()">
 				<div class="card-icon insurance">
 					<svg class="icon" viewBox="0 0 24 24">
@@ -71,8 +69,36 @@
 					</div>
 				</div>
 			</div>
+			<div class="option-card" (click)="selectTracker()">
+				<div class="card-icon tracker">
+					<svg class="icon" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+					</svg>
+				</div>
+				<h4>Custom Tracker</h4>
+				<p>Adaugă un tracker personalizat pentru bun</p>
+				<div class="card-features">
+					<div class="feature">
+						<svg class="icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+						</svg>
+						<span>Nume tracker</span>
+					</div>
+					<div class="feature">
+						<svg class="icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+						</svg>
+						<span>Perioadă</span>
+					</div>
+					<div class="feature">
+						<svg class="icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+						</svg>
+						<span>Descriere (opțional)</span>
+					</div>
+				</div>
+			</div>
 		</div>
-		
 		<div class="modal-actions">
 			<button type="button" class="btn-secondary" (click)="onClose()">
 				<svg class="icon" viewBox="0 0 24 24">
@@ -82,6 +108,113 @@
 			</button>
 		</div>
 	</div>
+	<!-- Custom Tracker Form -->
+	<form *ngIf="mode === 'tracker'" (ngSubmit)="submitTracker()" class="modern-form">
+		<div class="form-header">
+			<button type="button" class="back-btn" (click)="backToChoose()" [disabled]="loading">
+				<svg class="icon" viewBox="0 0 24 24">
+					<path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+				</svg>
+			</button>
+			<div class="header-content">
+				<div class="form-icon tracker">
+					<svg class="icon" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+					</svg>
+				</div>
+				<h3>Adaugă custom tracker</h3>
+				<p class="form-subtitle">Completează detaliile trackerului personalizat</p>
+			</div>
+		</div>
+		<div class="form-content">
+			<div class="form-row">
+				<div class="form-group">
+					<label>
+						<svg class="label-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+						</svg>
+						<span class="label-text">Nume tracker *</span>
+					</label>
+					<div class="input-wrapper">
+						<svg class="input-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M21.9 8.89l-1.05-4.37c-.22-.9-1-1.52-1.91-1.52H5.05c-.9 0-1.69.63-1.9 1.52L2.1 8.89c-.24 1.02-.02 2.06.62 2.88.08.11.19.19.28.29V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-6.94c.09-.09.2-.18.28-.28.64-.82.87-1.87.62-2.89zm-2.99-3.9l1.05 4.37c.1.42.01.84-.25 1.17-.14.18-.44.47-.94.47-.61 0-1.14-.49-1.21-1.14L16.98 5l1.93-.01zM13 5h1.96l.54 4.52c.05.39-.07.78-.33 1.07-.22.26-.54.41-.88.41-.67 0-1.22-.59-1.22-1.31V5zM8.49 9.52L9.04 5H11v4.69c0 .72-.55 1.31-1.29 1.31-.34 0-.65-.15-.89-.41-.25-.29-.37-.68-.33-1.07zm-4.45-.16L5.05 5h1.97l-.58 4.86c-.08.65-.6 1.14-1.21 1.14-.49 0-.8-.29-.93-.47-.27-.33-.36-.76-.26-1.18zM5 19v-6.03c.08.01.15.03.23.03.87 0 1.66-.36 2.24-.95.6.6 1.4.95 2.31.95.87 0 1.65-.36 2.23-.93.59.57 1.39.93 2.29.93.84 0 1.64-.35 2.24-.95.58.59 1.37.95 2.24.95.08 0 .15-.02.23-.03V19H5z"/>
+						</svg>
+						<input type="text" [(ngModel)]="tracker.name" name="trackerName" required placeholder="Ex: Service, Revizie, Custom...">
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label>
+						<svg class="label-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 6v2h14V6H5zm2 4h10v2H7zm0 4h7v2H7z"/>
+						</svg>
+						<span class="label-text">Data început *</span>
+					</label>
+					<div class="input-wrapper">
+						<svg class="input-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+						</svg>
+						<input type="date" [(ngModel)]="tracker.start" name="trackerStart" required>
+					</div>
+				</div>
+				<div class="form-group">
+					<label>
+						<svg class="label-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+						</svg>
+						<span class="label-text">Data sfârșit *</span>
+					</label>
+					<div class="input-wrapper">
+						<svg class="input-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+						</svg>
+						<input type="date" [(ngModel)]="tracker.end" name="trackerEnd" required>
+					</div>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group">
+					<label>
+						<svg class="label-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+						</svg>
+						<span class="label-text">Descriere (opțional)</span>
+					</label>
+					<div class="input-wrapper">
+						<svg class="input-icon" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M21.9 8.89l-1.05-4.37c-.22-.9-1-1.52-1.91-1.52H5.05c-.9 0-1.69.63-1.9 1.52L2.1 8.89c-.24 1.02-.02 2.06.62 2.88.08.11.19.19.28.29V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-6.94c.09-.09.2-.18.28-.28.64-.82.87-1.87.62-2.89zm-2.99-3.9l1.05 4.37c.1.42.01.84-.25 1.17-.14.18-.44.47-.94.47-.61 0-1.14-.49-1.21-1.14L16.98 5l1.93-.01zM13 5h1.96l.54 4.52c.05.39-.07.78-.33 1.07-.22.26-.54.41-.88.41-.67 0-1.22-.59-1.22-1.31V5zM8.49 9.52L9.04 5H11v4.69c0 .72-.55 1.31-1.29 1.31-.34 0-.65-.15-.89-.41-.25-.29-.37-.68-.33-1.07zm-4.45-.16L5.05 5h1.97l-.58 4.86c-.08.65-.6 1.14-1.21 1.14-.49 0-.8-.29-.93-.47-.27-.33-.36-.76-.26-1.18zM5 19v-6.03c.08.01.15.03.23.03.87 0 1.66-.36 2.24-.95.6.6 1.4.95 2.31.95.87 0 1.65-.36 2.23-.93.59.57 1.39.93 2.29.93.84 0 1.64-.35 2.24-.95.58.59 1.37.95 2.24.95.08 0 .15-.02.23-.03V19H5z"/>
+						</svg>
+						<textarea [(ngModel)]="tracker.description" name="trackerDescription" placeholder="Detalii suplimentare despre tracker"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div *ngIf="message" class="message-container" [ngClass]="messageType">
+			<svg class="icon" viewBox="0 0 24 24" *ngIf="messageType === 'success'">
+				<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+			</svg>
+			<svg class="icon" viewBox="0 0 24 24" *ngIf="messageType === 'error'">
+				<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+			</svg>
+			<span>{{ message }}</span>
+		</div>
+		<div class="form-actions">
+			<button type="button" class="btn-secondary" (click)="backToChoose()" [disabled]="loading">
+				<svg class="icon" viewBox="0 0 24 24">
+					<path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+				</svg>
+				<span>Înapoi</span>
+			</button>
+			<button type="submit" class="btn-primary" [disabled]="loading">
+				<svg class="icon" viewBox="0 0 24 24" *ngIf="!loading">
+					<path fill="currentColor" d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+				</svg>
+				<div class="spinner" *ngIf="loading"></div>
+				<span>{{ loading ? 'Se salvează...' : 'Salvează tracker' }}</span>
+			</button>
+		</div>
+	</form>
 
 	<!-- Warranty Form -->
 	<form *ngIf="mode === 'warranty'" (ngSubmit)="submitWarranty()" class="modern-form">

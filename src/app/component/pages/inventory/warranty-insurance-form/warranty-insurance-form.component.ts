@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
+import { CustomTrackerService } from '../../../../services/ApiServices/custom.tracker';
 
 @Component({
   selector: 'app-warranty-insurance-form',
@@ -15,7 +16,7 @@ export class WarrantyInsuranceFormComponent {
   @Input() assetId!: number | null;
   @Output() close = new EventEmitter<void>();
 
-  mode: 'choose' | 'warranty' | 'insurance' = 'choose';
+  mode: 'choose' | 'warranty' | 'insurance' | 'tracker' = 'choose';
 
   warranty = {
     provider: '',
@@ -26,6 +27,12 @@ export class WarrantyInsuranceFormComponent {
   insurance = {
     company: '',
     insuredValue: null as number | null,
+    start: '',
+    end: ''
+  };
+  tracker = {
+    name: '',
+    description: '',
     start: '',
     end: ''
   };
@@ -66,6 +73,7 @@ export class WarrantyInsuranceFormComponent {
 
   private warrantySrv = inject(warrantyService);
   private insuranceSrv = inject(InsuranceService);
+  private trackerSrv = inject(CustomTrackerService);
 
   // Reset forms when assetId changes
   ngOnChanges() {
@@ -81,7 +89,6 @@ export class WarrantyInsuranceFormComponent {
 
   selectWarranty() {
     this.mode = 'warranty';
-    // Optionally reset warranty form here too
     this.warranty = { provider: '', start: '', end: '', notes: '' };
     this.message = '';
   }
@@ -90,10 +97,16 @@ export class WarrantyInsuranceFormComponent {
     this.insurance = { company: '', insuredValue: null, start: '', end: '' };
     this.message = '';
   }
+  selectTracker() {
+    this.mode = 'tracker';
+    this.tracker = { name: '', description: '', start: '', end: '' };
+    this.message = '';
+  }
 
   resetForms() {
     this.warranty = { provider: '', start: '', end: '', notes: '' };
     this.insurance = { company: '', insuredValue: null, start: '', end: '' };
+    this.tracker = { name: '', description: '', start: '', end: '' };
     this.message = '';
     this.loading = false;
     this.mode = 'choose';
@@ -112,7 +125,6 @@ export class WarrantyInsuranceFormComponent {
     try {
       await this.warrantySrv.createWarranty(payload);
       this.message = 'Garanția a fost adăugată cu succes!';
-      // După succes, revino la meniul de alegere, nu închide complet
       setTimeout(() => {
         this.backToChoose();
         this.message = 'Garanția a fost adăugată cu succes!';
@@ -143,6 +155,30 @@ export class WarrantyInsuranceFormComponent {
       }, 800);
     } catch (err) {
       this.message = 'Eroare la salvare asigurare!';
+    } finally {
+      this.loading = false;
+    }
+  }
+  async submitTracker() {
+    if (!this.assetId || !this.tracker.name || !this.tracker.start || !this.tracker.end) return;
+    const payload = {
+      AssetId: this.assetId,
+      Name: this.tracker.name,
+      Description: this.tracker.description,
+      StartDate: this.tracker.start,
+      EndDate: this.tracker.end
+    };
+    this.loading = true;
+    this.message = '';
+    try {
+      await this.trackerSrv.createCustomTracker(payload);
+      this.message = 'Custom tracker adăugat cu succes!';
+      setTimeout(() => {
+        this.backToChoose();
+        this.message = 'Custom tracker adăugat cu succes!';
+      }, 800);
+    } catch (err) {
+      this.message = 'Eroare la salvare tracker!';
     } finally {
       this.loading = false;
     }

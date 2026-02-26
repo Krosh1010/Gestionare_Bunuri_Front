@@ -11,16 +11,16 @@ export class InsuranceStatusService {
     async getInsuranceStatusSummary(): Promise<any> {
         return this.apiService.getData('api/coverage-status/insurance/summary');
     }
-    async getExpiredInsurances(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/insurance/expired-assets');
+    async getExpiredInsurances(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/insurance/expired-assets', { page, pageSize });
     }
-    async getExpiringInsurances(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/insurance/expiring-assets');
+    async getExpiringInsurances(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/insurance/expiring-assets', { page, pageSize });
     }
-    async getValidInsurances(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/insurance/valid-assets');
+    async getValidInsurances(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/insurance/valid-assets', { page, pageSize });
     }
-    async getWithoutInsurances(): Promise<any> {
-        return this.apiService.getData('api/coverage-status/insurance/assets-without-insurance');
+    async getWithoutInsurances(page: number = 1, pageSize: number = 10): Promise<any> {
+        return this.apiService.getDataWithParams('api/coverage-status/insurance/assets-without-insurance', { page, pageSize });
     }
 }

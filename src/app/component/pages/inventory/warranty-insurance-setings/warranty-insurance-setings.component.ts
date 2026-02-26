@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
-
+import { CustomTrackerService } from '../../../../services/ApiServices/custom.tracker';
 @Component({
   selector: 'app-warranty-insurance-setings',
   standalone: true,
@@ -15,17 +15,21 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   @Input() assetId!: number | null;
   warrantyForm!: FormGroup;
   insuranceForm!: FormGroup;
+  customTrackerForm!: FormGroup;
   loading = false;
   warrantyData: any = null;
   insuranceData: any = null;
+  customTrackerData: any = null;
   error: string | null = null;
   showWarrantyFormSection = false;
   showInsuranceFormSection = false;
+  showCustomTrackerFormSection = false;
 
   constructor(
     private fb: FormBuilder,
     private warrantyService: warrantyService,
-    private insuranceService: InsuranceService
+    private insuranceService: InsuranceService,
+    private customTrackerService: CustomTrackerService
   ) {}
 
   ngOnInit() {
@@ -50,16 +54,24 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
       startDate: [''],
       endDate: ['']
     });
+    this.customTrackerForm = this.fb.group({
+      trackerName: [''],
+      description: [''],
+      startDate: [''],
+      endDate: ['']
+    });
   }
 
   resetSections() {
     this.showWarrantyFormSection = false;
     this.showInsuranceFormSection = false;
+    this.showCustomTrackerFormSection = false;
   }
 
   async openWarrantySection() {
     this.showWarrantyFormSection = true;
     this.showInsuranceFormSection = false;
+    this.showCustomTrackerFormSection = false;
     this.loading = true;
     this.error = null;
       this.showAddWarrantyForm = false;
@@ -131,6 +143,7 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   async openInsuranceSection() {
     this.showInsuranceFormSection = true;
     this.showWarrantyFormSection = false;
+    this.showCustomTrackerFormSection = false;
     this.loading = true;
     this.error = null;
     try {
@@ -191,6 +204,74 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
       // Optionally, show a success message or refresh UI
     } catch (e) {
       this.error = 'Eroare la ștergerea asigurării';
+    }
+    this.loading = false;
+  }
+
+  async openCustomTrackerSection() {
+    this.showCustomTrackerFormSection = true;
+    this.showWarrantyFormSection = false;
+    this.showInsuranceFormSection = false;
+    this.loading = true;
+    this.error = null;
+    try {
+      const data = await this.customTrackerService.getCustomTrackersByAssetId(String(this.assetId));
+      if (data) {
+        this.customTrackerData = data;
+        this.customTrackerForm.patchValue({
+          trackerName: data.Name || '',
+          description: data.description || '',
+          startDate: data.startDate ? data.startDate.substring(0, 10) : '',
+          endDate: data.endDate ? data.endDate.substring(0, 10) : ''
+        });
+      } else {
+        this.customTrackerData = null;
+        this.customTrackerForm.reset();
+      }
+    } catch (e: any) {
+      if (e && e.status === 404) {
+        this.customTrackerData = null;
+        this.customTrackerForm.reset();
+      } else {
+        this.error = 'Eroare la încărcarea urmăritorului personalizat';
+        this.customTrackerData = null;
+      }
+    }
+    this.loading = false;
+  }
+
+  async saveCustomTracker() {
+    if (!this.assetId) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      const payload = {
+        ...this.customTrackerForm.value,
+        assetId: this.assetId
+      };
+      if (this.customTrackerData) {
+        await this.customTrackerService.updateCustomTracker(String(this.assetId), payload);
+      } else {
+        await this.customTrackerService.createCustomTracker(payload);
+      }
+      await this.openCustomTrackerSection();
+    } catch (e) {
+      this.error = 'Eroare la salvarea urmăritorului personalizat';
+    }
+    this.loading = false;
+  }
+
+  async deleteCustomTracker() {
+    if (!this.assetId) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.customTrackerService.deleteCustomTracker(String(this.assetId));
+      this.customTrackerData = null;
+      this.customTrackerForm.reset();
+      // Optionally, show a success message or refresh UI
+    } catch (e) {
+      this.error = 'Eroare la ștergerea urmăritorului personalizat';
     }
     this.loading = false;
   }
@@ -263,4 +344,6 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     if (diff < 0) return 'Expirată';
     return diff + ' zile';
   }
+  
+  
 }

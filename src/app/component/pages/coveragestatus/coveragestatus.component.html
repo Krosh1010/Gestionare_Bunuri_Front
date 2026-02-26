@@ -199,9 +199,9 @@
     </div>
     
     <!-- Pagination -->
-    <div class="pagination" *ngIf="filteredItems.length > 0">
+    <div class="pagination" *ngIf="listTotalCount > 0 && totalPages > 1">
       <div class="pagination-info">
-        Afișate {{startIndex + 1}}-{{endIndex}} din {{filteredItems.length}}
+        Afișate {{startIndex + 1}}-{{endIndex}} din {{listTotalCount}}
       </div>
       <div class="pagination-controls">
         <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">

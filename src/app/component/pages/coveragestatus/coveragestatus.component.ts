@@ -23,6 +23,7 @@ export class CoveragestatusComponent {
   currentPage = 1;
   itemsPerPage = 10;
   totalPages = 1;
+  listTotalCount = 0;
   isLoading = false;
 
   // Warranty summary statistics
@@ -109,54 +110,67 @@ export class CoveragestatusComponent {
 
   async selectStatus(status: 'expired' | 'expiring-soon' | 'active' | 'no-coverage') {
     this.selectedStatus = status;
-    if (this.selectedType === 'warranty' && status === 'expired') {
-      await this.loadExpiredWarranties();
-    } else if (this.selectedType === 'warranty' && status === 'expiring-soon') {
-      await this.loadExpiringWarranties();
-    } else if (this.selectedType === 'warranty' && status === 'active') {
-      await this.loadValidWarranties();
-    } else if (this.selectedType === 'warranty' && status === 'no-coverage') {
-      await this.loadWithoutWarranties();
-    } else if (this.selectedType === 'insurance' && status === 'expired') {
-      await this.loadExpiredInsurances();
-    } else if (this.selectedType === 'insurance' && status === 'expiring-soon') {
-      await this.loadExpiringInsurances();
-    } else if (this.selectedType === 'insurance' && status === 'active') {
-      await this.loadValidInsurances();
-    } else if (this.selectedType === 'insurance' && status === 'no-coverage') {
-      await this.loadWithoutInsurances();
-    } else {
-      this.applyFilters();
+    this.currentPage = 1;
+    await this.reloadCurrentStatus(1);
+  }
+
+  async reloadCurrentStatus(page: number) {
+    if (this.selectedType === 'warranty' && this.selectedStatus === 'expired') {
+      await this.loadExpiredWarranties(page);
+    } else if (this.selectedType === 'warranty' && this.selectedStatus === 'expiring-soon') {
+      await this.loadExpiringWarranties(page);
+    } else if (this.selectedType === 'warranty' && this.selectedStatus === 'active') {
+      await this.loadValidWarranties(page);
+    } else if (this.selectedType === 'warranty' && this.selectedStatus === 'no-coverage') {
+      await this.loadWithoutWarranties(page);
+    } else if (this.selectedType === 'insurance' && this.selectedStatus === 'expired') {
+      await this.loadExpiredInsurances(page);
+    } else if (this.selectedType === 'insurance' && this.selectedStatus === 'expiring-soon') {
+      await this.loadExpiringInsurances(page);
+    } else if (this.selectedType === 'insurance' && this.selectedStatus === 'active') {
+      await this.loadValidInsurances(page);
+    } else if (this.selectedType === 'insurance' && this.selectedStatus === 'no-coverage') {
+      await this.loadWithoutInsurances(page);
     }
   }
 
-  private async loadWithoutInsurances() {
+  private async loadWithoutInsurances(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const without = await this.insuranceStatusService.getWithoutInsurances();
-      this.insuranceItems = (without || []).map((item: any) => ({
+      const res = await this.insuranceStatusService.getWithoutInsurances(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.insuranceItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         status: 'no-coverage',
         value: 0,
         daysRemaining: 0
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.insuranceItems];
       this.updateStats();
     } catch (error) {
       this.insuranceItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadValidInsurances() {
+  private async loadValidInsurances(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const valid = await this.insuranceStatusService.getValidInsurances();
-      this.insuranceItems = (valid || []).map((item: any) => ({
+      const res = await this.insuranceStatusService.getValidInsurances(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.insuranceItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         value: item.value || item.assetValue || 0,
@@ -166,22 +180,28 @@ export class CoveragestatusComponent {
         daysRemaining: item.daysLeft || 0,
         company: item.company || ''
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.insuranceItems];
       this.updateStats();
     } catch (error) {
       this.insuranceItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadExpiringInsurances() {
+  private async loadExpiringInsurances(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const expiring = await this.insuranceStatusService.getExpiringInsurances();
-      this.insuranceItems = (expiring || []).map((item: any) => ({
+      const res = await this.insuranceStatusService.getExpiringInsurances(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.insuranceItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         value: item.value || item.assetValue || 0,
@@ -191,22 +211,28 @@ export class CoveragestatusComponent {
         daysRemaining: item.daysLeft || 0,
         company: item.company || ''
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.insuranceItems];
       this.updateStats();
     } catch (error) {
       this.insuranceItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadExpiredInsurances() {
+  private async loadExpiredInsurances(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const expired = await this.insuranceStatusService.getExpiredInsurances();
-      this.insuranceItems = (expired || []).map((item: any) => ({
+      const res = await this.insuranceStatusService.getExpiredInsurances(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.insuranceItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         value: item.value || item.assetValue || 0,
@@ -216,22 +242,28 @@ export class CoveragestatusComponent {
         daysRemaining: 0,
         company: item.company || ''
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.insuranceItems];
       this.updateStats();
     } catch (error) {
       this.insuranceItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadExpiredWarranties() {
+  private async loadExpiredWarranties(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const expired = await this.warrantyStatusService.getExpiredWarranties();
-      this.warrantyItems = (expired || []).map((item: any) => ({
+      const res = await this.warrantyStatusService.getExpiredWarranties(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.warrantyItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
@@ -240,22 +272,28 @@ export class CoveragestatusComponent {
         daysRemaining: 0,
         provider: item.provider || ''
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.warrantyItems];
       this.updateStats();
     } catch (error) {
       this.warrantyItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadExpiringWarranties() {
+  private async loadExpiringWarranties(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const expiring = await this.warrantyStatusService.getExpiringWarranties();
-      this.warrantyItems = (expiring || []).map((item: any) => ({
+      const res = await this.warrantyStatusService.getExpiringWarranties(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.warrantyItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
@@ -264,22 +302,28 @@ export class CoveragestatusComponent {
         daysRemaining: item.daysLeft || 0,
         provider: item.provider || ''
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.warrantyItems];
       this.updateStats();
     } catch (error) {
       this.warrantyItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadValidWarranties() {
+  private async loadValidWarranties(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const valid = await this.warrantyStatusService.getValidWarranties();
-      this.warrantyItems = (valid || []).map((item: any) => ({
+      const res = await this.warrantyStatusService.getValidWarranties(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.warrantyItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         warrantyStartDate: item.startDate ? new Date(item.startDate) : undefined,
@@ -288,32 +332,40 @@ export class CoveragestatusComponent {
         daysRemaining: item.daysLeft || 0,
         provider: item.provider || ''
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.warrantyItems];
       this.updateStats();
     } catch (error) {
       this.warrantyItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
     }
   }
 
-  private async loadWithoutWarranties() {
+  private async loadWithoutWarranties(page: number = 1) {
     this.isLoading = true;
+    this.currentPage = page;
     try {
-      const without = await this.warrantyStatusService.getWithoutWarranties();
-      this.warrantyItems = (without || []).map((item: any) => ({
+      const res = await this.warrantyStatusService.getWithoutWarranties(page, this.itemsPerPage);
+      const rawItems = res?.items ?? (Array.isArray(res) ? res : []);
+      this.listTotalCount = res?.totalCount ?? rawItems.length;
+      this.totalPages = Math.max(1, Math.ceil(this.listTotalCount / this.itemsPerPage));
+      this.warrantyItems = rawItems.map((item: any) => ({
         name: item.name || item.assetName,
         category: item.category?.toLowerCase() || 'other',
         status: 'no-coverage',
         daysRemaining: 0
       }));
-      this.applyFilters();
+      this.filteredItems = [...this.warrantyItems];
       this.updateStats();
     } catch (error) {
       this.warrantyItems = [];
-      this.applyFilters();
+      this.filteredItems = [];
+      this.listTotalCount = 0;
+      this.totalPages = 1;
       this.updateStats();
     } finally {
       this.isLoading = false;
@@ -321,9 +373,8 @@ export class CoveragestatusComponent {
   }
 
   applyFilters() {
-    const items = this.selectedType === 'warranty' ? this.warrantyItems : this.insuranceItems;
-    this.filteredItems = items.filter(item => item.status === this.selectedStatus);
-    this.updatePagination();
+    // Items are already filtered server-side; this is kept for compatibility
+    this.filteredItems = this.selectedType === 'warranty' ? [...this.warrantyItems] : [...this.insuranceItems];
   }
 
   clearFilters() {
@@ -332,6 +383,9 @@ export class CoveragestatusComponent {
     this.filteredItems = [];
     this.warrantyStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0 };
     this.insuranceStats = { total: 0, expired: 0, expiringSoon: 0, active: 0, noCoverage: 0, totalValue: 0 };
+    this.listTotalCount = 0;
+    this.totalPages = 1;
+    this.currentPage = 1;
     this.updateStats();
   }
 
@@ -346,8 +400,7 @@ export class CoveragestatusComponent {
   }
 
   updatePagination() {
-    this.totalPages = Math.ceil(this.filteredItems.length / this.itemsPerPage);
-    this.currentPage = Math.min(this.currentPage, this.totalPages || 1);
+    // totalPages is now set by server response; kept for compatibility
   }
 
   getStatusCount(status: string): number {
@@ -445,7 +498,7 @@ export class CoveragestatusComponent {
   }
 
   get endIndex(): number {
-    return Math.min(this.startIndex + this.itemsPerPage, this.filteredItems.length);
+    return Math.min(this.startIndex + this.itemsPerPage, this.listTotalCount);
   }
 
   getPageNumbers(): number[] {
@@ -464,19 +517,19 @@ export class CoveragestatusComponent {
 
   prevPage() {
     if (this.currentPage > 1) {
-      this.currentPage--;
+      this.reloadCurrentStatus(this.currentPage - 1);
     }
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages) {
-      this.currentPage++;
+      this.reloadCurrentStatus(this.currentPage + 1);
     }
   }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.reloadCurrentStatus(page);
     }
   }
 }

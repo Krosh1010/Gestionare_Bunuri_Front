@@ -9,8 +9,11 @@ import { AssetsReadModel } from '../../models/assetsmodel/assets-read.model';
 export class AssetsService {
     constructor(private apiService: ApiService) {}
 
-    async getAssets(): Promise<AssetsReadModel> {
-        return this.apiService.getData('api/Assets/my');
+    async getAssets(page: number = 1, pageSize: number = 8): Promise<any> {
+        return this.apiService.getDataWithParams('api/Assets/my/paged', {
+            page: page,
+            pageSize: pageSize
+        });
     }
     async getAssetById(assetId: string): Promise<AssetsReadModel> {
         return this.apiService.getData(`api/Assets/${assetId}`);

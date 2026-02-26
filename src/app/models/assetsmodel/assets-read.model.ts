@@ -14,4 +14,6 @@ export interface AssetsReadModel {
     insuranceEndDate?: string;
     warrantyStatus?: 0 | 1 | null | undefined;
     insuranceStatus?: 0 | 1 | 2 | null | undefined;
+    customTrackerName?: string | null;
+    customTrackerEndDate?: string | null;
 }

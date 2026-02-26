@@ -74,6 +74,13 @@ selectedSpaceName: string | null = null;
   isLoadingSpaces = false;
   isLeafSpaceSelected = false;
 
+  // Pagination
+  currentPage: number = 1;
+  pageSize: number = 8;
+  totalPages: number = 1;
+  totalItems: number = 0;
+  isLoadingAssets: boolean = false;
+
   // Modal pentru warranty/insurance
   showWarrantyModal: boolean = false;
   createdAssetId: number | null = null;
@@ -96,17 +103,71 @@ selectedSpaceName: string | null = null;
   }
 
   ngOnInit(): void {
-    this.assetsService.getAssets().then((data: any) => {
-      this.assets = Array.isArray(data) ? data : [data];
+    this.loadAssets();
+  }
+
+  async loadAssets(page: number = 1): Promise<void> {
+    this.isLoadingAssets = true;
+    this.currentPage = page;
+    try {
+      const data = await this.assetsService.getAssets(this.currentPage, this.pageSize);
+      // Backend-ul paginat returnează { items, totalCount } sau direct array
+      if (data && data.items) {
+        this.assets = data.items;
+        this.totalItems = data.totalCount ?? data.items.length;
+        if (typeof data.totalValue === 'number') {
+          this.totalValue = data.totalValue;
+        }
+      } else if (Array.isArray(data)) {
+        this.assets = data;
+        this.totalItems = data.length;
+        // Dacă nu vine din back, calculează local
+        this.totalValue = this.assets.reduce((sum, asset) => sum + asset.value, 0);
+      } else {
+        this.assets = [data];
+        this.totalItems = 1;
+        this.totalValue = this.assets[0]?.value || 0;
+      }
+      this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.pageSize));
       this.filteredAssets = [...this.assets];
       this.updateStats();
-    }).catch(() => {
+    } catch {
       this.assets = [];
       this.filteredAssets = [];
+      this.totalItems = 0;
+      this.totalValue = 0;
+      this.totalPages = 1;
       this.updateStats();
-    });
+    } finally {
+      this.isLoadingAssets = false;
+    }
+  }
 
-    // ...existing code...
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    this.loadAssets(page);
+  }
+
+  nextPage(): void {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  prevPage(): void {
+    this.goToPage(this.currentPage - 1);
+  }
+
+  getVisiblePages(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+    if (end - start + 1 < maxVisible) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
       // Modal pentru setări garanție/asigurare la editare
     showWarrantySettingsModal: boolean = false;
@@ -391,12 +452,8 @@ async openAddModal() {
   deleteAsset(asset: AssetsReadModel): void {
       if (confirm(`Ești sigur că vrei să ștergi bunul "${asset.name}"?`)) {
         this.assetsService.deleteAsset(asset.id).then(() => {
-          // Remove asset from local list after successful delete
-          const index = this.assets.findIndex(a => a.id === asset.id);
-          if (index !== -1) {
-            this.assets.splice(index, 1);
-            this.filterAssets();
-          }
+          // Reload current page after successful delete
+          this.loadAssets(this.currentPage);
         }).catch(() => {
           alert('Eroare la ștergerea bunului. Încearcă din nou.');
         });
@@ -422,10 +479,7 @@ async openAddModal() {
         }
         try {
           await this.assetsService.updateAsset(this.editingAsset.id, patch);
-          const data = await this.assetsService.getAssets();
-          this.assets = Array.isArray(data) ? data : [data];
-          this.filteredAssets = [...this.assets];
-          this.updateStats();
+          await this.loadAssets(this.currentPage);
           this.closeModal();
         } catch (err) {
           alert('Eroare la editarea bunului.');
@@ -462,10 +516,7 @@ async openAddModal() {
     this.showWarrantyModal = false;
     this.createdAssetId = null;
     // Reîncarcă lista de bunuri și statistici după ce utilizatorul finalizează garanția/asigurarea
-    const data = await this.assetsService.getAssets();
-    this.assets = Array.isArray(data) ? data : [data];
-    this.filteredAssets = [...this.assets];
-    this.updateStats();
+    await this.loadAssets(this.currentPage);
   }
 
   closeModal(): void {
@@ -477,7 +528,7 @@ async openAddModal() {
   updateStats(): void {
     this.totalAssets = this.filteredAssets.length;
     this.activeAssets = this.filteredAssets.filter(a => a.status === 'active').length;
-    this.totalValue = this.filteredAssets.reduce((sum, asset) => sum + asset.value, 0);
+    // totalValue nu se mai calculează aici, vine din backend
     
     // Count assets with warranty expiring in the next 30 days
     const today = new Date();
