@@ -15,7 +15,7 @@
 	<!-- With Asset -->
 	<div *ngIf="assetId" class="settings-content">
 		<!-- Main Menu -->
-		<div *ngIf="!showWarrantyFormSection && !showInsuranceFormSection" class="main-menu">
+		<div *ngIf="!showWarrantyFormSection && !showInsuranceFormSection && !showCustomTrackerFormSection" class="main-menu">
 			<div class="menu-header">
 				<div class="asset-info">
 					<svg class="asset-icon" viewBox="0 0 24 24">
@@ -81,6 +81,37 @@
 									<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
 								</svg>
 								Data expirare
+							</span>
+						</div>
+					</div>
+					<div class="card-arrow">
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+						</svg>
+					</div>
+				</div>
+
+				<div class="menu-card" (click)="openCustomTrackerSection()">
+					<div class="card-icon tracker">
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/>
+						</svg>
+					</div>
+					<div class="card-content">
+						<h5>Custom Tracker</h5>
+						<p>Gestionează urmăritorul personalizat al bunului</p>
+						<div class="card-features">
+							<span class="feature">
+								<svg viewBox="0 0 24 24">
+									<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+								</svg>
+								Nume
+							</span>
+							<span class="feature">
+								<svg viewBox="0 0 24 24">
+									<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+								</svg>
+								Perioadă
 							</span>
 						</div>
 					</div>
@@ -156,6 +187,29 @@
 								<p class="info-value days-remaining">{{calculateDaysRemaining(warrantyData.endDate)}}</p>
 							</div>
 						</div>
+						<!-- Document atașat -->
+						<div class="document-section" *ngIf="warrantyData.documentFileName">
+							<div class="document-info">
+								<svg class="doc-icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="doc-name">{{ warrantyData.documentFileName }}</span>
+							</div>
+							<div class="document-actions">
+								<button type="button" class="btn-doc-download" (click)="downloadWarrantyDocument()" [disabled]="loading">
+									<svg viewBox="0 0 24 24">
+										<path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+									</svg>
+									<span>Descarcă</span>
+								</button>
+								<button type="button" class="btn-doc-delete" (click)="deleteWarrantyDocument()" [disabled]="loading">
+									<svg viewBox="0 0 24 24">
+										<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+									</svg>
+									<span>Șterge document</span>
+								</button>
+							</div>
+						</div>
 					</div>
 
 					<h5 class="form-title">Editează garanție</h5>
@@ -195,6 +249,61 @@
 							<div class="input-wrapper">
 								<input formControlName="endDate" type="date" />
 							</div>
+						</div>
+					</div>
+
+					<!-- File upload for editing warranty -->
+					<div class="file-upload-section">
+						<h5 class="form-title">Document atașat (opțional)</h5>
+						<input type="file" #warrantyEditFileInput [accept]="acceptedFileTypes" (change)="onWarrantyEditFileSelected($event)" style="display: none;">
+						<div *ngIf="warrantyData?.documentFileName && !warrantyEditFileName" class="existing-document">
+							<div class="file-details">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="file-name">{{ warrantyData.documentFileName }}</span>
+								<span class="file-badge">Document curent</span>
+							</div>
+							<div class="file-actions">
+								<button type="button" class="btn-file-replace" (click)="warrantyEditFileInput.click()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+									</svg>
+									<span>Înlocuiește</span>
+								</button>
+							</div>
+						</div>
+						<div *ngIf="warrantyEditFileName" class="selected-file">
+							<div class="file-details">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="file-name">{{ warrantyEditFileName }}</span>
+								<span class="file-badge new">Fișier nou</span>
+							</div>
+							<div class="file-actions">
+								<button type="button" class="btn-file-replace" (click)="warrantyEditFileInput.click()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+									</svg>
+									<span>Înlocuiește</span>
+								</button>
+								<button type="button" class="btn-file-remove" (click)="removeWarrantyEditFile()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+									</svg>
+									<span>Elimină</span>
+								</button>
+							</div>
+						</div>
+						<div *ngIf="!warrantyData?.documentFileName && !warrantyEditFileName" class="file-upload-area">
+							<button type="button" class="upload-btn" (click)="warrantyEditFileInput.click()">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+								</svg>
+								<span>Adaugă document</span>
+							</button>
+							<span class="file-info">PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT</span>
 						</div>
 					</div>
 
@@ -262,6 +371,43 @@
 								</label>
 								<div class="input-wrapper">
 									<input formControlName="endDate" type="date" />
+								</div>
+							</div>
+						</div>
+
+						<!-- File upload for new warranty -->
+						<div class="file-upload-section">
+							<h5 class="form-title">Document atașat (opțional)</h5>
+							<input type="file" #warrantyNewFileInput [accept]="acceptedFileTypes" (change)="onWarrantyNewFileSelected($event)" style="display: none;">
+							<div *ngIf="!warrantyNewFileName" class="file-upload-area">
+								<button type="button" class="upload-btn" (click)="warrantyNewFileInput.click()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+									</svg>
+									<span>Adaugă document</span>
+								</button>
+								<span class="file-info">PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT</span>
+							</div>
+							<div *ngIf="warrantyNewFileName" class="selected-file">
+								<div class="file-details">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+									</svg>
+									<span class="file-name">{{ warrantyNewFileName }}</span>
+								</div>
+								<div class="file-actions">
+									<button type="button" class="btn-file-replace" (click)="warrantyNewFileInput.click()">
+										<svg class="icon" viewBox="0 0 24 24">
+											<path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+										</svg>
+										<span>Înlocuiește</span>
+									</button>
+									<button type="button" class="btn-file-remove" (click)="removeWarrantyNewFile()">
+										<svg class="icon" viewBox="0 0 24 24">
+											<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+										</svg>
+										<span>Elimină</span>
+									</button>
 								</div>
 							</div>
 						</div>
@@ -347,6 +493,29 @@
 								<p class="info-value days-remaining">{{calculateDaysRemaining(insuranceData.endDate)}}</p>
 							</div>
 						</div>
+						<!-- Document atașat -->
+						<div class="document-section" *ngIf="insuranceData.documentFileName">
+							<div class="document-info">
+								<svg class="doc-icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="doc-name">{{ insuranceData.documentFileName }}</span>
+							</div>
+							<div class="document-actions">
+								<button type="button" class="btn-doc-download" (click)="downloadInsuranceDocument()" [disabled]="loading">
+									<svg viewBox="0 0 24 24">
+										<path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+									</svg>
+									<span>Descarcă</span>
+								</button>
+								<button type="button" class="btn-doc-delete" (click)="deleteInsuranceDocument()" [disabled]="loading">
+									<svg viewBox="0 0 24 24">
+										<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+									</svg>
+									<span>Șterge document</span>
+								</button>
+							</div>
+						</div>
 					</div>
 
 					<h5 class="form-title">Editează asigurare</h5>
@@ -384,6 +553,62 @@
 							</div>
 						</div>
 					</div>
+
+					<!-- File upload for editing insurance -->
+					<div class="file-upload-section">
+						<h5 class="form-title">Document atașat (opțional)</h5>
+						<input type="file" #insuranceEditFileInput [accept]="acceptedFileTypes" (change)="onInsuranceEditFileSelected($event)" style="display: none;">
+						<div *ngIf="insuranceData?.documentFileName && !insuranceEditFileName" class="existing-document">
+							<div class="file-details">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="file-name">{{ insuranceData.documentFileName }}</span>
+								<span class="file-badge">Document curent</span>
+							</div>
+							<div class="file-actions">
+								<button type="button" class="btn-file-replace" (click)="insuranceEditFileInput.click()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+									</svg>
+									<span>Înlocuiește</span>
+								</button>
+							</div>
+						</div>
+						<div *ngIf="insuranceEditFileName" class="selected-file">
+							<div class="file-details">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="file-name">{{ insuranceEditFileName }}</span>
+								<span class="file-badge new">Fișier nou</span>
+							</div>
+							<div class="file-actions">
+								<button type="button" class="btn-file-replace" (click)="insuranceEditFileInput.click()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+									</svg>
+									<span>Înlocuiește</span>
+								</button>
+								<button type="button" class="btn-file-remove" (click)="removeInsuranceEditFile()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+									</svg>
+									<span>Elimină</span>
+								</button>
+							</div>
+						</div>
+						<div *ngIf="!insuranceData?.documentFileName && !insuranceEditFileName" class="file-upload-area">
+							<button type="button" class="upload-btn" (click)="insuranceEditFileInput.click()">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+								</svg>
+								<span>Adaugă document</span>
+							</button>
+							<span class="file-info">PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT</span>
+						</div>
+					</div>
+
 					<div class="form-actions">
 						<button type="submit" class="btn-primary" [disabled]="loading || insuranceForm.invalid">
 							<svg viewBox="0 0 24 24" *ngIf="!loading">
@@ -446,6 +671,44 @@
 								   </div>
 							   </div>
 						   </div>
+
+						   <!-- File upload for new insurance -->
+						   <div class="file-upload-section">
+							   <h5 class="form-title">Document atașat (opțional)</h5>
+							   <input type="file" #insuranceNewFileInput [accept]="acceptedFileTypes" (change)="onInsuranceNewFileSelected($event)" style="display: none;">
+							   <div *ngIf="!insuranceNewFileName" class="file-upload-area">
+								   <button type="button" class="upload-btn" (click)="insuranceNewFileInput.click()">
+									   <svg class="icon" viewBox="0 0 24 24">
+										   <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+									   </svg>
+									   <span>Adaugă document</span>
+								   </button>
+								   <span class="file-info">PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT</span>
+							   </div>
+							   <div *ngIf="insuranceNewFileName" class="selected-file">
+								   <div class="file-details">
+									   <svg class="icon" viewBox="0 0 24 24">
+										   <path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+									   </svg>
+									   <span class="file-name">{{ insuranceNewFileName }}</span>
+								   </div>
+								   <div class="file-actions">
+									   <button type="button" class="btn-file-replace" (click)="insuranceNewFileInput.click()">
+										   <svg class="icon" viewBox="0 0 24 24">
+											   <path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+										   </svg>
+										   <span>Înlocuiește</span>
+									   </button>
+									   <button type="button" class="btn-file-remove" (click)="removeInsuranceNewFile()">
+										   <svg class="icon" viewBox="0 0 24 24">
+											   <path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+										   </svg>
+										   <span>Elimină</span>
+									   </button>
+								   </div>
+							   </div>
+						   </div>
+
 						   <div class="form-actions">
 							   <button type="submit" class="btn-primary" [disabled]="loading || insuranceForm.invalid">
 								   <svg viewBox="0 0 24 24" *ngIf="!loading">
@@ -457,6 +720,188 @@
 						   </div>
 					   </form>
 				   </div>
+			</div>
+		</div>
+
+		<!-- Custom Tracker Form Section -->
+		<div *ngIf="showCustomTrackerFormSection" class="form-section">
+			<div class="section-header">
+				<button class="back-btn" (click)="backToMenu()">
+					<svg viewBox="0 0 24 24">
+						<path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+					</svg>
+					<span>Înapoi</span>
+				</button>
+				<div class="header-content">
+					<div class="section-icon tracker">
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/>
+						</svg>
+					</div>
+					<h4>Custom Tracker</h4>
+					<p>Gestionează urmăritorul personalizat al bunului</p>
+				</div>
+			</div>
+
+			<!-- Loading State -->
+			<div *ngIf="loading" class="loading-state">
+				<div class="spinner"></div>
+				<p>Se încarcă informațiile...</p>
+			</div>
+
+			<!-- Error State -->
+			<div *ngIf="error && !loading" class="error-state">
+				<svg viewBox="0 0 24 24">
+					<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+				</svg>
+				<p>{{error}}</p>
+			</div>
+
+			<!-- Content -->
+			<div *ngIf="!loading" class="section-content">
+				<!-- Existing Custom Tracker -->
+				<form *ngIf="customTrackerData" [formGroup]="customTrackerForm" (ngSubmit)="saveCustomTracker()" class="tracker-form">
+					<div class="tracker-info">
+						<div class="info-header">
+							<h5>Tracker existent</h5>
+							<div class="status-badge" [ngClass]="getCustomTrackerStatus(customTrackerData)">
+								{{ getCustomTrackerStatusText(customTrackerData) }}
+							</div>
+						</div>
+						<div class="info-grid">
+							<div class="info-item">
+								<label>Nume</label>
+								<p class="info-value">{{customTrackerData.name || customTrackerData.Name}}</p>
+							</div>
+							<div class="info-item">
+								<label>Descriere</label>
+								<p class="info-value">{{customTrackerData.description || customTrackerData.Description || '-'}}</p>
+							</div>
+							<div class="info-item">
+								<label>Data început</label>
+								<p class="info-value">{{formatDate(customTrackerData.startDate || customTrackerData.StartDate)}}</p>
+							</div>
+							<div class="info-item">
+								<label>Data expirare</label>
+								<p class="info-value">{{formatDate(customTrackerData.endDate || customTrackerData.EndDate)}}</p>
+							</div>
+							<div class="info-item">
+								<label>Zile rămase</label>
+								<p class="info-value days-remaining">{{calculateDaysRemaining(customTrackerData.endDate || customTrackerData.EndDate)}}</p>
+							</div>
+						</div>
+					</div>
+
+					<h5 class="form-title">Editează tracker</h5>
+					<div class="form-grid">
+						<div class="form-group">
+							<label>
+								<span>Nume *</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="trackerName" type="text" placeholder="Ex: Revizie, Mentenanță..." />
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<span>Descriere</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="description" type="text" placeholder="Descriere opțională..." />
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<span>Data început *</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="startDate" type="date" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<span>Data expirare *</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="endDate" type="date" />
+							</div>
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button type="submit" class="btn-primary" [disabled]="loading || customTrackerForm.invalid">
+							<svg viewBox="0 0 24 24" *ngIf="!loading">
+								<path fill="currentColor" d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+							</svg>
+							<div class="spinner" *ngIf="loading"></div>
+							<span>{{ loading ? 'Se salvează...' : 'Salvează modificări' }}</span>
+						</button>
+						<button type="button" class="btn-danger" (click)="deleteCustomTracker()" [disabled]="loading">
+							<svg viewBox="0 0 24 24">
+								<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+							</svg>
+							<span>Șterge tracker</span>
+						</button>
+					</div>
+				</form>
+
+				<!-- No Custom Tracker - Add Form -->
+				<div *ngIf="!customTrackerData" class="no-tracker-state no-warranty-state">
+					<div class="empty-state">
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/>
+						</svg>
+						<h5>Niciun tracker configurat</h5>
+						<p>Acest bun nu are încă un tracker personalizat. Adaugă unul nou.</p>
+					</div>
+					<form [formGroup]="customTrackerForm" (ngSubmit)="saveCustomTracker()" class="add-tracker-form add-warranty-form">
+						<h5>Adaugă tracker nou</h5>
+						<div class="form-grid">
+							<div class="form-group">
+								<label>
+									<span>Nume *</span>
+								</label>
+								<div class="input-wrapper">
+									<input formControlName="trackerName" type="text" placeholder="Ex: Revizie, Mentenanță..." />
+								</div>
+							</div>
+							<div class="form-group">
+								<label>
+									<span>Descriere</span>
+								</label>
+								<div class="input-wrapper">
+									<input formControlName="description" type="text" placeholder="Descriere opțională..." />
+								</div>
+							</div>
+							<div class="form-group">
+								<label>
+									<span>Data început *</span>
+								</label>
+								<div class="input-wrapper">
+									<input formControlName="startDate" type="date" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label>
+									<span>Data expirare *</span>
+								</label>
+								<div class="input-wrapper">
+									<input formControlName="endDate" type="date" />
+								</div>
+							</div>
+						</div>
+
+						<div class="form-actions">
+							<button type="submit" class="btn-primary" [disabled]="loading || customTrackerForm.invalid">
+								<svg viewBox="0 0 24 24" *ngIf="!loading">
+									<path fill="currentColor" d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+								</svg>
+								<div class="spinner" *ngIf="loading"></div>
+								<span>{{ loading ? 'Se salvează...' : 'Adaugă tracker' }}</span>
+							</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 		

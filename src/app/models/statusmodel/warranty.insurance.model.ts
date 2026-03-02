@@ -10,4 +10,29 @@ export interface WarrantyItem {
   daysRemaining: number;
   provider?: string;
   company?: string;
+  documentFileName?: string;
+  documentId?: number;
+}
+
+export interface WarrantyReadDto {
+  id?: number;
+  assetId: number;
+  provider: string;
+  startDate: string;
+  endDate: string;
+  status?: number;
+  documentFileName?: string;
+  documentId?: number;
+}
+
+export interface InsuranceReadDto {
+  id?: number;
+  assetId: number;
+  company: string;
+  insuredValue: number;
+  startDate: string;
+  endDate: string;
+  status?: number;
+  documentFileName?: string;
+  documentId?: number;
 }

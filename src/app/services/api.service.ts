@@ -122,5 +122,45 @@ async patchData(endpoint: string, payload: any): Promise<any> {
   }
 }
 
+  // Cerere POST cu FormData (multipart/form-data) — NU seta Content-Type manual
+  async postFormData(endpoint: string, formData: FormData): Promise<any> {
+    try {
+      const response = await this.axiosClient.post(endpoint, formData, {
+        headers: {
+          'Content-Type': undefined as any
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error('Eroare la cererea POST FormData:', error);
+      throw error;
+    }
+  }
+
+  // Cerere PATCH cu FormData (multipart/form-data) — NU seta Content-Type manual
+  async patchFormData(endpoint: string, formData: FormData): Promise<any> {
+    try {
+      const response = await this.axiosClient.patch(endpoint, formData, {
+        headers: {
+          'Content-Type': undefined as any
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Eroare la cererea PATCH FormData:', error);
+      throw error;
+    }
+  }
+
+  // Cerere DELETE simplă (fără body)
+  async deleteSimple(endpoint: string): Promise<any> {
+    try {
+      const response = await this.axiosClient.delete(endpoint);
+      return response;
+    } catch (error) {
+      console.error('DELETE request error:', error);
+      throw error;
+    }
+  }
 
 }

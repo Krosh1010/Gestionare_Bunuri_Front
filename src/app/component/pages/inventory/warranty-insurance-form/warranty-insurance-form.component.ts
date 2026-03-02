@@ -18,6 +18,9 @@ export class WarrantyInsuranceFormComponent {
 
   mode: 'choose' | 'warranty' | 'insurance' | 'tracker' = 'choose';
 
+  // Accepted file types
+  acceptedFileTypes = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.txt';
+
   warranty = {
     provider: '',
     start: '',
@@ -36,6 +39,13 @@ export class WarrantyInsuranceFormComponent {
     start: '',
     end: ''
   };
+
+  // Fișiere selectate pentru upload
+  warrantyFile: File | null = null;
+  warrantyFileName: string = '';
+  insuranceFile: File | null = null;
+  insuranceFileName: string = '';
+
   // Calculează zilele rămase până la expirarea garanției (frontend only)
   calculateWarrantyDays(): number | null {
     if (!this.warranty.end) return null;
@@ -49,14 +59,34 @@ export class WarrantyInsuranceFormComponent {
     return days >= 0 ? days : 0;
   }
 
-  // Funcție goală pentru upload document garanție
-  uploadWarrantyDocument() {
-    // TODO: trimite la backend
+  // Selectare fișier garanție
+  onWarrantyFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.warrantyFile = input.files[0];
+      this.warrantyFileName = input.files[0].name;
+    }
   }
 
-  // Funcție goală pentru upload document asigurare
-  uploadInsuranceDocument() {
-    // TODO: trimite la backend
+  // Eliminare fișier garanție selectat
+  removeWarrantyFile() {
+    this.warrantyFile = null;
+    this.warrantyFileName = '';
+  }
+
+  // Selectare fișier asigurare
+  onInsuranceFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.insuranceFile = input.files[0];
+      this.insuranceFileName = input.files[0].name;
+    }
+  }
+
+  // Eliminare fișier asigurare selectat
+  removeInsuranceFile() {
+    this.insuranceFile = null;
+    this.insuranceFileName = '';
   }
 
   // Feedback vizual simplu
@@ -90,11 +120,15 @@ export class WarrantyInsuranceFormComponent {
   selectWarranty() {
     this.mode = 'warranty';
     this.warranty = { provider: '', start: '', end: '', notes: '' };
+    this.warrantyFile = null;
+    this.warrantyFileName = '';
     this.message = '';
   }
   selectInsurance() {
     this.mode = 'insurance';
     this.insurance = { company: '', insuredValue: null, start: '', end: '' };
+    this.insuranceFile = null;
+    this.insuranceFileName = '';
     this.message = '';
   }
   selectTracker() {
@@ -107,6 +141,10 @@ export class WarrantyInsuranceFormComponent {
     this.warranty = { provider: '', start: '', end: '', notes: '' };
     this.insurance = { company: '', insuredValue: null, start: '', end: '' };
     this.tracker = { name: '', description: '', start: '', end: '' };
+    this.warrantyFile = null;
+    this.warrantyFileName = '';
+    this.insuranceFile = null;
+    this.insuranceFileName = '';
     this.message = '';
     this.loading = false;
     this.mode = 'choose';
@@ -123,7 +161,7 @@ export class WarrantyInsuranceFormComponent {
     this.loading = true;
     this.message = '';
     try {
-      await this.warrantySrv.createWarranty(payload);
+      await this.warrantySrv.createWarranty(payload, this.warrantyFile || undefined);
       this.message = 'Garanția a fost adăugată cu succes!';
       setTimeout(() => {
         this.backToChoose();
@@ -147,8 +185,7 @@ export class WarrantyInsuranceFormComponent {
     this.loading = true;
     this.message = '';
     try {
-      
-      await this.insuranceSrv.createInsurance(payload);
+      await this.insuranceSrv.createInsurance(payload, this.insuranceFile || undefined);
       this.message = 'Asigurarea a fost adăugată cu succes!';
       setTimeout(() => {
         this.backToChoose();

@@ -25,6 +25,21 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   showInsuranceFormSection = false;
   showCustomTrackerFormSection = false;
 
+  // Accepted file types
+  acceptedFileTypes = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.txt';
+
+  // Fișiere pentru edit warranty/insurance
+  warrantyEditFile: File | null = null;
+  warrantyEditFileName: string = '';
+  insuranceEditFile: File | null = null;
+  insuranceEditFileName: string = '';
+
+  // Fișiere pentru creare (când nu există încă)
+  warrantyNewFile: File | null = null;
+  warrantyNewFileName: string = '';
+  insuranceNewFile: File | null = null;
+  insuranceNewFileName: string = '';
+
   constructor(
     private fb: FormBuilder,
     private warrantyService: warrantyService,
@@ -112,11 +127,15 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
       };
       if (this.warrantyData) {
         // Update existing warranty
-        await this.warrantyService.updateWarranty(String(this.assetId), payload);
+        await this.warrantyService.updateWarranty(String(this.assetId), payload, this.warrantyEditFile || undefined);
       } else {
         // Create new warranty
-        await this.warrantyService.createWarranty(payload);
+        await this.warrantyService.createWarranty(payload, this.warrantyNewFile || undefined);
       }
+      this.warrantyEditFile = null;
+      this.warrantyEditFileName = '';
+      this.warrantyNewFile = null;
+      this.warrantyNewFileName = '';
       await this.openWarrantySection();
     } catch (e) {
       this.error = 'Eroare la salvare';
@@ -182,10 +201,14 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
         assetId: this.assetId
       };
       if (this.insuranceData) {
-        await this.insuranceService.updateInsurance(String(this.assetId), payload);
+        await this.insuranceService.updateInsurance(String(this.assetId), payload, this.insuranceEditFile || undefined);
       } else {
-        await this.insuranceService.createInsurance(payload);
+        await this.insuranceService.createInsurance(payload, this.insuranceNewFile || undefined);
       }
+      this.insuranceEditFile = null;
+      this.insuranceEditFileName = '';
+      this.insuranceNewFile = null;
+      this.insuranceNewFileName = '';
       await this.openInsuranceSection();
     } catch (e) {
       this.error = 'Eroare la salvare asigurare';
@@ -215,14 +238,16 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     this.loading = true;
     this.error = null;
     try {
-      const data = await this.customTrackerService.getCustomTrackersByAssetId(String(this.assetId));
+      const response = await this.customTrackerService.getCustomTrackersByAssetId(String(this.assetId));
+      // API may return array or single object
+      const data = Array.isArray(response) ? response[0] : response;
       if (data) {
         this.customTrackerData = data;
         this.customTrackerForm.patchValue({
-          trackerName: data.Name || '',
-          description: data.description || '',
-          startDate: data.startDate ? data.startDate.substring(0, 10) : '',
-          endDate: data.endDate ? data.endDate.substring(0, 10) : ''
+          trackerName: data.name || data.Name || '',
+          description: data.description || data.Description || '',
+          startDate: (data.startDate || data.StartDate) ? (data.startDate || data.StartDate).substring(0, 10) : '',
+          endDate: (data.endDate || data.EndDate) ? (data.endDate || data.EndDate).substring(0, 10) : ''
         });
       } else {
         this.customTrackerData = null;
@@ -245,12 +270,17 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     this.loading = true;
     this.error = null;
     try {
+      const formVal = this.customTrackerForm.value;
       const payload = {
-        ...this.customTrackerForm.value,
-        assetId: this.assetId
+        AssetId: this.assetId,
+        Name: formVal.trackerName,
+        Description: formVal.description,
+        StartDate: formVal.startDate,
+        EndDate: formVal.endDate
       };
       if (this.customTrackerData) {
-        await this.customTrackerService.updateCustomTracker(String(this.assetId), payload);
+        const trackerId = this.customTrackerData.id || this.customTrackerData.Id;
+        await this.customTrackerService.updateCustomTracker(String(trackerId), payload);
       } else {
         await this.customTrackerService.createCustomTracker(payload);
       }
@@ -262,14 +292,14 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   }
 
   async deleteCustomTracker() {
-    if (!this.assetId) return;
+    if (!this.assetId || !this.customTrackerData) return;
     this.loading = true;
     this.error = null;
     try {
-      await this.customTrackerService.deleteCustomTracker(String(this.assetId));
+      const trackerId = this.customTrackerData.id || this.customTrackerData.Id;
+      await this.customTrackerService.deleteCustomTracker(String(trackerId));
       this.customTrackerData = null;
       this.customTrackerForm.reset();
-      // Optionally, show a success message or refresh UI
     } catch (e) {
       this.error = 'Eroare la ștergerea urmăritorului personalizat';
     }
@@ -340,6 +370,34 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
       : 'Necunoscut';
   }
 
+  // Custom Tracker status maps
+  private customTrackerStatusTextMap: { [key: string]: string } = {
+    '0': 'Activă',
+    '1': 'Aproape de expirare',
+    '2': 'Expirată',
+    'null': 'Lipsă',
+    'undefined': 'Necunoscut',
+  };
+  private customTrackerStatusClassMap: { [key: string]: string } = {
+    '0': 'active',
+    '1': 'soon',
+    '2': 'expired',
+    'null': 'unknown',
+    'undefined': 'unknown',
+  };
+  getCustomTrackerStatus(tracker: any): string {
+    const key = String(tracker?.status);
+    return this.customTrackerStatusClassMap.hasOwnProperty(key)
+      ? this.customTrackerStatusClassMap[key]
+      : 'unknown';
+  }
+  getCustomTrackerStatusText(tracker: any): string {
+    const key = String(tracker?.status);
+    return this.customTrackerStatusTextMap.hasOwnProperty(key)
+      ? this.customTrackerStatusTextMap[key]
+      : 'Necunoscut';
+  }
+
   // Formats a date string as 'DD.MM.YYYY'
   formatDate(dateStr: string): string {
     if (!dateStr) return '';
@@ -356,6 +414,130 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 3600 * 24));
     if (diff < 0) return 'Expirată';
     return diff + ' zile';
+  }
+
+  // --- Document management methods ---
+
+  // Warranty edit file selection
+  onWarrantyEditFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.warrantyEditFile = input.files[0];
+      this.warrantyEditFileName = input.files[0].name;
+    }
+  }
+  removeWarrantyEditFile() {
+    this.warrantyEditFile = null;
+    this.warrantyEditFileName = '';
+  }
+
+  // Warranty new file selection
+  onWarrantyNewFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.warrantyNewFile = input.files[0];
+      this.warrantyNewFileName = input.files[0].name;
+    }
+  }
+  removeWarrantyNewFile() {
+    this.warrantyNewFile = null;
+    this.warrantyNewFileName = '';
+  }
+
+  // Insurance edit file selection
+  onInsuranceEditFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.insuranceEditFile = input.files[0];
+      this.insuranceEditFileName = input.files[0].name;
+    }
+  }
+  removeInsuranceEditFile() {
+    this.insuranceEditFile = null;
+    this.insuranceEditFileName = '';
+  }
+
+  // Insurance new file selection
+  onInsuranceNewFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.insuranceNewFile = input.files[0];
+      this.insuranceNewFileName = input.files[0].name;
+    }
+  }
+  removeInsuranceNewFile() {
+    this.insuranceNewFile = null;
+    this.insuranceNewFileName = '';
+  }
+
+  // Download warranty document
+  async downloadWarrantyDocument() {
+    if (!this.assetId) return;
+    this.loading = true;
+    try {
+      const blob = await this.warrantyService.downloadWarrantyDocument(String(this.assetId));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.warrantyData?.documentFileName || 'document';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      this.error = 'Eroare la descărcarea documentului';
+    }
+    this.loading = false;
+  }
+
+  // Delete warranty document only
+  async deleteWarrantyDocument() {
+    if (!this.assetId) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.warrantyService.deleteWarrantyDocument(String(this.assetId));
+      // Refresh data
+      await this.openWarrantySection();
+    } catch (e) {
+      this.error = 'Eroare la ștergerea documentului';
+    }
+    this.loading = false;
+  }
+
+  // Download insurance document
+  async downloadInsuranceDocument() {
+    if (!this.assetId) return;
+    this.loading = true;
+    try {
+      const blob = await this.insuranceService.downloadInsuranceDocument(String(this.assetId));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.insuranceData?.documentFileName || 'document';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      this.error = 'Eroare la descărcarea documentului';
+    }
+    this.loading = false;
+  }
+
+  // Delete insurance document only
+  async deleteInsuranceDocument() {
+    if (!this.assetId) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.insuranceService.deleteInsuranceDocument(String(this.assetId));
+      // Refresh data
+      await this.openInsuranceSection();
+    } catch (e) {
+      this.error = 'Eroare la ștergerea documentului';
+    }
+    this.loading = false;
   }
   
   

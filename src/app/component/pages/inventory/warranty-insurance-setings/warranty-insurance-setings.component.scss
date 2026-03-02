@@ -215,6 +215,10 @@
 			&.insurance {
 				background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
 			}
+
+			&.tracker {
+				background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+			}
 			
 			svg {
 				width: 28px;
@@ -325,6 +329,10 @@
 				
 				&.insurance {
 					background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+				}
+
+				&.tracker {
+					background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
 				}
 				
 				svg {
@@ -469,6 +477,83 @@
 				font-weight: 500;
 				margin: 0;
 				
+				&.days-remaining {
+					color: #10b981;
+					font-weight: 600;
+				}
+			}
+		}
+	}
+}
+
+/* Tracker Info (same as Warranty/Insurance Info) */
+.tracker-info {
+	background: #f9fafb;
+	border-radius: 12px;
+	padding: 20px;
+	margin-bottom: 32px;
+  
+	.info-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 20px;
+    
+		h5 {
+			font-size: 16px;
+			font-weight: 600;
+			color: #111827;
+			margin: 0;
+		}
+    
+		.status-badge {
+			padding: 6px 12px;
+			border-radius: 20px;
+			font-size: 12px;
+			font-weight: 600;
+      
+			&.active {
+				background: #d1fae5;
+				color: #065f46;
+			}
+      
+			&.expired {
+				background: #fee2e2;
+				color: #991b1b;
+			}
+      
+			&.soon {
+				background: #fef3c7;
+				color: #92400e;
+			}
+
+			&.unknown {
+				background: #f3f4f6;
+				color: #6b7280;
+			}
+		}
+	}
+  
+	.info-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 16px;
+    
+		.info-item {
+			label {
+				display: block;
+				font-size: 12px;
+				color: #6b7280;
+				margin-bottom: 4px;
+				font-weight: 500;
+			}
+      
+			.info-value {
+				font-size: 14px;
+				color: #111827;
+				font-weight: 500;
+				margin: 0;
+        
 				&.days-remaining {
 					color: #10b981;
 					font-weight: 600;
@@ -804,4 +889,237 @@
 		}
 	}
 	
+}
+
+/* Document section in warranty/insurance info */
+.document-section {
+	margin-top: 16px;
+	padding: 16px;
+	background: #f0f9ff;
+	border: 1px solid #bae6fd;
+	border-radius: 8px;
+
+	.document-info {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 12px;
+
+		.doc-icon {
+			width: 24px;
+			height: 24px;
+			color: #3b82f6;
+			flex-shrink: 0;
+		}
+
+		.doc-name {
+			font-size: 14px;
+			font-weight: 500;
+			color: #1e40af;
+			word-break: break-all;
+		}
+	}
+
+	.document-actions {
+		display: flex;
+		gap: 10px;
+		flex-wrap: wrap;
+
+		.btn-doc-download, .btn-doc-delete {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 6px 14px;
+			border-radius: 6px;
+			font-size: 13px;
+			font-weight: 500;
+			cursor: pointer;
+			border: none;
+			transition: all 0.2s ease;
+
+			svg {
+				width: 18px;
+				height: 18px;
+			}
+
+			&[disabled] {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+		}
+
+		.btn-doc-download {
+			background: #3b82f6;
+			color: white;
+
+			&:hover:not([disabled]) {
+				background: #2563eb;
+			}
+		}
+
+		.btn-doc-delete {
+			background: #fee2e2;
+			color: #991b1b;
+
+			&:hover:not([disabled]) {
+				background: #fecaca;
+			}
+		}
+	}
+}
+
+/* File upload section for editing/creating */
+.file-upload-section {
+	margin-top: 20px;
+	margin-bottom: 16px;
+
+	.form-title {
+		font-size: 14px;
+		font-weight: 600;
+		color: #374151;
+		margin: 0 0 12px;
+	}
+
+	.file-upload-area {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		padding: 20px;
+		border: 2px dashed #d1d5db;
+		border-radius: 8px;
+		background: #f9fafb;
+		transition: all 0.3s ease;
+
+		&:hover {
+			border-color: #6366f1;
+			background: #f0f9ff;
+		}
+
+		.upload-btn {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 16px;
+			background: white;
+			border: 1.5px solid #6366f1;
+			border-radius: 8px;
+			color: #6366f1;
+			font-weight: 500;
+			font-size: 14px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+
+			&:hover {
+				background: #6366f1;
+				color: white;
+
+				.icon {
+					color: white;
+				}
+			}
+
+			.icon {
+				width: 20px;
+				height: 20px;
+				color: #6366f1;
+				transition: color 0.3s ease;
+			}
+		}
+
+		.file-info {
+			font-size: 12px;
+			color: #6b7280;
+		}
+	}
+
+	.existing-document, .selected-file {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px 16px;
+		background: #f9fafb;
+		border: 1.5px solid #e5e7eb;
+		border-radius: 8px;
+		flex-wrap: wrap;
+		gap: 10px;
+
+		.file-details {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			flex: 1;
+			min-width: 0;
+
+			.icon {
+				width: 22px;
+				height: 22px;
+				color: #6366f1;
+				flex-shrink: 0;
+			}
+
+			.file-name {
+				font-size: 14px;
+				font-weight: 500;
+				color: #374151;
+				word-break: break-all;
+			}
+
+			.file-badge {
+				font-size: 11px;
+				font-weight: 600;
+				padding: 2px 8px;
+				border-radius: 12px;
+				background: #e0e7ff;
+				color: #4338ca;
+				white-space: nowrap;
+
+				&.new {
+					background: #d1fae5;
+					color: #065f46;
+				}
+			}
+		}
+
+		.file-actions {
+			display: flex;
+			gap: 8px;
+
+			.btn-file-replace, .btn-file-remove {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				padding: 4px 10px;
+				border-radius: 6px;
+				font-size: 12px;
+				font-weight: 500;
+				cursor: pointer;
+				border: none;
+				transition: all 0.2s ease;
+
+				.icon {
+					width: 16px;
+					height: 16px;
+				}
+			}
+
+			.btn-file-replace {
+				background: #e0e7ff;
+				color: #4338ca;
+
+				&:hover {
+					background: #c7d2fe;
+				}
+			}
+
+			.btn-file-remove {
+				background: #fee2e2;
+				color: #991b1b;
+
+				&:hover {
+					background: #fecaca;
+				}
+			}
+		}
+	}
 }
