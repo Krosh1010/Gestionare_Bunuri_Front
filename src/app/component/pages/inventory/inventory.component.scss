@@ -1171,6 +1171,33 @@
   }
 }
 
+.status-tag.custom-tracker-tag {
+  &.notstarted, &.unknown {
+    background: rgba(107, 114, 128, 0.06);
+    border-color: rgba(107, 114, 128, 0.15);
+    color: #6b7280;
+    .tag-dot { background: #9ca3af; }
+  }
+  &.active {
+    background: rgba(8, 145, 178, 0.08);
+    border-color: rgba(8, 145, 178, 0.2);
+    color: #0891b2;
+    .tag-dot { background: #06b6d4; }
+  }
+  &.expiredsoon {
+    background: rgba(251, 191, 36, 0.08);
+    border-color: rgba(251, 191, 36, 0.2);
+    color: #d97706;
+    .tag-dot { background: #fbbf24; }
+  }
+  &.expired {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+    .tag-dot { background: #ef4444; }
+  }
+}
+
 /* Cell: Warranty/Insurance dates */
 .dates-stack {
   display: flex;
@@ -2010,6 +2037,74 @@
   background: #9ca3af;
 }
 
+/* === Custom Tracker Status === */
+
+.custom-tracker-badge {
+  border: 1px solid rgba(8, 145, 178, 0.2);
+  background: rgba(8, 145, 178, 0.08);
+  color: #0891b2;
+}
+
+.custom-tracker-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(8, 145, 178, 0.18);
+  border-color: rgba(8, 145, 178, 0.4);
+}
+
+.custom-tracker-badge.notstarted {
+  background: linear-gradient(135deg, rgba(156, 163, 175, 0.12) 0%, rgba(107, 114, 128, 0.12) 100%);
+  border-color: rgba(156, 163, 175, 0.3);
+  color: #6b7280;
+}
+
+.custom-tracker-badge.notstarted .badge-dot {
+  background: #9ca3af;
+}
+
+.custom-tracker-badge.active {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.12) 0%, rgba(6, 182, 212, 0.12) 100%);
+  border-color: rgba(8, 145, 178, 0.3);
+  color: #0891b2;
+}
+
+.custom-tracker-badge.active .badge-dot {
+  background: #06b6d4;
+}
+
+.custom-tracker-badge.active .badge-dot.pulse {
+  background: #06b6d4;
+}
+
+.custom-tracker-badge.expiredsoon {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(251, 146, 60, 0.12) 100%);
+  border-color: rgba(251, 191, 36, 0.3);
+  color: #d97706;
+}
+
+.custom-tracker-badge.expiredsoon .badge-dot {
+  background: #fbbf24;
+}
+
+.custom-tracker-badge.expired {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.12) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.custom-tracker-badge.expired .badge-dot {
+  background: #ef4444;
+}
+
+.custom-tracker-badge.unknown {
+  background: rgba(107, 114, 128, 0.08);
+  border-color: rgba(107, 114, 128, 0.2);
+  color: #6b7280;
+}
+
+.custom-tracker-badge.unknown .badge-dot {
+  background: #9ca3af;
+}
+
 /* === Expiring Warning === */
 .status-badge.warning {
   position: relative;
@@ -2028,8 +2123,9 @@
 /* === Grid View Specific === */
 .asset-footer .status-badges-container {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
   margin-bottom: 12px;
   padding: 8px 0;
   border-bottom: 1px solid #f1f5f9;

@@ -7,13 +7,20 @@ export interface AssetsReadModel {
     purchaseDate: string;
     description: string;
     category: string;
+    createdAt?: string;
     status?: 'active' | 'inactive' | 'maintenance' | 'sold';
     warrantyEnd?: string;
     additionalInfo?: string;
     warrantyEndDate?: string;
+    warrantyStatus?: 1 | 2 | 3 | null | undefined;
+    warrantyProvider?: string | null;
+    warrantyStartDate?: string | null;
     insuranceEndDate?: string;
-    warrantyStatus?: 0 | 1 | null | undefined;
     insuranceStatus?: 0 | 1 | 2 | null | undefined;
+    insuranceValue?: number | null;
+    insuranceCompany?: string | null;
+    insuranceStartDate?: string | null;
     customTrackerName?: string | null;
     customTrackerEndDate?: string | null;
+    customTrackerStatus?: 0 | 1 | 2 | 3 | null | undefined;
 }

@@ -7,11 +7,12 @@ import { CommonModule, NgFor } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WarrantyInsuranceFormComponent } from '../inventory/warranty-insurance-form/warranty-insurance-form.component';
 import { WarrantyInsuranceSetingsComponent } from '../inventory/warranty-insurance-setings/warranty-insurance-setings.component';
+import { AssetDetaileComponent } from '../inventory/asset-detaile/asset-detaile.component';
 
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [FormsModule,NgFor,CommonModule,ReactiveFormsModule, WarrantyInsuranceFormComponent, WarrantyInsuranceSetingsComponent],
+  imports: [FormsModule,NgFor,CommonModule,ReactiveFormsModule, WarrantyInsuranceFormComponent, WarrantyInsuranceSetingsComponent, AssetDetaileComponent],
   templateUrl: './inventory.component.html',
   styleUrl: './inventory.component.scss'
 })
@@ -80,6 +81,10 @@ selectedSpaceName: string | null = null;
   // Modal pentru warranty/insurance
   showWarrantyModal: boolean = false;
   createdAssetId: number | null = null;
+
+  // Asset detail panel
+  showAssetDetail: boolean = false;
+  selectedAssetId: number | string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -406,7 +411,27 @@ async openAddModal() {
   }
 
   viewAsset(asset: AssetsReadModel): void {
-    alert(`Detalii bun:\n\nNume: ${asset.name}\nID: ${asset.id}\nCategorie: ${this.getCategoryText(asset.category)}\nValoare: ${asset.value} EUR\nLocație: ${asset.spaceName}\nStare: ${this.getStatusText(asset.status ?? '')}`);
+    this.openAssetDetail(asset.id);
+  }
+
+  openAssetDetail(assetId: number | string): void {
+    this.selectedAssetId = assetId;
+    this.showAssetDetail = true;
+  }
+
+  closeAssetDetail(): void {
+    this.showAssetDetail = false;
+    this.selectedAssetId = null;
+  }
+
+  onDetailEdit(asset: AssetsReadModel): void {
+    this.closeAssetDetail();
+    this.editAsset(asset);
+  }
+
+  onDetailDelete(asset: AssetsReadModel): void {
+    this.closeAssetDetail();
+    this.deleteAsset(asset);
   }
 
   deleteAsset(asset: AssetsReadModel): void {
@@ -549,16 +574,16 @@ async openAddModal() {
   }
 
   private warrantyStatusTextMap: { [key: string]: string } = {
-    '0': 'Activă',
-    '1': 'Expira degraba',
-    '2': 'Expirata',
+    '1': 'Activă',
+    '2': 'Expira degraba',
+    '3': 'Expirata',
     'null': 'Lipsa',
     'undefined': 'Necunoscut',
   };
   private warrantyStatusClassMap: { [key: string]: string } = {
-    '0': 'active',
-    '1': 'expiredsoon', 
-    '2': 'expired',     
+    '1': 'active',
+    '2': 'expiredsoon',
+    '3': 'expired',
     'null': 'unknown',
     'undefined': 'unknown',
   };
@@ -602,6 +627,35 @@ async openAddModal() {
     return this.insuranceStatusClassMap.hasOwnProperty(key)
       ? this.insuranceStatusClassMap[key]
       : 'unknown';
-  } 
+  }
+
+  private customTrackerStatusTextMap: { [key: string]: string } = {
+    '0': 'Neînceput',
+    '1': 'Activ',
+    '2': 'Expiră degrabă',
+    '3': 'Expirat',
+    'null': 'Tracker lipsă',
+    'undefined': 'Tracker lipsă',
+  };
+  private customTrackerStatusClassMap: { [key: string]: string } = {
+    '0': 'notstarted',
+    '1': 'active',
+    '2': 'expiredsoon',
+    '3': 'expired',
+    'null': 'unknown',
+    'undefined': 'unknown',
+  };
+  getCustomTrackerStatusText(status: number | null | undefined): string {
+    const key = String(status);
+    return this.customTrackerStatusTextMap.hasOwnProperty(key)
+      ? this.customTrackerStatusTextMap[key]
+      : 'Necunoscut';
+  }
+  getCustomTrackerStatusClass(status: number | null | undefined): string {
+    const key = String(status);
+    return this.customTrackerStatusClassMap.hasOwnProperty(key)
+      ? this.customTrackerStatusClassMap[key]
+      : 'unknown';
+  }
 
 }

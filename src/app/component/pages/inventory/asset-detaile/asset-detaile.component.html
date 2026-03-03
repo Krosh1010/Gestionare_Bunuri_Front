@@ -1,0 +1,196 @@
+<!-- Overlay backdrop -->
+<div class="detail-overlay" [class.open]="isOpen" (click)="onOverlayClick($event)">
+  <!-- Slide-in Panel -->
+  <div class="detail-panel" [class.open]="isOpen">
+    
+    <!-- Loading State -->
+    <div class="detail-loading" *ngIf="isLoading">
+      <div class="loading-pulse">
+        <div class="pulse-ring"></div>
+        <div class="pulse-icon">📦</div>
+      </div>
+      <p>Se încarcă detaliile...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="detail-error" *ngIf="errorMessage && !isLoading">
+      <div class="error-icon">⚠️</div>
+      <p>{{errorMessage}}</p>
+      <button class="btn-retry" (click)="loadAsset()">Încearcă din nou</button>
+    </div>
+
+    <!-- Asset Content -->
+    <div class="detail-content" *ngIf="asset && !isLoading && !errorMessage">
+      
+      <!-- Close Button -->
+      <button class="btn-close" (click)="onClose()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- Hero Header -->
+      <div class="detail-hero">
+        <div class="hero-category" [ngClass]="asset.category">
+          <span class="category-emoji">{{getCategoryIcon(asset.category)}}</span>
+        </div>
+        <div class="hero-info">
+          <span class="category-label">{{getCategoryText(asset.category)}}</span>
+          <h1 class="asset-title">{{asset.name}}</h1>
+          <p class="asset-location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            {{asset.spaceName || 'Locație nesetată'}}
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Stats Row -->
+      <div class="quick-stats">
+        <div class="quick-stat value-stat">
+          <span class="stat-label">Valoare</span>
+          <span class="stat-value">{{asset.value | currency:'EUR':'symbol':'1.0-2'}}</span>
+        </div>
+        <div class="quick-stat" *ngIf="asset.purchaseDate">
+          <span class="stat-label">Achiziționat</span>
+          <span class="stat-value">{{asset.purchaseDate | date:'dd MMM yyyy'}}</span>
+        </div>
+        <div class="quick-stat" *ngIf="asset.createdAt">
+          <span class="stat-label">Adăugat</span>
+          <span class="stat-value">{{asset.createdAt | date:'dd MMM yyyy'}}</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="detail-section" *ngIf="asset.description">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+          </svg>
+          Descriere
+        </h3>
+        <p class="description-text">{{asset.description}}</p>
+      </div>
+
+      <!-- Warranty Section -->
+      <div class="detail-section coverage-section">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          Garanție
+        </h3>
+        <div class="coverage-card" [ngClass]="'status-' + getWarrantyStatusClass(asset.warrantyStatus)">
+          <div class="coverage-header">
+            <span class="coverage-status-dot"></span>
+            <span class="coverage-status-text">{{getWarrantyStatusText(asset.warrantyStatus)}}</span>
+            <span class="coverage-days" *ngIf="getDaysUntil(asset.warrantyEndDate) !== null && getDaysUntil(asset.warrantyEndDate)! > 0">
+              {{getDaysUntil(asset.warrantyEndDate)}} zile rămase
+            </span>
+          </div>
+          <div class="coverage-details" *ngIf="asset.warrantyStartDate || asset.warrantyEndDate || asset.warrantyProvider">
+            <div class="coverage-row" *ngIf="asset.warrantyProvider">
+              <span class="coverage-label">Furnizor</span>
+              <span class="coverage-value">{{asset.warrantyProvider}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.warrantyStartDate">
+              <span class="coverage-label">De la</span>
+              <span class="coverage-value">{{asset.warrantyStartDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.warrantyEndDate">
+              <span class="coverage-label">Până la</span>
+              <span class="coverage-value">{{asset.warrantyEndDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+          </div>
+          <div class="coverage-empty" *ngIf="!asset.warrantyStartDate && !asset.warrantyEndDate && !asset.warrantyProvider">
+            <span>Nicio informație despre garanție</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance Section -->
+      <div class="detail-section coverage-section">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Asigurare
+        </h3>
+        <div class="coverage-card" [ngClass]="'status-' + getInsuranceStatusClass(asset.insuranceStatus)">
+          <div class="coverage-header">
+            <span class="coverage-status-dot"></span>
+            <span class="coverage-status-text">{{getInsuranceStatusText(asset.insuranceStatus)}}</span>
+            <span class="coverage-days" *ngIf="getDaysUntil(asset.insuranceEndDate) !== null && getDaysUntil(asset.insuranceEndDate)! > 0">
+              {{getDaysUntil(asset.insuranceEndDate)}} zile rămase
+            </span>
+          </div>
+          <div class="coverage-details" *ngIf="asset.insuranceStartDate || asset.insuranceEndDate || asset.insuranceCompany || asset.insuranceValue">
+            <div class="coverage-row" *ngIf="asset.insuranceCompany">
+              <span class="coverage-label">Companie</span>
+              <span class="coverage-value">{{asset.insuranceCompany}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.insuranceValue">
+              <span class="coverage-label">Valoare asigurată</span>
+              <span class="coverage-value">{{asset.insuranceValue | currency:'EUR':'symbol':'1.0-2'}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.insuranceStartDate">
+              <span class="coverage-label">De la</span>
+              <span class="coverage-value">{{asset.insuranceStartDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.insuranceEndDate">
+              <span class="coverage-label">Până la</span>
+              <span class="coverage-value">{{asset.insuranceEndDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+          </div>
+          <div class="coverage-empty" *ngIf="!asset.insuranceStartDate && !asset.insuranceEndDate && !asset.insuranceCompany && !asset.insuranceValue">
+            <span>Nicio informație despre asigurare</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Tracker Section -->
+      <div class="detail-section coverage-section" *ngIf="asset.customTrackerName">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          {{asset.customTrackerName}}
+        </h3>
+        <div class="coverage-card" [ngClass]="'status-' + getCustomTrackerStatusClass(asset.customTrackerStatus)">
+          <div class="coverage-header">
+            <span class="coverage-status-dot"></span>
+            <span class="coverage-status-text">{{getCustomTrackerStatusText(asset.customTrackerStatus)}}</span>
+            <span class="coverage-days" *ngIf="getDaysUntil(asset.customTrackerEndDate) !== null && getDaysUntil(asset.customTrackerEndDate)! > 0">
+              {{getDaysUntil(asset.customTrackerEndDate)}} zile rămase
+            </span>
+          </div>
+          <div class="coverage-details" *ngIf="asset.customTrackerEndDate">
+            <div class="coverage-row">
+              <span class="coverage-label">Până la</span>
+              <span class="coverage-value">{{asset.customTrackerEndDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions Footer -->
+      <div class="detail-actions">
+        <button class="btn-action btn-edit" (click)="onEdit()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Editează
+        </button>
+        <button class="btn-action btn-delete" (click)="onDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Șterge
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

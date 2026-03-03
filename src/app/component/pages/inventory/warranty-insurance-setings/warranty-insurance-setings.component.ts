@@ -372,16 +372,18 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
 
   // Custom Tracker status maps
   private customTrackerStatusTextMap: { [key: string]: string } = {
-    '0': 'Activă',
-    '1': 'Aproape de expirare',
-    '2': 'Expirată',
+    '0': 'Neînceput',
+    '1': 'Activ',
+    '2': 'Expiră curând',
+    '3': 'Expirat',
     'null': 'Lipsă',
     'undefined': 'Necunoscut',
   };
   private customTrackerStatusClassMap: { [key: string]: string } = {
-    '0': 'active',
-    '1': 'soon',
-    '2': 'expired',
+    '0': 'notstarted',
+    '1': 'active',
+    '2': 'expiredsoon',
+    '3': 'expired',
     'null': 'unknown',
     'undefined': 'unknown',
   };
