@@ -103,6 +103,16 @@
               <span class="coverage-label">Până la</span>
               <span class="coverage-value">{{asset.warrantyEndDate | date:'dd.MM.yyyy'}}</span>
             </div>
+            <div class="coverage-row document-row">
+              <span class="coverage-label">Document</span>
+              <span class="coverage-value" *ngIf="!asset.warrantyDocumentFileName">Lipsă</span>
+              <button class="btn-download" *ngIf="asset.warrantyDocumentFileName" (click)="downloadWarrantyDocument()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                {{asset.warrantyDocumentFileName}}
+              </button>
+            </div>
           </div>
           <div class="coverage-empty" *ngIf="!asset.warrantyStartDate && !asset.warrantyEndDate && !asset.warrantyProvider">
             <span>Nicio informație despre garanție</span>
@@ -142,6 +152,16 @@
             <div class="coverage-row" *ngIf="asset.insuranceEndDate">
               <span class="coverage-label">Până la</span>
               <span class="coverage-value">{{asset.insuranceEndDate | date:'dd.MM.yyyy'}}</span>
+            </div>
+            <div class="coverage-row document-row">
+              <span class="coverage-label">Document</span>
+              <span class="coverage-value" *ngIf="!asset.insuranceDocumentFileName">Lipsă</span>
+              <button class="btn-download" *ngIf="asset.insuranceDocumentFileName" (click)="downloadInsuranceDocument()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                {{asset.insuranceDocumentFileName}}
+              </button>
             </div>
           </div>
           <div class="coverage-empty" *ngIf="!asset.insuranceStartDate && !asset.insuranceEndDate && !asset.insuranceCompany && !asset.insuranceValue">

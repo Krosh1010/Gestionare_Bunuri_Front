@@ -21,4 +21,16 @@ export class AuthenticationService {
         }
         return response.data;
     }
+
+    async forgotPassword(email: string): Promise<any> {
+        return this.apiService.postData('api/Auth/forgot-password', { Email: email });
+    }
+
+    async resetPassword(email: string, token: string, newPassword: string): Promise<any> {
+        return this.apiService.postData('api/Auth/reset-password', {
+            Email: email,
+            Token: token,
+            NewPassword: newPassword
+        });
+    }
 }

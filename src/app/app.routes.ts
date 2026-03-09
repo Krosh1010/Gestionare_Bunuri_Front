@@ -4,6 +4,8 @@ import { HomeComponent } from './component/pages/home/home.component';
 import { DashbordComponent } from './component/pages/dashbord/dashbord.component';
 import { LoginComponent } from './component/pages/auth/login/login.component';
 import { RegisterComponent } from './component/pages/auth/register/register.component';
+import { ForgotPasswordComponent } from './component/pages/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './component/pages/auth/reset-password/reset-password.component';
 import { InventoryComponent } from './component/pages/inventory/inventory.component';
 import { ReportsComponent } from './component/pages/reports/reports.component';
 import { LocationsComponent } from './component/pages/locations/locations.component';
@@ -30,6 +32,8 @@ export const routes: Routes = [
         component: CoveragestatusComponent},
     {   path: 'login', component: LoginComponent},
     {   path: 'register', component: RegisterComponent},
+    {   path: 'forgot-password', component: ForgotPasswordComponent},
+    {   path: 'reset-password', component: ResetPasswordComponent},
     {   path: 'profile',
         canActivate: [AuthGuard],
         component: ProfileComponent}

@@ -315,16 +315,18 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
 
   // Status maps (same as InventoryComponent)
   private warrantyStatusTextMap: { [key: string]: string } = {
-    '0': 'Activă',
-    '1': 'Aproape de expirare',
-    '2': 'Expirată',
+    '0': 'Neîncepută',
+    '1': 'Activă',
+    '2': 'Aproape de expirare',
+    '3': 'Expirată',
     'null': 'Lipsă',
     'undefined': 'Necunoscut',
   };
   private warrantyStatusClassMap: { [key: string]: string } = {
-    '0': 'active',
-    '1': 'soon',
-    '2': 'expired',
+    '0': 'notstarted',
+    '1': 'active',
+    '2': 'soon',
+    '3': 'expired',
     'null': 'unknown',
     'undefined': 'unknown',
   };

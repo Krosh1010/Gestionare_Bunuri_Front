@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from
 import { CommonModule } from '@angular/common';
 import { AssetsReadModel } from '../../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../../services/ApiServices/assets.service';
+import { warrantyService } from '../../../../services/ApiServices/warranty.service';
+import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 
 @Component({
   selector: 'app-asset-detaile',
@@ -21,7 +23,11 @@ export class AssetDetaileComponent implements OnChanges {
   isLoading: boolean = false;
   errorMessage: string | null = null;
 
-  constructor(private assetsService: AssetsService) {}
+  constructor(
+    private assetsService: AssetsService,
+    private warrantyService: warrantyService,
+    private insuranceService: InsuranceService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['assetId'] && this.assetId) {
@@ -139,5 +145,39 @@ export class AssetDetaileComponent implements OnChanges {
     const today = new Date();
     const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diff;
+  }
+
+  async downloadWarrantyDocument(): Promise<void> {
+    if (!this.assetId) return;
+    try {
+      const blob = await this.warrantyService.downloadWarrantyDocument(this.assetId.toString());
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.asset?.warrantyDocumentFileName || 'document-garantie';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Eroare la descărcarea documentului garanție:', err);
+    }
+  }
+
+  async downloadInsuranceDocument(): Promise<void> {
+    if (!this.assetId) return;
+    try {
+      const blob = await this.insuranceService.downloadInsuranceDocument(this.assetId.toString());
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.asset?.insuranceDocumentFileName || 'document-asigurare';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Eroare la descărcarea documentului asigurare:', err);
+    }
   }
 }

@@ -213,14 +213,15 @@
             <div *ngFor="let notif of notifications" [ngClass]="{
               'notification-item': true,
               'urgent': notif.type === 0,
-              'warning': notif.type === 1
+              'warning': notif.type === 1,
+              'tracker': notif.type === 2
             }">
               <div class="notification-icon">
-                {{ notif.type === 0 ? '⚠️' : '📋' }}
+                {{ notif.type === 0 ? '⚠️' : notif.type === 1 ? '📋' : '🔔' }}
               </div>
               <div class="notification-content">
                 <div class="notification-title">
-                  {{ notif.type === 0 ? 'Garantie expiră' : 'Asigurare expiră' }}
+                  {{ notif.type === 0 ? 'Garantie ' : notif.type === 1 ? 'Asigurare ' : 'Tracker' }}
                 </div>
                 <div class="notification-desc">{{ notif.message }}</div>
               </div>
