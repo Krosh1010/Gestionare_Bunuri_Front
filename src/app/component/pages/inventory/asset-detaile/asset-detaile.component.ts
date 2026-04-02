@@ -4,6 +4,7 @@ import { AssetsReadModel } from '../../../../models/assetsmodel/assets-read.mode
 import { AssetsService } from '../../../../services/ApiServices/assets.service';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
+import { LoanService } from '../../../../services/ApiServices/loan.service';
 
 @Component({
   selector: 'app-asset-detaile',
@@ -22,11 +23,15 @@ export class AssetDetaileComponent implements OnChanges {
   asset: AssetsReadModel | null = null;
   isLoading: boolean = false;
   errorMessage: string | null = null;
+  loanHistory: any[] = [];
+  isLoadingHistory: boolean = false;
+  showLoanHistory: boolean = false;
 
   constructor(
     private assetsService: AssetsService,
     private warrantyService: warrantyService,
-    private insuranceService: InsuranceService
+    private insuranceService: InsuranceService,
+    private loanService: LoanService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -36,6 +41,8 @@ export class AssetDetaileComponent implements OnChanges {
     if (changes['isOpen'] && !this.isOpen) {
       this.asset = null;
       this.errorMessage = null;
+      this.loanHistory = [];
+      this.showLoanHistory = false;
     }
   }
 
@@ -63,6 +70,30 @@ export class AssetDetaileComponent implements OnChanges {
 
   onDelete(): void {
     if (this.asset) this.delete.emit(this.asset);
+  }
+
+  async toggleLoanHistory(): Promise<void> {
+    this.showLoanHistory = !this.showLoanHistory;
+    if (this.showLoanHistory && this.loanHistory.length === 0) {
+      this.isLoadingHistory = true;
+      try {
+        const history = await this.loanService.getAllLoansByAssetId(this.assetId!.toString());
+        this.loanHistory = Array.isArray(history) ? history : [];
+      } catch {
+        this.loanHistory = [];
+      } finally {
+        this.isLoadingHistory = false;
+      }
+    }
+  }
+
+  async deleteLoanFromHistory(loanId: string): Promise<void> {
+    try {
+      await this.loanService.deleteLoan(loanId);
+      this.loanHistory = this.loanHistory.filter(l => l.id !== loanId);
+    } catch {
+      // silent
+    }
   }
 
   onOverlayClick(event: MouseEvent): void {

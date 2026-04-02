@@ -195,6 +195,106 @@
         </div>
       </div>
 
+      <!-- Loan Section -->
+      <div class="detail-section coverage-section">
+        <h3 class="section-title loan-section-title">
+          <span class="loan-title-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+            </svg>
+            Împrumut
+          </span>
+          <button class="btn-history-toggle" (click)="toggleLoanHistory()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Istoric
+            <svg class="toggle-chevron" [class.rotated]="showLoanHistory" viewBox="0 0 24 24" fill="none" stroke="currentColor" width="13" height="13" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <path d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </h3>
+
+        <!-- History (above current status) -->
+        <div class="history-panel" *ngIf="showLoanHistory">
+          <div *ngIf="isLoadingHistory" class="coverage-empty"><span>Se încarcă...</span></div>
+          <div *ngIf="!isLoadingHistory && loanHistory.length === 0" class="coverage-empty"><span>Niciun împrumut înregistrat</span></div>
+          <div class="history-list" *ngIf="!isLoadingHistory && loanHistory.length > 0">
+            <div class="history-item" *ngFor="let loan of loanHistory">
+              <div class="history-item-header">
+                <span class="history-person">{{loan.loanedToName}}</span>
+                <div class="history-item-actions">
+                  <span class="history-badge" [class.returned]="loan.returnedAt">
+                    {{loan.returnedAt ? 'Returnat' : 'Activ'}}
+                  </span>
+                  <button class="btn-delete-loan" (click)="deleteLoanFromHistory(loan.id)" title="Șterge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="history-item-rows">
+                <div class="coverage-row" *ngIf="loan.loanedAt">
+                  <span class="coverage-label">Împrumutat la</span>
+                  <span class="coverage-value">{{loan.loanedAt | date:'dd.MM.yyyy'}}</span>
+                </div>
+                <div class="coverage-row" *ngIf="loan.returnedAt">
+                  <span class="coverage-label">Returnat la</span>
+                  <span class="coverage-value">{{loan.returnedAt | date:'dd.MM.yyyy'}}</span>
+                </div>
+                <div class="coverage-row" *ngIf="loan.condition">
+                  <span class="coverage-label">Stare la împrumutare</span>
+                  <span class="coverage-value">{{loan.condition}}</span>
+                </div>
+                <div class="coverage-row" *ngIf="loan.conditionOnReturn">
+                  <span class="coverage-label">Stare la returnare</span>
+                  <span class="coverage-value">{{loan.conditionOnReturn}}</span>
+                </div>
+                <div class="coverage-row" *ngIf="loan.notes">
+                  <span class="coverage-label">Notițe</span>
+                  <span class="coverage-value">{{loan.notes}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active loan -->
+        <div class="coverage-card status-loaned" *ngIf="asset.isLoaned">
+          <div class="coverage-header">
+            <span class="coverage-status-dot"></span>
+            <span class="coverage-status-text">Împrumutat</span>
+          </div>
+          <div class="coverage-details">
+            <div class="coverage-row" *ngIf="asset.loanedToName">
+              <span class="coverage-label">Împrumutat la</span>
+              <span class="coverage-value">{{asset.loanedToName}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.loanCondition">
+              <span class="coverage-label">Stare la împrumutare</span>
+              <span class="coverage-value">{{asset.loanCondition}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.loanedAt">
+              <span class="coverage-label">Data împrumutului</span>
+              <span class="coverage-value">{{asset.loanedAt | date:'dd.MM.yyyy'}}</span>
+            </div>
+            <div class="coverage-row" *ngIf="asset.loanNotes">
+              <span class="coverage-label">Notițe</span>
+              <span class="coverage-value">{{asset.loanNotes}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- No active loan -->
+        <div class="coverage-card" *ngIf="!asset.isLoaned">
+          <div class="coverage-empty">
+            <span>Împrumut lipsă</span>
+          </div>
+        </div>
+
+      </div>
+
       <!-- Actions Footer -->
       <div class="detail-actions">
         <button class="btn-action btn-edit" (click)="onEdit()">

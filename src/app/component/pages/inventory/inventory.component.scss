@@ -1798,6 +1798,57 @@
 }
 
 /* Opțional: variantă outline mai subtilă */
+
+/* Loaned asset styles */
+.asset-card.asset-loaned {
+  border-color: #f97316;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.03) 0%, rgba(251, 146, 60, 0.03) 100%);
+  position: relative;
+}
+
+.asset-card.asset-loaned:hover {
+  border-color: #ea6910;
+  box-shadow: 0 10px 40px rgba(249, 115, 22, 0.15);
+}
+
+.loaned-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  border-radius: 8px 8px 0 0;
+}
+
+.loaned-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(251, 146, 60, 0.1));
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  color: #ea580c;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-left: 6px;
+}
+
+.list-item-loaned {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.04) 0%, rgba(251, 146, 60, 0.02) 100%) !important;
+  border-left: 3px solid #f97316;
+}
+
+.list-item-loaned:hover {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.07) 0%, rgba(251, 146, 60, 0.05) 100%) !important;
+}
 .warranty-settings-btn.outline {
   background: transparent;
   border: 1.5px solid #e2e8f0;

@@ -1,9 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 import { CustomTrackerService } from '../../../../services/ApiServices/custom.tracker';
+import { LoanService } from '../../../../services/ApiServices/loan.service';
 @Component({
   selector: 'app-warranty-insurance-setings',
   standalone: true,
@@ -24,6 +25,13 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   showWarrantyFormSection = false;
   showInsuranceFormSection = false;
   showCustomTrackerFormSection = false;
+  showLoanFormSection = false;
+
+  // Loan state
+  loanForm!: FormGroup;
+  returnLoanForm!: FormGroup;
+  activeLoanData: any = null;
+  showReturnForm = false;
 
   // Accepted file types
   acceptedFileTypes = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.txt';
@@ -44,7 +52,8 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     private fb: FormBuilder,
     private warrantyService: warrantyService,
     private insuranceService: InsuranceService,
-    private customTrackerService: CustomTrackerService
+    private customTrackerService: CustomTrackerService,
+    private loanService: LoanService
   ) {}
 
   ngOnInit() {
@@ -75,12 +84,26 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
       startDate: [''],
       endDate: ['']
     });
+    const today = new Date().toISOString().substring(0, 10);
+    this.loanForm = this.fb.group({
+      loanedToName: ['', Validators.required],
+      condition: ['', Validators.required],
+      notes: [''],
+      loanedAt: [today, Validators.required]
+    });
+    this.returnLoanForm = this.fb.group({
+      conditionOnReturn: [''],
+      notes: [''],
+      returnedAt: [today, Validators.required]
+    });
   }
 
   resetSections() {
     this.showWarrantyFormSection = false;
     this.showInsuranceFormSection = false;
     this.showCustomTrackerFormSection = false;
+    this.showLoanFormSection = false;
+    this.showReturnForm = false;
   }
 
   async openWarrantySection() {
@@ -309,6 +332,112 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   backToMenu() {
     this.resetSections();
     this.showAddWarrantyForm = false;
+  }
+
+  async openLoanSection() {
+    this.showLoanFormSection = true;
+    this.showWarrantyFormSection = false;
+    this.showInsuranceFormSection = false;
+    this.showCustomTrackerFormSection = false;
+    this.showReturnForm = false;
+    this.loading = true;
+    this.error = null;
+    try {
+      const data = await this.loanService.getLoansByAssetId(String(this.assetId));
+      const today = new Date().toISOString().substring(0, 10);
+      this.activeLoanData = data && (Array.isArray(data) ? data[0] : data) ? (Array.isArray(data) ? data[0] : data) : null;
+      if (this.activeLoanData) {
+        this.loanForm.patchValue({
+          loanedToName: this.activeLoanData.loanedToName || '',
+          condition: this.activeLoanData.condition || '',
+          notes: this.activeLoanData.notes || '',
+          loanedAt: this.activeLoanData.loanedAt ? this.activeLoanData.loanedAt.substring(0, 10) : today
+        });
+      } else {
+        this.loanForm.reset({ loanedAt: today });
+      }
+      this.returnLoanForm.reset({ returnedAt: today });
+    } catch (e: any) {
+      if (e && e.status === 404) {
+        this.activeLoanData = null;
+      } else {
+        this.error = 'Eroare la încărcarea împrumutului activ';
+        this.activeLoanData = null;
+      }
+    }
+    this.loading = false;
+  }
+
+  async createLoan() {
+    if (!this.assetId || this.loanForm.invalid) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      const payload = {
+        assetId: this.assetId,
+        loanedToName: this.loanForm.value.loanedToName,
+        condition: this.loanForm.value.condition,
+        notes: this.loanForm.value.notes || null,
+        loanedAt: this.loanForm.value.loanedAt
+      };
+      await this.loanService.createLoan(payload);
+      await this.openLoanSection();
+    } catch (e) {
+      this.error = 'Eroare la crearea împrumutului';
+    }
+    this.loading = false;
+  }
+
+  async returnLoan() {
+    if (!this.activeLoanData) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      const payload = {
+        conditionOnReturn: this.returnLoanForm.value.conditionOnReturn || null,
+        notes: this.returnLoanForm.value.notes || null,
+        returnedAt: this.returnLoanForm.value.returnedAt
+      };
+      await this.loanService.returnLoan(String(this.activeLoanData.id), payload);
+      await this.openLoanSection();
+    } catch (e) {
+      this.error = 'Eroare la returnarea împrumutului';
+    }
+    this.loading = false;
+  }
+
+  async saveLoan() {
+    if (!this.assetId || !this.activeLoanData || this.loanForm.invalid) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      const payload = {
+        assetId: this.assetId,
+        loanedToName: this.loanForm.value.loanedToName,
+        condition: this.loanForm.value.condition,
+        notes: this.loanForm.value.notes || null,
+        loanedAt: this.loanForm.value.loanedAt
+      };
+      await this.loanService.updateLoan(String(this.activeLoanData.id), payload);
+      await this.openLoanSection();
+    } catch (e) {
+      this.error = 'Eroare la salvarea împrumutului';
+    }
+    this.loading = false;
+  }
+
+  async deleteLoan() {
+    if (!this.activeLoanData) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.loanService.deleteLoan(String(this.activeLoanData.id));
+      this.activeLoanData = null;
+      this.loanForm.reset({ loanedAt: new Date().toISOString().substring(0, 10) });
+    } catch (e) {
+      this.error = 'Eroare la ștergerea împrumutului';
+    }
+    this.loading = false;
   }
   showAddWarrantyForm = false;
   

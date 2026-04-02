@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 import { CustomTrackerService } from '../../../../services/ApiServices/custom.tracker';
+import { LoanService } from '../../../../services/ApiServices/loan.service';
 
 @Component({
   selector: 'app-warranty-insurance-form',
@@ -16,7 +17,7 @@ export class WarrantyInsuranceFormComponent {
   @Input() assetId!: number | null;
   @Output() close = new EventEmitter<void>();
 
-  mode: 'choose' | 'warranty' | 'insurance' | 'tracker' = 'choose';
+  mode: 'choose' | 'warranty' | 'insurance' | 'tracker' | 'loan' = 'choose';
 
   // Accepted file types
   acceptedFileTypes = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx,.txt';
@@ -38,6 +39,12 @@ export class WarrantyInsuranceFormComponent {
     description: '',
     start: '',
     end: ''
+  };
+  loan = {
+    loanedToName: '',
+    condition: '',
+    loanedAt: '',
+    notes: ''
   };
 
   // Fișiere selectate pentru upload
@@ -104,6 +111,7 @@ export class WarrantyInsuranceFormComponent {
   private warrantySrv = inject(warrantyService);
   private insuranceSrv = inject(InsuranceService);
   private trackerSrv = inject(CustomTrackerService);
+  private loanSrv = inject(LoanService);
 
   // Reset forms when assetId changes
   ngOnChanges() {
@@ -136,11 +144,17 @@ export class WarrantyInsuranceFormComponent {
     this.tracker = { name: '', description: '', start: '', end: '' };
     this.message = '';
   }
+  selectLoan() {
+    this.mode = 'loan';
+    this.loan = { loanedToName: '', condition: '', loanedAt: '', notes: '' };
+    this.message = '';
+  }
 
   resetForms() {
     this.warranty = { provider: '', start: '', end: '', notes: '' };
     this.insurance = { company: '', insuredValue: null, start: '', end: '' };
     this.tracker = { name: '', description: '', start: '', end: '' };
+    this.loan = { loanedToName: '', condition: '', loanedAt: '', notes: '' };
     this.warrantyFile = null;
     this.warrantyFileName = '';
     this.insuranceFile = null;
@@ -217,6 +231,30 @@ export class WarrantyInsuranceFormComponent {
       }, 800);
     } catch (err) {
       this.message = 'Eroare la salvare tracker!';
+    } finally {
+      this.loading = false;
+    }
+  }
+  async submitLoan() {
+    if (!this.assetId || !this.loan.loanedToName || !this.loan.condition || !this.loan.loanedAt) return;
+    const payload = {
+      assetId: this.assetId,
+      loanedToName: this.loan.loanedToName,
+      condition: this.loan.condition,
+      loanedAt: this.loan.loanedAt,
+      notes: this.loan.notes
+    };
+    this.loading = true;
+    this.message = '';
+    try {
+      await this.loanSrv.createLoan(payload);
+      this.message = 'Împrumutul a fost înregistrat cu succes!';
+      setTimeout(() => {
+        this.backToChoose();
+        this.message = 'Împrumutul a fost înregistrat cu succes!';
+      }, 800);
+    } catch (err) {
+      this.message = 'Eroare la salvare împrumut!';
     } finally {
       this.loading = false;
     }

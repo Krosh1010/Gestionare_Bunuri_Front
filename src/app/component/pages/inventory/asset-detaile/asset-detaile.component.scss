@@ -425,6 +425,22 @@
       color: #94a3b8;
     }
   }
+
+  &.status-loaned {
+    border-color: rgba(249, 115, 22, 0.35);
+
+    .coverage-header {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(251, 146, 60, 0.06));
+    }
+    .coverage-status-dot {
+      background: #f97316;
+      box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+    }
+    .coverage-status-text {
+      color: #c2410c;
+      font-weight: 700;
+    }
+  }
 }
 
 @keyframes blink {
@@ -528,6 +544,136 @@
     font-size: 13px;
     color: #94a3b8;
     font-style: italic;
+  }
+}
+
+// ============================
+// Loan Section
+// ============================
+
+.loan-section-title {
+  justify-content: space-between;
+
+  .loan-title-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.btn-history-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    border-color: #cbd5e1;
+  }
+
+  .toggle-chevron {
+    transition: transform 0.25s ease;
+
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.history-panel {
+  margin: 0 0 10px;
+}
+
+// ============================
+// Loan History List
+// ============================
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 18px 4px;
+}
+
+.history-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f8fafc;
+
+  .history-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f1f5f9;
+
+    .history-person {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .history-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .history-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      background: rgba(249, 115, 22, 0.12);
+      color: #c2410c;
+
+      &.returned {
+        background: rgba(34, 197, 94, 0.12);
+        color: #15803d;
+      }
+    }
+
+    .btn-delete-loan {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      background: transparent;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      color: #ef4444;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+
+      &:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+      }
+    }
+  }
+
+  .history-item-rows {
+    padding: 6px 14px 10px;
+
+    .coverage-row {
+      padding: 4px 0;
+    }
   }
 }
 

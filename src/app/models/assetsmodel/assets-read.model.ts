@@ -27,4 +27,11 @@ export interface AssetsReadModel {
     warrantyDocumentFileName?: string | null;
     insuranceDocumentId?: string | null;
     insuranceDocumentFileName?: string | null;
+    isLoaned?: boolean;
+    loanedToName?: string | null;
+    loanCondition?: string | null;
+    loanNotes?: string | null;
+    loanedAt?: string | null;
+    loanReturnedAt?: string | null;
+    loanConditionOnReturn?: string | null;
 }

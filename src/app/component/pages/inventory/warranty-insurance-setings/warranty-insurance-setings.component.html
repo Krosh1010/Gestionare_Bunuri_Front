@@ -15,7 +15,7 @@
 	<!-- With Asset -->
 	<div *ngIf="assetId" class="settings-content">
 		<!-- Main Menu -->
-		<div *ngIf="!showWarrantyFormSection && !showInsuranceFormSection && !showCustomTrackerFormSection" class="main-menu">
+		<div *ngIf="!showWarrantyFormSection && !showInsuranceFormSection && !showCustomTrackerFormSection && !showLoanFormSection" class="main-menu">
 			<div class="menu-header">
 				<div class="asset-info">
 					<svg class="asset-icon" viewBox="0 0 24 24">
@@ -112,6 +112,38 @@
 									<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
 								</svg>
 								Perioadă
+							</span>
+						</div>
+					</div>
+					<div class="card-arrow">
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+						</svg>
+					</div>
+				</div>
+
+				<!-- Loan Card -->
+				<div class="menu-card loan-card" (click)="openLoanSection()">
+					<div class="card-icon loan">
+						<svg viewBox="0 0 24 24">
+							<path fill="currentColor" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</div>
+					<div class="card-content">
+						<h5>Împrumut</h5>
+						<p>Gestionează împrumuturile bunului</p>
+						<div class="card-features">
+							<span class="feature">
+								<svg viewBox="0 0 24 24">
+									<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+								</svg>
+								Împrumutat la
+							</span>
+							<span class="feature">
+								<svg viewBox="0 0 24 24">
+									<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+								</svg>
+								Returnare
 							</span>
 						</div>
 					</div>
@@ -904,6 +936,213 @@
 				</div>
 			</div>
 		</div>
-		
+
+		<!-- Loan Form Section -->
+		<div *ngIf="showLoanFormSection" class="form-section">
+			<div class="section-header">
+				<button class="back-btn" (click)="backToMenu()">
+					<svg viewBox="0 0 24 24">
+						<path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+					</svg>
+					<span>Înapoi</span>
+				</button>
+				<div class="header-content">
+					<div class="section-icon loan">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+						</svg>
+					</div>
+					<h4>Gestionare împrumut</h4>
+					<p>Înregistrează și gestionează împrumuturile bunului</p>
+				</div>
+			</div>
+
+			<!-- Loading State -->
+			<div *ngIf="loading" class="loading-state">
+				<div class="spinner"></div>
+				<p>Se încarcă informațiile...</p>
+			</div>
+
+			<!-- Error State -->
+			<div *ngIf="error && !loading" class="error-state">
+				<svg viewBox="0 0 24 24">
+					<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+				</svg>
+				<p>{{error}}</p>
+			</div>
+
+			<!-- Content -->
+			<div *ngIf="!loading" class="section-content">
+				<!-- Existing Loan -->
+				<form *ngIf="activeLoanData" [formGroup]="loanForm" (ngSubmit)="saveLoan()" class="loan-form">
+					<div class="loan-info-block">
+						<div class="info-header">
+							<h5>Împrumut activ</h5>
+							<div class="status-badge active">Activ</div>
+						</div>
+						<div class="info-grid">
+							<div class="info-item">
+								<label>Împrumutat la</label>
+								<p class="info-value">{{activeLoanData.loanedToName}}</p>
+							</div>
+							<div class="info-item">
+								<label>Stare la împrumutare</label>
+								<p class="info-value">{{activeLoanData.condition}}</p>
+							</div>
+							<div class="info-item">
+								<label>Data împrumutului</label>
+								<p class="info-value">{{formatDate(activeLoanData.loanedAt)}}</p>
+							</div>
+							<div class="info-item" *ngIf="activeLoanData.notes">
+								<label>Notițe</label>
+								<p class="info-value">{{activeLoanData.notes}}</p>
+							</div>
+						</div>
+					</div>
+
+					<h5 class="form-title">Editează împrumut</h5>
+					<div class="form-grid">
+						<div class="form-group">
+							<label>
+								<span>Împrumutat la *</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="loanedToName" type="text" placeholder="Numele persoanei..." />
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<span>Starea bunului la împrumutare *</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="condition" type="text" placeholder="Ex: Foarte bun, fără defecte..." />
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<span>Data împrumutului *</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="loanedAt" type="date" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label>
+								<span>Notițe (opțional)</span>
+							</label>
+							<div class="input-wrapper">
+								<input formControlName="notes" type="text" placeholder="Observații suplimentare..." />
+							</div>
+						</div>
+					</div>
+
+					<div class="form-actions">
+						<button type="submit" class="btn-primary" [disabled]="loading || loanForm.invalid">
+							<svg viewBox="0 0 24 24" *ngIf="!loading">
+								<path fill="currentColor" d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+							</svg>
+							<div class="spinner" *ngIf="loading"></div>
+							<span>{{ loading ? 'Se salvează...' : 'Salvează modificări' }}</span>
+						</button>
+						<button type="button" class="btn-primary" (click)="showReturnForm = !showReturnForm" [disabled]="loading">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+							</svg>
+							<span>Returnează bunul</span>
+						</button>
+						<button type="button" class="btn-danger" (click)="deleteLoan()" [disabled]="loading">
+							<svg viewBox="0 0 24 24">
+								<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+							</svg>
+							<span>Șterge împrumut</span>
+						</button>
+					</div>
+				</form>
+
+				<!-- Return Loan Form -->
+				<form *ngIf="activeLoanData && showReturnForm" [formGroup]="returnLoanForm" (ngSubmit)="returnLoan()" class="return-loan-form">
+					<h5 class="form-title">Returnare bun</h5>
+					<div class="form-grid">
+						<div class="form-group">
+							<label><span>Stare la returnare</span></label>
+							<div class="input-wrapper">
+								<input formControlName="conditionOnReturn" type="text" placeholder="Ex: Bun, cu zgârieturi minore..."/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label><span>Data returnării *</span></label>
+							<div class="input-wrapper">
+								<input formControlName="returnedAt" type="date"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<label><span>Notițe (opțional)</span></label>
+							<div class="input-wrapper">
+								<input formControlName="notes" type="text" placeholder="Observații suplimentare..."/>
+							</div>
+						</div>
+					</div>
+					<div class="form-actions">
+						<button type="submit" class="btn-primary" [disabled]="loading">
+							<div class="spinner" *ngIf="loading"></div>
+							<span>{{loading ? 'Se salvează...' : 'Confirmă returnarea'}}</span>
+						</button>
+						<button type="button" class="btn-secondary" (click)="showReturnForm = false" [disabled]="loading">Anulează</button>
+					</div>
+				</form>
+
+				<!-- No Active Loan - Add Form -->
+				<div *ngIf="!activeLoanData" class="no-loan-state no-warranty-state">
+					<div class="empty-state">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+						</svg>
+						<h5>Niciun împrumut activ</h5>
+						<p>Bunul nu este în prezent împrumutat. Înregistrează un nou împrumut mai jos.</p>
+					</div>
+
+					<form [formGroup]="loanForm" (ngSubmit)="createLoan()" class="add-loan-form add-warranty-form">
+						<h5>Adaugă împrumut nou</h5>
+						<div class="form-grid">
+							<div class="form-group">
+								<label><span>Împrumutat la *</span></label>
+								<div class="input-wrapper">
+									<input formControlName="loanedToName" type="text" placeholder="Numele persoanei..."/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label><span>Starea bunului la împrumutare *</span></label>
+								<div class="input-wrapper">
+									<input formControlName="condition" type="text" placeholder="Ex: Foarte bun, fără defecte..."/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label><span>Data împrumutului *</span></label>
+								<div class="input-wrapper">
+									<input formControlName="loanedAt" type="date"/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label><span>Notițe (opțional)</span></label>
+								<div class="input-wrapper">
+									<input formControlName="notes" type="text" placeholder="Observații suplimentare..."/>
+								</div>
+							</div>
+						</div>
+						<div class="form-actions">
+							<button type="submit" class="btn-primary" [disabled]="loading || loanForm.invalid">
+								<svg viewBox="0 0 24 24" *ngIf="!loading">
+									<path fill="currentColor" d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+								</svg>
+								<div class="spinner" *ngIf="loading"></div>
+								<span>{{loading ? 'Se salvează...' : 'Înregistrează împrumutul'}}</span>
+							</button>
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+
 	</div>
 </div>
