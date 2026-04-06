@@ -16,10 +16,15 @@ export class AuthenticationService {
 
     async register(registerData: RegisterModel): Promise<any> {
         const response = await this.apiService.postData('api/Auth/register', registerData);
+        return response;
+    }
+
+    async verifyEmail(email: string, token: string): Promise<any> {
+        const response = await this.apiService.postData('api/Auth/verify-email', { email, token });
         if (response && response.data && response.data.token) {
             localStorage.setItem('authToken', JSON.stringify({ token: response.data.token }));
         }
-        return response.data;
+        return response;
     }
 
     async forgotPassword(email: string): Promise<any> {

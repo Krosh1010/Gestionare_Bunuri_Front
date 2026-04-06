@@ -6,17 +6,17 @@
     <div class="gradient-circle circle-3"></div>
   </div>
 
-  <!-- Success Notification Overlay -->
-  <div class="success-overlay" *ngIf="showSuccessNotification">
-    <div class="success-modal">
-      <div class="success-icon-wrapper">
+  <!-- Email Exists Error Notification -->
+  <div class="success-overlay" *ngIf="showEmailExistsError">
+    <div class="success-modal error-modal">
+      <div class="success-icon-wrapper error-icon-wrapper">
         <svg class="success-check" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </div>
-      <h3>Cont creat cu succes!</h3>
-      <p>Felicitări! Contul tău a fost creat. Vei fi redirecționat către pagina de autentificare.</p>
-      <div class="success-loader">
+      <h3>Email deja înregistrat!</h3>
+      <p>Adresa de email introdusă este deja asociată unui cont. Încearcă să te autentifici sau folosește o altă adresă.</p>
+      <div class="success-loader error-loader">
         <div class="loader-bar"></div>
       </div>
     </div>
@@ -78,6 +78,9 @@
     <!-- Right Column - Registration Form -->
     <div class="register-right">
       <div class="form-container">
+
+        <!-- STEP 1: Registration Form -->
+        <ng-container *ngIf="step === 1">
         <div class="form-header">
           <h2>Începe acum</h2>
           <p>Creează-ți contul în doar câteva minute</p>
@@ -219,6 +222,87 @@
           </svg>
           <span>Datele tale sunt protejate și securizate</span>
         </div>
+        </ng-container>
+
+        <!-- STEP 2: Email Verification -->
+        <ng-container *ngIf="step === 2">
+          <div class="form-header">
+            <div class="verify-icon-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2>Verifică email-ul</h2>
+            <p>Am trimis un cod de 6 cifre la <strong>{{ pendingEmail }}</strong>. Introdu-l mai jos.</p>
+          </div>
+
+          <form class="register-form" [formGroup]="verifyForm" (ngSubmit)="onVerify()">
+            <div class="form-group">
+              <label for="code">Cod de verificare</label>
+              <div class="input-container" [class.input-error]="verifyForm.get('code')?.invalid && verifyForm.get('code')?.touched">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <input
+                  type="text"
+                  id="code"
+                  formControlName="code"
+                  placeholder="Ex: 123456"
+                  maxlength="6"
+                  class="form-input"
+                />
+              </div>
+              <div class="error-message" *ngIf="verifyForm.get('code')?.touched && verifyForm.get('code')?.invalid">
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span>Introdu codul de 6 cifre din email</span>
+              </div>
+              <div class="error-message" *ngIf="verificationError">
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <span>{{ verificationError }}</span>
+              </div>
+            </div>
+
+            <div class="verify-actions">
+              <button type="submit" class="submit-button" [disabled]="isVerifying">
+                <span *ngIf="!isVerifying">Confirmă contul</span>
+                <span *ngIf="isVerifying" class="loading-text">
+                  <span class="spinner"></span>
+                  Se verifică...
+                </span>
+                <svg *ngIf="!isVerifying" class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+
+              <button type="button" class="resend-button" (click)="onResendCode()" [disabled]="resendCooldown > 0 || isResending">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span *ngIf="isResending">Se trimite...</span>
+                <span *ngIf="!isResending && resendCooldown > 0">Retrimite codul ({{ resendCooldown }}s)</span>
+                <span *ngIf="!isResending && resendCooldown === 0">Retrimite codul</span>
+              </button>
+            </div>
+          </form>
+
+          <div class="divider"><span>sau</span></div>
+
+          <div class="login-link">
+            <a class="login-link-text" style="cursor:pointer" (click)="goBackToRegister()">← Înapoi la înregistrare</a>
+          </div>
+
+          <div class="security-info">
+            <svg class="security-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Codul expiră în 15 minute</span>
+          </div>
+        </ng-container>
+
       </div>
     </div>
   </div>

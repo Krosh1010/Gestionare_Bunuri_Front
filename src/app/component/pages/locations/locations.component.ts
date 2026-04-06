@@ -18,12 +18,15 @@ import { CommonModule } from '@angular/common';
 export class LocationsComponent implements OnInit {
       // Close dropdown menu when clicking outside
       closeMenuOnOutsideClick(event: MouseEvent) {
-        // Only close if menu is open and click is not on a menu button
         const target = event.target as HTMLElement;
         if (this.activeMenu !== null) {
-          // If click is NOT inside a .dropdown-menu or .icon-btn, close
           if (!target.closest('.dropdown-menu') && !target.closest('.icon-btn')) {
             this.activeMenu = null;
+          }
+        }
+        if (this.treePickerVisible) {
+          if (!target.closest('.tree-picker-wrapper')) {
+            this.treePickerVisible = false;
           }
         }
       }
@@ -63,6 +66,12 @@ export class LocationsComponent implements OnInit {
   childSpaces: { [key: number]: any[] } = {};
   loadingChildSpaces: { [key: number]: boolean } = {};
   editingLocation: any = null;
+
+  // Tree picker state
+  treeNodes: any[] = [];
+  treePickerVisible = false;
+  selectedTreeNode: any = null;
+  treeLoading = false;
 
   constructor(private fb: FormBuilder, private spaceService: SpaceService) {
     this.locationForm = this.fb.group({
@@ -121,23 +130,17 @@ export class LocationsComponent implements OnInit {
   async showCreateForm() {
     this.showForm = true;
     this.message = '';
-    // Reset form with default placeholders
     this.locationForm.reset({
       name: '',
       type: '',
       parentSpaceId: null,
       description: ''
     });
-    try {
-      const parents = await this.spaceService.getSpacesParents();
-      this.parentLevels = [parents];
-      // Setează explicit 'Nicio locație părinte' ca selectat
-      this.selectedParentIds = [null];
-    } catch (error) {
-      console.error('Error loading parent spaces for dropdown:', error);
-      this.parentLevels = [[]];
-      this.selectedParentIds = [null];
-    }
+    this.selectedTreeNode = null;
+    this.treeNodes = [];
+    this.treePickerVisible = false;
+    this.parentLevels = [];
+    this.selectedParentIds = [];
   }
 
   async onParentSelected(level: number, parentId: number) {
@@ -176,6 +179,9 @@ export class LocationsComponent implements OnInit {
     this.locationForm.reset();
     this.editingLocation = null;
     this.message = '';
+    this.selectedTreeNode = null;
+    this.treeNodes = [];
+    this.treePickerVisible = false;
   }
 
   async createLocation() {
@@ -184,20 +190,7 @@ export class LocationsComponent implements OnInit {
     this.message = '';
     const formValue = { ...this.locationForm.value };
     // Determină parentSpaceId pe baza selectedParentIds (ultimul id valid)
-    let parentSpaceId = null;
-    if (this.selectedParentIds && this.selectedParentIds.length > 0) {
-      // Găsește ultimul id valid (number)
-      for (let i = this.selectedParentIds.length - 1; i >= 0; i--) {
-        if (typeof this.selectedParentIds[i] === 'number' && this.selectedParentIds[i] !== null) {
-          parentSpaceId = this.selectedParentIds[i];
-          break;
-        }
-      }
-    }
-    // Dacă nu există niciun id valid, forțează null
-    if (typeof parentSpaceId !== 'number') {
-      parentSpaceId = null;
-    }
+    let parentSpaceId = this.selectedTreeNode ? this.selectedTreeNode.id : null;
     if (this.editingLocation) {
       // Editare: trimite doar câmpurile modificate
       const patch: any = {};
@@ -327,11 +320,17 @@ export class LocationsComponent implements OnInit {
         parentSpaceId: loc.parentSpaceId || '',
         description: loc.description || ''
       });
-      // Populează dropdown-urile pe niveluri cu părinții existenți
-      await this.populateParentDropdowns(loc.parentSpaceId);
-      // Forțează selectarea corectă a părintelui în dropdown
+      this.treeNodes = [];
+      this.treePickerVisible = false;
       if (loc.parentSpaceId) {
-        this.locationForm.patchValue({ parentSpaceId: loc.parentSpaceId });
+        try {
+          const parentSpace = await this.spaceService.getSpaceById(loc.parentSpaceId.toString());
+          this.selectedTreeNode = { ...parentSpace, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
+        } catch {
+          this.selectedTreeNode = null;
+        }
+      } else {
+        this.selectedTreeNode = null;
       }
     });
   }
@@ -442,5 +441,66 @@ async populateParentDropdowns(spaceId: number | null) {
       this.loadLocations();
       this.filteredLocations = this.currentLocations;
     }
+  }
+
+  async openTreePicker() {
+    this.treePickerVisible = true;
+    if (this.treeNodes.length === 0) {
+      this.treeLoading = true;
+      try {
+        const roots = await this.spaceService.getSpacesParents();
+        this.treeNodes = roots.map((r: any) => ({
+          ...r,
+          expanded: false,
+          childrenLoaded: false,
+          children: [],
+          loadingChildren: false
+        }));
+      } finally {
+        this.treeLoading = false;
+      }
+    }
+  }
+
+  closeTreePicker() {
+    this.treePickerVisible = false;
+  }
+
+  async toggleTreeNode(node: any) {
+    if (node.expanded) {
+      node.expanded = false;
+      return;
+    }
+    if (!node.childrenLoaded) {
+      node.loadingChildren = true;
+      try {
+        const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+        node.children = children.map((c: any) => ({
+          ...c,
+          expanded: false,
+          childrenLoaded: false,
+          children: [],
+          loadingChildren: false
+        }));
+        node.childrenLoaded = true;
+      } finally {
+        node.loadingChildren = false;
+      }
+    }
+    if (node.children.length > 0) {
+      node.expanded = true;
+    }
+  }
+
+  selectTreeNode(node: any) {
+    if (this.editingLocation && node.id === this.editingLocation.id) return;
+    this.selectedTreeNode = node;
+    this.locationForm.patchValue({ parentSpaceId: node.id });
+    this.treePickerVisible = false;
+  }
+
+  clearTreeSelection() {
+    this.selectedTreeNode = null;
+    this.locationForm.patchValue({ parentSpaceId: null });
   }
 }

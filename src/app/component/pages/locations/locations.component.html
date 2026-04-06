@@ -64,30 +64,47 @@
           </div>
         </div>
 
-        <!-- Dropdown-uri pe nivele pentru locație părinte -->
+        <!-- Tree Picker pentru locație părinte -->
         <div class="form-field-group">
           <label class="form-label">
-            <span class="label-text">Locație părinte (opțional, pe nivele)</span>
-            <span class="label-hint">Selectează locația părinte, apoi sub-locația dacă există</span>
+            <span class="label-text">Locație părinte (opțional)</span>
+            <span class="label-hint">Click pe câmp pentru a selecta din arbore</span>
           </label>
-          <ng-container *ngFor="let levelSpaces of parentLevels; let i = index">
-            <div class="input-group">
+          <div class="tree-picker-wrapper">
+            <!-- Display box -->
+            <div class="tree-selected-display" (click)="openTreePicker()">
               <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              <select
-                class="form-select"
-                [(ngModel)]="selectedParentIds[i]"
-                (ngModelChange)="onParentSelected(i, $event)"
-                [ngModelOptions]="{standalone: true}"
-              >
-                <option [ngValue]="null">Nicio locație părinte</option>
-                <option *ngFor="let location of levelSpaces" [ngValue]="location.id" [disabled]="editingLocation && location.id === editingLocation.id">
-                  {{ location.name }} ({{ getTypeLabel(location.type) }})
-                </option>
-              </select>
+              <span class="tree-display-text placeholder-text" *ngIf="!selectedTreeNode">Nicio locație părinte (click pentru a selecta)</span>
+              <span class="tree-display-text selected-text" *ngIf="selectedTreeNode">
+                {{ selectedTreeNode.name }} <span class="tree-type-inline">({{ getTypeLabel(selectedTreeNode.type) }})</span>
+              </span>
+              <button type="button" class="tree-clear-btn" *ngIf="selectedTreeNode" (click)="$event.stopPropagation(); clearTreeSelection()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+              <svg class="tree-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
             </div>
-          </ng-container>
+            <!-- Tree Panel -->
+            <div class="tree-panel" *ngIf="treePickerVisible">
+              <div class="tree-loading" *ngIf="treeLoading">
+                <div class="spinner small"></div>
+                <span>Se încarcă...</span>
+              </div>
+              <div class="tree-content" *ngIf="!treeLoading">
+                <div class="tree-no-parent-option" (click)="clearTreeSelection(); closeTreePicker()">
+                  — Nicio locație părinte —
+                </div>
+                <ng-container *ngFor="let node of treeNodes">
+                  <ng-container *ngTemplateOutlet="treeNodeTpl; context: { $implicit: node, level: 0 }"></ng-container>
+                </ng-container>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -307,3 +324,30 @@
     </div>
   </div>
 </div>
+
+<!-- Template recursiv pentru noduri de arbore -->
+<ng-template #treeNodeTpl let-node let-level="level">
+  <div class="tree-node"
+       [style.padding-left.px]="12 + level * 20"
+       [class.tree-node-selected]="selectedTreeNode?.id === node.id"
+       [class.tree-node-disabled]="editingLocation && node.id === editingLocation.id">
+    <button type="button" class="tree-expand-btn"
+            *ngIf="!node.childrenLoaded || node.children.length > 0"
+            (click)="$event.stopPropagation(); toggleTreeNode(node)">
+      <div *ngIf="node.loadingChildren" class="spinner micro"></div>
+      <svg *ngIf="!node.loadingChildren" class="tree-chevron-node" [class.open]="node.expanded" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </button>
+    <span class="tree-expand-spacer" *ngIf="node.childrenLoaded && node.children.length === 0"></span>
+    <span class="tree-node-label" (click)="selectTreeNode(node)">
+      <span class="tree-node-name">{{ node.name }}</span>
+      <span class="tree-node-type">{{ getTypeLabel(node.type) }}</span>
+    </span>
+  </div>
+  <ng-container *ngIf="node.expanded && node.children?.length > 0">
+    <ng-container *ngFor="let child of node.children">
+      <ng-container *ngTemplateOutlet="treeNodeTpl; context: { $implicit: child, level: level + 1 }"></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>
