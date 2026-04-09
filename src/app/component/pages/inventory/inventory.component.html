@@ -182,7 +182,7 @@
     </div>
     
     <!-- Grid View -->
-    <div class="assets-grid" *ngIf="viewMode === 'grid'">
+    <div class="assets-grid" *ngIf="viewMode === 'grid'" [@staggerCards]="filteredAssets.length">
       <div class="asset-card" *ngFor="let asset of filteredAssets" (click)="openAssetDetail(asset.id)" style="cursor: pointer;" [class.asset-loaned]="asset.isLoaned">
         <!-- Loaned Banner -->
         <div class="loaned-banner" *ngIf="asset.isLoaned">

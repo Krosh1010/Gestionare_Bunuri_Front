@@ -2,7 +2,8 @@ import { AssetFilterService } from '../../../services/asset-filter.service';
 import { AssetsReadModel } from '../../../models/assetsmodel/assets-read.model';
 import { AssetsService } from '../../../services/ApiServices/assets.service';
 import { SpaceService } from '../../../services/ApiServices/space.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { CommonModule, NgFor } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WarrantyInsuranceFormComponent } from '../inventory/warranty-insurance-form/warranty-insurance-form.component';
@@ -13,8 +14,21 @@ import { AssetDetaileComponent } from '../inventory/asset-detaile/asset-detaile.
   selector: 'app-inventory',
   standalone: true,
   imports: [FormsModule,NgFor,CommonModule,ReactiveFormsModule, WarrantyInsuranceFormComponent, WarrantyInsuranceSetingsComponent, AssetDetaileComponent],
+  // BrowserAnimationsModule is provided globally via provideAnimations() in app.config.ts
   templateUrl: './inventory.component.html',
-  styleUrl: './inventory.component.scss'
+  styleUrl: './inventory.component.scss',
+  animations: [
+    trigger('staggerCards', [
+      transition('* => *', [
+        query(':enter', [
+          style({ opacity: 0, transform: 'translateY(24px)' }),
+          stagger(60, [
+            animate('280ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+          ])
+        ], { optional: true })
+      ])
+    ])
+  ]
 })
 
 export class InventoryComponent implements OnInit {
@@ -73,7 +87,7 @@ selectedSpaceName: string | null = null;
 
   // Pagination
   currentPage: number = 1;
-  pageSize: number = 4;
+  pageSize: number = 10;
   totalPages: number = 1;
   totalItems: number = 0;
   isLoadingAssets: boolean = false;

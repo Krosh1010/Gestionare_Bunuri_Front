@@ -16,6 +16,7 @@ export class HeaderComponent implements OnDestroy {
   isLoggedIn = false;
   @HostBinding('class.mobile-menu-open') isMobileMenuOpen = false;
   isUserDropdownOpen = false;
+  isDarkMode = false;
   userName = '';
   userEmail = '';
   userInitials = '';
@@ -26,6 +27,13 @@ export class HeaderComponent implements OnDestroy {
     private router: Router,
     private userService: UserService
   ) {
+    // Restore saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      this.isDarkMode = true;
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
     this.sub = this.authState.loggedIn$.subscribe(val => {
       this.isLoggedIn = val;
       if (val) {
@@ -56,6 +64,17 @@ export class HeaderComponent implements OnDestroy {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return parts[0][0].toUpperCase();
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    if (this.isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
   }
 
   // Comută meniul mobil

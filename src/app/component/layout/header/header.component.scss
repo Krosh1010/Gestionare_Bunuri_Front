@@ -1,4 +1,4 @@
-
+﻿
 
 /* Main Header Styles */
 .header {
@@ -47,7 +47,7 @@
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border-radius: 12px;
   display: flex;
@@ -135,7 +135,7 @@
   transform: translateX(-50%);
   width: 20px;
   height: 3px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 3px;
 }
 
@@ -233,14 +233,14 @@
 }
 
 .auth-btn.register-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border: none;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .auth-btn.register-btn:hover {
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, #6b46c1 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
@@ -281,7 +281,7 @@
 .user-avatar {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border-radius: 10px;
   display: flex;
@@ -379,7 +379,7 @@
 .dropdown-avatar {
   width: 46px;
   height: 46px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border-radius: 12px;
   display: flex;
@@ -533,7 +533,33 @@
 
 .dropdown-logout-btn:hover {
   background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  color: var(--color-danger);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: rotate(15deg);
+  }
 }
 
 /* Mobile Menu Toggle */
@@ -842,7 +868,7 @@
 
 .mobile-logout-btn:hover {
   background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .mobile-logout-btn .mobile-nav-icon {
@@ -850,7 +876,7 @@
 }
 
 .mobile-logout-btn:hover .mobile-nav-icon {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 /* Animations */

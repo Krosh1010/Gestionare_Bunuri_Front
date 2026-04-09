@@ -1,6 +1,6 @@
-.profile-container {
+﻿.profile-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-lighter) 100%);
   padding: 24px;
 }
 
@@ -16,14 +16,14 @@
   .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #e5e7eb;
-    border-top-color: #6366f1;
+    border: 4px solid var(--border);
+    border-top-color: var(--color-indigo);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
 
   p {
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: 16px;
   }
 }
@@ -45,17 +45,17 @@
   .error-icon {
     width: 64px;
     height: 64px;
-    color: #ef4444;
+    color: var(--color-danger);
   }
 
   h3 {
-    color: #111827;
+    color: var(--text-dark);
     font-size: 20px;
     margin: 0;
   }
 
   p {
-    color: #6b7280;
+    color: var(--text-muted);
     font-size: 14px;
     margin: 0;
     max-width: 400px;
@@ -64,11 +64,11 @@
 
 /* Profile Header Card */
 .profile-header-card {
-  background: white;
+  background: var(--bg-white);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   margin-bottom: 24px;
 }
 
@@ -106,13 +106,13 @@
   height: 96px;
   border-radius: 50%;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
+  color: var(--bg-white);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
   font-weight: 700;
-  border: 4px solid white;
+  border: 4px solid var(--bg-white);
   box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
   letter-spacing: 1px;
 }
@@ -132,10 +132,10 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  color: #374151;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -145,19 +145,19 @@
   .btn-icon {
     width: 18px;
     height: 18px;
-    color: #6366f1;
+    color: var(--color-indigo);
     transition: transform 0.3s ease;
   }
 
   &:hover {
-    background: #ede9fe;
-    border-color: #c4b5fd;
-    color: #4f46e5;
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: var(--color-indigo-dark);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 
     .btn-icon {
       transform: rotate(90deg);
-      color: #4f46e5;
+      color: var(--color-indigo-dark);
     }
   }
 }
@@ -165,7 +165,7 @@
 .profile-name {
   font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-dark);
   margin: 0 0 6px;
   line-height: 1.2;
 }
@@ -174,7 +174,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 15px;
   margin: 0;
 }
@@ -194,10 +194,10 @@
 }
 
 .info-card {
-  background: white;
+  background: var(--bg-white);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
@@ -212,19 +212,19 @@
   align-items: center;
   gap: 12px;
   padding: 20px 24px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafbfc;
+  border-bottom: 1px solid var(--bg-lighter);
+  background: var(--bg-subtle);
 
   .card-icon {
     width: 22px;
     height: 22px;
-    color: #6366f1;
+    color: var(--color-indigo);
   }
 
   h2 {
     font-size: 16px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-dark);
     margin: 0;
   }
 }
@@ -241,23 +241,23 @@
   transition: background 0.15s ease;
 
   &:hover {
-    background: #f9fafb;
+    background: var(--bg-subtle);
   }
 
   & + .info-row {
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--bg-lighter);
   }
 }
 
 .info-label {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .info-value {
   font-size: 14px;
-  color: #111827;
+  color: var(--text-dark);
   font-weight: 600;
   text-align: right;
   max-width: 60%;
@@ -276,31 +276,31 @@
   padding: 12px 0;
 
   & + .tip-item {
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid var(--bg-lighter);
   }
 
   .tip-icon {
     width: 20px;
     height: 20px;
-    color: #6366f1;
+    color: var(--color-indigo);
     flex-shrink: 0;
     margin-top: 1px;
   }
 
   span {
     font-size: 14px;
-    color: #374151;
+    color: var(--text-secondary);
     line-height: 1.5;
   }
 }
 
 /* Quick Links */
 .quick-links-section {
-  background: white;
+  background: var(--bg-white);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
 }
 
 .section-title {
@@ -309,13 +309,13 @@
   gap: 10px;
   font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-dark);
   margin: 0 0 20px;
 
   .section-icon {
     width: 22px;
     height: 22px;
-    color: #6366f1;
+    color: var(--color-indigo);
   }
 }
 
@@ -332,8 +332,8 @@
   gap: 12px;
   padding: 24px 16px;
   border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  background: #fafbfc;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
   text-decoration: none;
   transition: all 0.25s ease;
   cursor: pointer;
@@ -341,29 +341,29 @@
   .ql-icon {
     width: 28px;
     height: 28px;
-    color: #6366f1;
+    color: var(--color-indigo);
     transition: transform 0.25s ease;
   }
 
   span {
     font-size: 14px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
   }
 
   &:hover {
-    background: #ede9fe;
-    border-color: #c4b5fd;
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.35);
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
 
     .ql-icon {
       transform: scale(1.15);
-      color: #4f46e5;
+      color: var(--color-indigo-dark);
     }
 
     span {
-      color: #4f46e5;
+      color: var(--color-indigo-dark);
     }
   }
 }
