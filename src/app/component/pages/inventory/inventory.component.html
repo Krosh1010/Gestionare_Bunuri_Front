@@ -121,6 +121,34 @@
                   </div>
                 </div>
               </div>
+
+              <div class="filter-divider"></div>
+
+              <div class="filter-section">
+                <h4 class="filter-section-title">
+                  <span class="section-icon">🔍</span>Caută după cod de bare
+                </h4>
+                <div class="barcode-search-group">
+                  <div class="barcode-input-wrapper">
+                    <input
+                      type="text"
+                      class="price-input barcode-search-input"
+                      placeholder="Introduceți codul de bare..."
+                      [(ngModel)]="barcodeSearch"
+                      (keyup.enter)="searchByBarcode()"
+                    >
+                    <button class="btn-barcode-search" (click)="searchByBarcode()" [disabled]="isBarcodeSearching || !barcodeSearch.trim()">
+                      <span *ngIf="!isBarcodeSearching">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="15" height="15">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                      </span>
+                      <span *ngIf="isBarcodeSearching" class="spinner" style="width:14px;height:14px;border-width:2px;"></span>
+                    </button>
+                  </div>
+                  <p class="barcode-search-error" *ngIf="barcodeSearchError">{{ barcodeSearchError }}</p>
+                </div>
+              </div>
             </div>
             
             <div class="filter-panel-footer">
@@ -545,6 +573,10 @@
         <div class="form-group">
           <label>Data achiziției</label>
           <input type="date" formControlName="purchaseDate" [max]="todayString">
+        </div>
+        <div class="form-group">
+          <label>Cod de bare</label>
+          <input type="text" formControlName="barcode" placeholder="Ex: 1234567890128">
         </div>
         <!-- Buton pentru setări garanție/asigurare, doar la editare, pe același rând cu data achiziției -->
         <div class="form-group" *ngIf="editingAsset">

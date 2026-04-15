@@ -74,6 +74,20 @@
         <p class="description-text">{{asset.description}}</p>
       </div>
 
+      <!-- Barcode -->
+      <div class="detail-section">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h1M4 10h1M4 14h1M4 18h1M8 6h1v12H8zm4 0h1v12h-1zm4 0h1v12h-1zm4 0h1v12h-1zM20 6h1M20 10h1M20 14h1M20 18h1"/>
+          </svg>
+          Cod de bare
+        </h3>
+        <div class="barcode-container">
+          <span class="barcode-value" *ngIf="asset.barcode">{{asset.barcode}}</span>
+          <span class="barcode-missing" *ngIf="!asset.barcode">Lipsește</span>
+        </div>
+      </div>
+
       <!-- Warranty Section -->
       <div class="detail-section coverage-section">
         <h3 class="section-title">

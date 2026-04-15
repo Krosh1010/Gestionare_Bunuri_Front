@@ -351,6 +351,30 @@
   border: 1px solid var(--border-light);
 }
 
+.barcode-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 10px 18px;
+}
+
+.barcode-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--text-dark);
+}
+
+.barcode-missing {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 // ============================
 // Coverage Cards (Warranty, Insurance, Tracker)
 // ============================

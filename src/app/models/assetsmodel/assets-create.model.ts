@@ -6,4 +6,5 @@ export interface AssetsCreateModel {
     category: string;
     purchaseDate: string;
     description: string;
+    barcode?: string;
 }

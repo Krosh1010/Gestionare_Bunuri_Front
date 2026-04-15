@@ -30,5 +30,8 @@ export class SpaceService {
     async updateSpace(spaceId: string, spaceData: SpaceCreateModel): Promise<any> {
         return this.apiService.patchData(`api/Spaces/${spaceId}`, spaceData);
     }
+    async searchSpaces(query: string): Promise<any> {
+        return this.apiService.getData(`api/Spaces/search?query=${encodeURIComponent(query)}`);
+    }
 
 }

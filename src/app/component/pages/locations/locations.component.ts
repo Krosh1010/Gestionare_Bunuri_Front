@@ -29,6 +29,11 @@ export class LocationsComponent implements OnInit {
             this.treePickerVisible = false;
           }
         }
+        if (this.showSpaceSearchResults) {
+          if (!target.closest('.space-search-wrapper')) {
+            this.showSpaceSearchResults = false;
+          }
+        }
       }
     // For dropdown menu state
     activeMenu: number | null = null;
@@ -72,6 +77,13 @@ export class LocationsComponent implements OnInit {
   treePickerVisible = false;
   selectedTreeNode: any = null;
   treeLoading = false;
+
+  // Space search
+  spaceSearchQuery: string = '';
+  spaceSearchResults: any[] = [];
+  isSearchingSpaces = false;
+  showSpaceSearchResults = false;
+  private spaceSearchTimeout: any = null;
 
   constructor(private fb: FormBuilder, private spaceService: SpaceService) {
     this.locationForm = this.fb.group({
@@ -141,6 +153,9 @@ export class LocationsComponent implements OnInit {
     this.treePickerVisible = false;
     this.parentLevels = [];
     this.selectedParentIds = [];
+    this.spaceSearchQuery = '';
+    this.spaceSearchResults = [];
+    this.showSpaceSearchResults = false;
   }
 
   async onParentSelected(level: number, parentId: number) {
@@ -445,6 +460,7 @@ async populateParentDropdowns(spaceId: number | null) {
 
   async openTreePicker() {
     this.treePickerVisible = true;
+    this.showSpaceSearchResults = false;
     if (this.treeNodes.length === 0) {
       this.treeLoading = true;
       try {
@@ -459,6 +475,50 @@ async populateParentDropdowns(spaceId: number | null) {
       } finally {
         this.treeLoading = false;
       }
+    }
+    // Auto-expand to selected node
+    if (this.selectedTreeNode) {
+      await this.expandTreeToNode(this.selectedTreeNode.id);
+    }
+  }
+
+  private async expandTreeToNode(spaceId: number): Promise<void> {
+    try {
+      const chain = await this.spaceService.getParentChain(spaceId.toString());
+      if (!chain || chain.length === 0) return;
+
+      let currentLevel = this.treeNodes;
+      for (const chainNode of chain) {
+        const treeNode = currentLevel.find((n: any) => n.id === chainNode.id);
+        if (!treeNode) break;
+
+        // Load children if not loaded
+        if (!treeNode.childrenLoaded) {
+          treeNode.loadingChildren = true;
+          try {
+            const children = await this.spaceService.getSpaceByIdParents(treeNode.id.toString());
+            treeNode.children = children.map((c: any) => ({
+              ...c,
+              expanded: false,
+              childrenLoaded: false,
+              children: [],
+              loadingChildren: false
+            }));
+            treeNode.childrenLoaded = true;
+          } finally {
+            treeNode.loadingChildren = false;
+          }
+        }
+
+        // Expand if it has children and is not the final node
+        if (treeNode.children.length > 0) {
+          treeNode.expanded = true;
+        }
+
+        currentLevel = treeNode.children;
+      }
+    } catch {
+      // Silently fail - tree just won't auto-expand
     }
   }
 
@@ -502,5 +562,65 @@ async populateParentDropdowns(spaceId: number | null) {
   clearTreeSelection() {
     this.selectedTreeNode = null;
     this.locationForm.patchValue({ parentSpaceId: null });
+    this.spaceSearchQuery = '';
+    this.spaceSearchResults = [];
+    this.showSpaceSearchResults = false;
+  }
+
+  startEditingParent(): void {
+    this.selectedTreeNode = null;
+    this.locationForm.patchValue({ parentSpaceId: null });
+    this.spaceSearchQuery = '';
+    this.treePickerVisible = false;
+  }
+
+  // Space search methods
+  onSpaceSearchInput(): void {
+    const query = this.spaceSearchQuery.trim();
+    if (this.spaceSearchTimeout) {
+      clearTimeout(this.spaceSearchTimeout);
+    }
+    if (query.length < 2) {
+      this.spaceSearchResults = [];
+      this.showSpaceSearchResults = false;
+      return;
+    }
+    this.spaceSearchTimeout = setTimeout(() => {
+      this.performSpaceSearch(query);
+    }, 300);
+  }
+
+  async performSpaceSearch(query: string): Promise<void> {
+    this.isSearchingSpaces = true;
+    this.showSpaceSearchResults = true;
+    try {
+      const results = await this.spaceService.searchSpaces(query);
+      this.spaceSearchResults = Array.isArray(results) ? results : [];
+    } catch {
+      this.spaceSearchResults = [];
+    } finally {
+      this.isSearchingSpaces = false;
+    }
+  }
+
+  selectSpaceFromSearch(space: any): void {
+    this.selectedTreeNode = { ...space, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
+    this.locationForm.patchValue({ parentSpaceId: space.id });
+    this.spaceSearchQuery = '';
+    this.showSpaceSearchResults = false;
+    // Reset tree so it reloads with auto-expansion next time
+    this.treeNodes = [];
+  }
+
+  clearSpaceSearch(): void {
+    this.spaceSearchQuery = '';
+    this.spaceSearchResults = [];
+    this.showSpaceSearchResults = false;
+  }
+
+  onSpaceSearchFocus(): void {
+    if (this.spaceSearchQuery.trim().length >= 2) {
+      this.showSpaceSearchResults = true;
+    }
   }
 }

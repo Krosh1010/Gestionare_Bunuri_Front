@@ -46,6 +46,9 @@ export class AssetsService {
     async updateAsset(assetId: number, assetData: any): Promise<AssetsCreateModel> {
         return this.apiService.patchData(`api/Assets/${assetId}`, assetData);
     }
+    async getAssetByBarcode(barcode: string): Promise<any> {
+        return this.apiService.getData(`api/Assets/barcode/${encodeURIComponent(barcode)}`);
+    }
 
 
 }

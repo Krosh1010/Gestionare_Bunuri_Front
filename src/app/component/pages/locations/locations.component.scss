@@ -779,6 +779,63 @@
 }
 
 /* ========================================
+   Space Search Styles (inside tree picker)
+   ======================================== */
+
+.space-search-empty {
+  padding: 16px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.space-search-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--bg-lighter);
+  transition: background 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.06);
+  }
+}
+
+.space-search-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-dark);
+  line-height: 1.4;
+}
+
+.space-search-item-path {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.space-search-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted-lt);
+}
+
+.space-type-badge {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-indigo-dark);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ========================================
    Tree Picker Component
    ======================================== */
 
@@ -817,6 +874,32 @@
     border-color: var(--color-indigo);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
   }
+
+  &.is-focused {
+    border-color: var(--color-indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+}
+
+.tree-combobox-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-dark);
+  line-height: 1.4;
+  padding: 0;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--text-muted-lt);
+  }
+}
+
+.space-search-spinner {
+  flex-shrink: 0;
+  margin-right: 4px;
 }
 
 .tree-display-text {

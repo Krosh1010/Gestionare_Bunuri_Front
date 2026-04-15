@@ -100,6 +100,11 @@ selectedSpaceName: string | null = null;
   showAssetDetail: boolean = false;
   selectedAssetId: number | string | null = null;
 
+  // Barcode search
+  barcodeSearch: string = '';
+  isBarcodeSearching: boolean = false;
+  barcodeSearchError: string = '';
+
   constructor(
     private fb: FormBuilder,
     private assetsService: AssetsService,
@@ -114,7 +119,8 @@ selectedSpaceName: string | null = null;
       location: [''],
       purchaseDate: [''],
       warrantyEnd: [''],
-      spaceId: [null, Validators.required]
+      spaceId: [null, Validators.required],
+      barcode: ['']
     });
     this.filters = this.assetFilterService.getDefaultFilter();
   }
@@ -239,6 +245,8 @@ selectedSpaceName: string | null = null;
     this.filterSelectedParentIds = [];
     this.activeFilters = 0;
     this.activeFiltersParams = null;
+    this.barcodeSearch = '';
+    this.barcodeSearchError = '';
     await this.loadAssets(1);
     this.showFilter = false;
   }
@@ -311,7 +319,8 @@ async openAddModal() {
     value: 0,
     purchaseDate: '',
     warrantyEnd: '',
-    spaceId: null
+    spaceId: null,
+    barcode: ''
   });
 
   this.parentLevels = [];
@@ -438,6 +447,26 @@ async openAddModal() {
     this.selectedAssetId = null;
   }
 
+  async searchByBarcode(): Promise<void> {
+    const barcode = this.barcodeSearch.trim();
+    if (!barcode) return;
+    this.isBarcodeSearching = true;
+    this.barcodeSearchError = '';
+    try {
+      const asset = await this.assetsService.getAssetByBarcode(barcode);
+      if (asset?.id) {
+        this.showFilter = false;
+        this.openAssetDetail(asset.id);
+      } else {
+        this.barcodeSearchError = 'Niciun bun găsit cu acest cod de bare.';
+      }
+    } catch {
+      this.barcodeSearchError = 'Niciun bun găsit cu acest cod de bare.';
+    } finally {
+      this.isBarcodeSearching = false;
+    }
+  }
+
   onDetailEdit(asset: AssetsReadModel): void {
     this.closeAssetDetail();
     this.editAsset(asset);
@@ -472,6 +501,10 @@ async openAddModal() {
         if (formData.purchaseDate !== this.formatDate(this.editingAsset.purchaseDate)) patch.purchaseDate = formData.purchaseDate;
         if (formData.description !== this.editingAsset.description) patch.description = formData.description;
         if (formData.warrantyEnd !== this.formatDate(this.editingAsset.warrantyEnd ?? '')) patch.warrantyEnd = formData.warrantyEnd;
+        if ((formData.barcode || null) !== (this.editingAsset.barcode || null)) {
+          patch.barcode = formData.barcode || null;
+          patch.barcodeIsSet = true;
+        }
         if (Object.keys(patch).length === 0) {
           alert('Nu ai modificat nimic.');
           return;
@@ -491,7 +524,8 @@ async openAddModal() {
           value: formData.value,
           category: formData.category,
           purchaseDate: formData.purchaseDate,
-          description: formData.description
+          description: formData.description,
+          barcode: formData.barcode || null
         };
         try {
           const created = await this.assetsService.createAsset(assetToSend);

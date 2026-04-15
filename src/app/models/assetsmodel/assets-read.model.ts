@@ -34,4 +34,5 @@ export interface AssetsReadModel {
     loanedAt?: string | null;
     loanReturnedAt?: string | null;
     loanConditionOnReturn?: string | null;
+    barcode?: string | null;
 }
