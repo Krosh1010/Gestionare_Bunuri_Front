@@ -25,8 +25,10 @@ export interface AssetsReadModel {
     customTrackerStatus?: 0 | 1 | 2 | 3 | null | undefined;
     warrantyDocumentId?: string | null;
     warrantyDocumentFileName?: string | null;
+    warrantySpaceName?: string | null;
     insuranceDocumentId?: string | null;
     insuranceDocumentFileName?: string | null;
+    insuranceSpaceName?: string | null;
     isLoaned?: boolean;
     loanedToName?: string | null;
     loanCondition?: string | null;

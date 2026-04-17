@@ -525,6 +525,12 @@
   font-size: 13px;
   color: var(--text-dark);
   font-weight: 600;
+
+  &.faded {
+    color: var(--text-muted, #999);
+    font-weight: 400;
+    font-style: italic;
+  }
 }
 
 .document-row {

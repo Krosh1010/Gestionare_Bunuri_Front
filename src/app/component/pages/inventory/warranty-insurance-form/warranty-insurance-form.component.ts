@@ -1,10 +1,12 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 import { CustomTrackerService } from '../../../../services/ApiServices/custom.tracker';
 import { LoanService } from '../../../../services/ApiServices/loan.service';
+import { SpaceService } from '../../../../services/ApiServices/space.service';
+
 
 @Component({
   selector: 'app-warranty-insurance-form',
@@ -52,6 +54,21 @@ export class WarrantyInsuranceFormComponent {
   warrantyFileName: string = '';
   insuranceFile: File | null = null;
   insuranceFileName: string = '';
+  loanFiles: File[] = [];
+  loanFileNames: string[] = [];
+
+  // Tree picker state (shared for warranty/insurance)
+  treeNodes: any[] = [];
+  treePickerVisible = false;
+  selectedTreeNode: any = null;
+  treeLoading = false;
+  spaceSearchQuery: string = '';
+  spaceSearchResults: any[] = [];
+  isSearchingSpaces = false;
+  showSpaceSearchResults = false;
+  private spaceSearchTimeout: any = null;
+
+  private spaceSrv = inject(SpaceService);
 
   // Calculează zilele rămase până la expirarea garanției (frontend only)
   calculateWarrantyDays(): number | null {
@@ -96,6 +113,24 @@ export class WarrantyInsuranceFormComponent {
     this.insuranceFileName = '';
   }
 
+  // Selectare fișiere împrumut (multiple)
+  onLoanFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      for (let i = 0; i < input.files.length; i++) {
+        this.loanFiles.push(input.files[i]);
+        this.loanFileNames.push(input.files[i].name);
+      }
+    }
+    input.value = '';
+  }
+
+  // Eliminare fișier împrumut selectat (după index)
+  removeLoanFile(index: number) {
+    this.loanFiles.splice(index, 1);
+    this.loanFileNames.splice(index, 1);
+  }
+
   // Feedback vizual simplu
   message: string = '';
   loading = false;
@@ -131,6 +166,7 @@ export class WarrantyInsuranceFormComponent {
     this.warrantyFile = null;
     this.warrantyFileName = '';
     this.message = '';
+    this.resetTreePicker();
   }
   selectInsurance() {
     this.mode = 'insurance';
@@ -138,6 +174,7 @@ export class WarrantyInsuranceFormComponent {
     this.insuranceFile = null;
     this.insuranceFileName = '';
     this.message = '';
+    this.resetTreePicker();
   }
   selectTracker() {
     this.mode = 'tracker';
@@ -147,6 +184,8 @@ export class WarrantyInsuranceFormComponent {
   selectLoan() {
     this.mode = 'loan';
     this.loan = { loanedToName: '', condition: '', loanedAt: '', notes: '' };
+    this.loanFiles = [];
+    this.loanFileNames = [];
     this.message = '';
   }
 
@@ -159,19 +198,25 @@ export class WarrantyInsuranceFormComponent {
     this.warrantyFileName = '';
     this.insuranceFile = null;
     this.insuranceFileName = '';
+    this.loanFiles = [];
+    this.loanFileNames = [];
     this.message = '';
     this.loading = false;
     this.mode = 'choose';
+    this.resetTreePicker();
   }
 
   async submitWarranty() {
     if (!this.assetId || !this.warranty.provider || !this.warranty.start || !this.warranty.end) return;
-    const payload = {
+    const payload: any = {
       assetId: this.assetId,
       provider: this.warranty.provider,
       startDate: this.warranty.start,
       endDate: this.warranty.end
     };
+    if (this.selectedTreeNode) {
+      payload.spaceId = this.selectedTreeNode.id;
+    }
     this.loading = true;
     this.message = '';
     try {
@@ -189,13 +234,16 @@ export class WarrantyInsuranceFormComponent {
   }
   async submitInsurance() {
     if (!this.assetId || !this.insurance.company || !this.insurance.insuredValue || !this.insurance.start || !this.insurance.end) return;
-    const payload = {
+    const payload: any = {
       assetId: this.assetId,
       company: this.insurance.company,
       insuredValue: this.insurance.insuredValue,
       startDate: this.insurance.start,
       endDate: this.insurance.end
     };
+    if (this.selectedTreeNode) {
+      payload.spaceId = this.selectedTreeNode.id;
+    }
     this.loading = true;
     this.message = '';
     try {
@@ -247,7 +295,7 @@ export class WarrantyInsuranceFormComponent {
     this.loading = true;
     this.message = '';
     try {
-      await this.loanSrv.createLoan(payload);
+      await this.loanSrv.createLoan(payload, this.loanFiles.length > 0 ? this.loanFiles : undefined);
       this.message = 'Împrumutul a fost înregistrat cu succes!';
       setTimeout(() => {
         this.backToChoose();
@@ -261,5 +309,136 @@ export class WarrantyInsuranceFormComponent {
   }
   onClose() {
     this.close.emit();
+  }
+
+  // --- Tree picker methods ---
+  resetTreePicker() {
+    this.selectedTreeNode = null;
+    this.treeNodes = [];
+    this.treePickerVisible = false;
+    this.spaceSearchQuery = '';
+    this.spaceSearchResults = [];
+    this.showSpaceSearchResults = false;
+  }
+
+  async openTreePicker(): Promise<void> {
+    this.treePickerVisible = true;
+    this.showSpaceSearchResults = false;
+    if (this.treeNodes.length === 0) {
+      this.treeLoading = true;
+      try {
+        const roots = await this.spaceSrv.getSpacesParents();
+        this.treeNodes = roots.map((r: any) => ({
+          ...r, expanded: false, childrenLoaded: false, children: [], loadingChildren: false
+        }));
+      } finally {
+        this.treeLoading = false;
+      }
+    }
+    if (this.selectedTreeNode?.id) {
+      try {
+        const chain: any[] = await this.spaceSrv.getParentChain(this.selectedTreeNode.id.toString());
+        let currentLevel = this.treeNodes;
+        for (const ancestor of chain) {
+          const node = currentLevel.find((n: any) => n.id === ancestor.id);
+          if (!node) break;
+          if (!node.childrenLoaded) {
+            const children = await this.spaceSrv.getSpaceByIdParents(node.id.toString());
+            node.children = children.map((c: any) => ({ ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+            node.childrenLoaded = true;
+          }
+          if (node.children.length > 0) { node.expanded = true; }
+          currentLevel = node.children;
+        }
+      } catch {}
+    }
+  }
+
+  closeTreePicker(): void {
+    this.treePickerVisible = false;
+  }
+
+  async toggleTreeNode(node: any): Promise<void> {
+    if (node.expanded) { node.expanded = false; return; }
+    if (!node.childrenLoaded) {
+      node.loadingChildren = true;
+      try {
+        const children = await this.spaceSrv.getSpaceByIdParents(node.id.toString());
+        node.children = children.map((c: any) => ({
+          ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false
+        }));
+        node.childrenLoaded = true;
+      } finally {
+        node.loadingChildren = false;
+      }
+    }
+    if (node.children.length > 0) { node.expanded = true; }
+  }
+
+  selectTreeNode(node: any): void {
+    this.selectedTreeNode = node;
+    this.treePickerVisible = false;
+  }
+
+  clearTreeSelection(): void {
+    this.selectedTreeNode = null;
+    this.spaceSearchQuery = '';
+    this.spaceSearchResults = [];
+    this.showSpaceSearchResults = false;
+    this.treeNodes = [];
+  }
+
+  onSpaceSearchInput(): void {
+    const query = this.spaceSearchQuery.trim();
+    if (this.spaceSearchTimeout) { clearTimeout(this.spaceSearchTimeout); }
+    if (query.length < 2) {
+      this.spaceSearchResults = [];
+      this.showSpaceSearchResults = false;
+      return;
+    }
+    this.treePickerVisible = false;
+    this.spaceSearchTimeout = setTimeout(() => { this.performSpaceSearch(query); }, 300);
+  }
+
+  async performSpaceSearch(query: string): Promise<void> {
+    this.isSearchingSpaces = true;
+    this.showSpaceSearchResults = true;
+    try {
+      const results = await this.spaceSrv.searchSpaces(query);
+      this.spaceSearchResults = Array.isArray(results) ? results : [];
+    } catch {
+      this.spaceSearchResults = [];
+    } finally {
+      this.isSearchingSpaces = false;
+    }
+  }
+
+  async selectSpaceFromSearch(space: any): Promise<void> {
+    this.selectedTreeNode = { ...space, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
+    this.spaceSearchQuery = '';
+    this.showSpaceSearchResults = false;
+    this.treeNodes = [];
+  }
+
+  startEditingSpace(): void {
+    this.selectedTreeNode = null;
+    this.spaceSearchQuery = '';
+    this.treePickerVisible = false;
+    this.treeNodes = [];
+  }
+
+  onSpaceSearchFocus(): void {
+    if (this.spaceSearchQuery.trim().length >= 2) {
+      this.showSpaceSearchResults = true;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.tree-picker-wrapper')) {
+      this.showSpaceSearchResults = false;
+      this.treePickerVisible = false;
+    }
   }
 }

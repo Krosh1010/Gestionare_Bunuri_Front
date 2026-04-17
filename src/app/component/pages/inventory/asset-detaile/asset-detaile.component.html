@@ -127,6 +127,11 @@
                 {{asset.warrantyDocumentFileName}}
               </button>
             </div>
+            <div class="coverage-row">
+              <span class="coverage-label">Spațiu</span>
+              <span class="coverage-value" *ngIf="asset.warrantySpaceName">{{asset.warrantySpaceName}}</span>
+              <span class="coverage-value faded" *ngIf="!asset.warrantySpaceName">Lipsă</span>
+            </div>
           </div>
           <div class="coverage-empty" *ngIf="!asset.warrantyStartDate && !asset.warrantyEndDate && !asset.warrantyProvider">
             <span>Nicio informație despre garanție</span>
@@ -176,6 +181,11 @@
                 </svg>
                 {{asset.insuranceDocumentFileName}}
               </button>
+            </div>
+            <div class="coverage-row">
+              <span class="coverage-label">Spațiu</span>
+              <span class="coverage-value" *ngIf="asset.insuranceSpaceName">{{asset.insuranceSpaceName}}</span>
+              <span class="coverage-value faded" *ngIf="!asset.insuranceSpaceName">Lipsă</span>
             </div>
           </div>
           <div class="coverage-empty" *ngIf="!asset.insuranceStartDate && !asset.insuranceEndDate && !asset.insuranceCompany && !asset.insuranceValue">

@@ -85,6 +85,18 @@ selectedSpaceName: string | null = null;
   isLoadingSpaces = false;
   isLeafSpaceSelected = false;
 
+  // Tree picker + space search
+  treeNodes: any[] = [];
+  treePickerVisible = false;
+  selectedTreeNode: any = null;
+  treeLoading = false;
+
+  spaceSearchQuery: string = '';
+  spaceSearchResults: any[] = [];
+  isSearchingSpaces = false;
+  showSpaceSearchResults = false;
+  private spaceSearchTimeout: any = null;
+
   // Pagination
   currentPage: number = 1;
   pageSize: number = 10;
@@ -326,14 +338,12 @@ async openAddModal() {
   this.parentLevels = [];
   this.selectedParentIds = [];
   this.isLeafSpaceSelected = false;
-
-  this.isLoadingSpaces = true;
-  try {
-    const roots = await this.spaceService.getSpacesParents();
-    this.parentLevels.push(roots);
-  } finally {
-    this.isLoadingSpaces = false;
-  }
+  this.selectedTreeNode = null;
+  this.treeNodes = [];
+  this.treePickerVisible = false;
+  this.spaceSearchQuery = '';
+  this.spaceSearchResults = [];
+  this.showSpaceSearchResults = false;
 
   this.showModal = true;
 }
@@ -367,6 +377,162 @@ async openAddModal() {
   }
 }
 
+  // --- Tree picker methods ---
+  async openTreePicker(): Promise<void> {
+    this.treePickerVisible = true;
+    this.showSpaceSearchResults = false;
+    if (this.treeNodes.length === 0) {
+      this.treeLoading = true;
+      try {
+        const roots = await this.spaceService.getSpacesParents();
+        this.treeNodes = roots.map((r: any) => ({
+          ...r,
+          expanded: false,
+          childrenLoaded: false,
+          children: [],
+          loadingChildren: false
+        }));
+      } finally {
+        this.treeLoading = false;
+      }
+    }
+    if (this.selectedTreeNode) {
+      await this.expandTreeToNode(this.selectedTreeNode.id);
+    }
+  }
+
+  private async expandTreeToNode(spaceId: number): Promise<void> {
+    try {
+      const chain = await this.spaceService.getParentChain(spaceId.toString());
+      if (!chain || chain.length === 0) return;
+      let currentLevel = this.treeNodes;
+      for (const chainNode of chain) {
+        const treeNode = currentLevel.find((n: any) => n.id === chainNode.id);
+        if (!treeNode) break;
+        if (!treeNode.childrenLoaded) {
+          treeNode.loadingChildren = true;
+          try {
+            const children = await this.spaceService.getSpaceByIdParents(treeNode.id.toString());
+            treeNode.children = children.map((c: any) => ({
+              ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false
+            }));
+            treeNode.childrenLoaded = true;
+          } finally {
+            treeNode.loadingChildren = false;
+          }
+        }
+        if (treeNode.children.length > 0) {
+          treeNode.expanded = true;
+        }
+        currentLevel = treeNode.children;
+      }
+    } catch { /* silently fail */ }
+  }
+
+  closeTreePicker(): void {
+    this.treePickerVisible = false;
+  }
+
+  async toggleTreeNode(node: any): Promise<void> {
+    if (node.expanded) {
+      node.expanded = false;
+      return;
+    }
+    if (!node.childrenLoaded) {
+      node.loadingChildren = true;
+      try {
+        const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+        node.children = children.map((c: any) => ({
+          ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false
+        }));
+        node.childrenLoaded = true;
+      } finally {
+        node.loadingChildren = false;
+      }
+    }
+    if (node.children.length > 0) {
+      node.expanded = true;
+    }
+  }
+
+  selectTreeNode(node: any): void {
+    this.selectedTreeNode = node;
+    this.assetForm.patchValue({ spaceId: node.id });
+    this.isLeafSpaceSelected = true;
+    this.treePickerVisible = false;
+  }
+
+  clearTreeSelection(): void {
+    this.selectedTreeNode = null;
+    this.assetForm.patchValue({ spaceId: null });
+    this.isLeafSpaceSelected = false;
+    this.spaceSearchQuery = '';
+    this.spaceSearchResults = [];
+    this.showSpaceSearchResults = false;
+    this.treeNodes = [];
+  }
+
+  // --- Space search methods ---
+  onSpaceSearchInput(): void {
+    const query = this.spaceSearchQuery.trim();
+    if (this.spaceSearchTimeout) {
+      clearTimeout(this.spaceSearchTimeout);
+    }
+    if (query.length < 2) {
+      this.spaceSearchResults = [];
+      this.showSpaceSearchResults = false;
+      return;
+    }
+    this.treePickerVisible = false;
+    this.spaceSearchTimeout = setTimeout(() => {
+      this.performSpaceSearch(query);
+    }, 300);
+  }
+
+  async performSpaceSearch(query: string): Promise<void> {
+    this.isSearchingSpaces = true;
+    this.showSpaceSearchResults = true;
+    try {
+      const results = await this.spaceService.searchSpaces(query);
+      this.spaceSearchResults = Array.isArray(results) ? results : [];
+    } catch {
+      this.spaceSearchResults = [];
+    } finally {
+      this.isSearchingSpaces = false;
+    }
+  }
+
+  selectSpaceFromSearch(space: any): void {
+    this.selectedTreeNode = { ...space, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
+    this.assetForm.patchValue({ spaceId: space.id });
+    this.isLeafSpaceSelected = true;
+    this.spaceSearchQuery = '';
+    this.showSpaceSearchResults = false;
+    this.treeNodes = [];
+  }
+
+  startEditingSpace(): void {
+    this.selectedTreeNode = null;
+    this.assetForm.patchValue({ spaceId: null });
+    this.spaceSearchQuery = '';
+    this.treePickerVisible = false;
+  }
+
+  onSpaceSearchFocus(): void {
+    if (this.spaceSearchQuery.trim().length >= 2) {
+      this.showSpaceSearchResults = true;
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.tree-picker-wrapper')) {
+      this.showSpaceSearchResults = false;
+      this.treePickerVisible = false;
+    }
+  }
+
     editAsset(asset: AssetsReadModel) {
       this.editAssetById(asset.id);
     }
@@ -382,39 +548,31 @@ async openAddModal() {
       this.parentLevels = [];
       this.selectedParentIds = [];
       this.isLeafSpaceSelected = false;
+      this.selectedTreeNode = null;
+      this.treeNodes = [];
+      this.treePickerVisible = false;
+      this.spaceSearchQuery = '';
+      this.spaceSearchResults = [];
+      this.showSpaceSearchResults = false;
+
       if (asset.spaceId) {
+        // Construiește selectedTreeNode din parent chain pentru a afișa spațiul selectat
         let parentChain: any[] = [];
         try {
           parentChain = await this.spaceService.getParentChain(asset.spaceId.toString());
         } catch {
           parentChain = [];
         }
-        if (!parentChain || parentChain.length === 0) {
-          const roots = await this.spaceService.getSpacesParents();
-          this.parentLevels = [roots];
+        if (parentChain && parentChain.length > 0) {
+          const lastSpace = parentChain[parentChain.length - 1];
+          this.selectedTreeNode = { ...lastSpace, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
         } else {
-          let currentLevelSpaces = await this.spaceService.getSpacesParents();
-          this.parentLevels = [currentLevelSpaces];
-          this.selectedParentIds = [];
-          for (let i = 0; i < parentChain.length; i++) {
-            const parent = parentChain[i];
-            this.selectedParentIds[i] = parent.id;
-            if (i < parentChain.length - 1) {
-              currentLevelSpaces = await this.spaceService.getSpaceByIdParents(parent.id.toString());
-              this.parentLevels.push(currentLevelSpaces);
-            }
-          }
+          this.selectedTreeNode = { id: asset.spaceId, name: (asset as any).spaceName || `Spațiu #${asset.spaceId}`, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
         }
         this.assetForm.patchValue({ spaceId: asset.spaceId });
-        const children = await this.spaceService.getSpaceByIdParents(asset.spaceId.toString());
-        if (children && children.length > 0) {
-          this.parentLevels.push(children);
-        }
         this.isLeafSpaceSelected = true;
-      } else {
-        const roots = await this.spaceService.getSpacesParents();
-        this.parentLevels = [roots];
       }
+
       this.assetForm.patchValue({
         ...asset,
         purchaseDate: asset.purchaseDate ? this.formatDate(asset.purchaseDate) : '',

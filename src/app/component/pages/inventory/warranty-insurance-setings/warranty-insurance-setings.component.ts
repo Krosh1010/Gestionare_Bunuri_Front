@@ -1,10 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { warrantyService } from '../../../../services/ApiServices/warranty.service';
 import { InsuranceService } from '../../../../services/ApiServices/insurance.service';
 import { CustomTrackerService } from '../../../../services/ApiServices/custom.tracker';
 import { LoanService } from '../../../../services/ApiServices/loan.service';
+import { SpaceService } from '../../../../services/ApiServices/space.service';
 @Component({
   selector: 'app-warranty-insurance-setings',
   standalone: true,
@@ -48,12 +49,41 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   insuranceNewFile: File | null = null;
   insuranceNewFileName: string = '';
 
+  // Fișiere pentru loan (multiple)
+  loanEditFiles: File[] = [];
+  loanEditFileNames: string[] = [];
+  loanNewFiles: File[] = [];
+  loanNewFileNames: string[] = [];
+
+  // Warranty tree picker state
+  warrantyTreeNodes: any[] = [];
+  warrantyTreePickerVisible = false;
+  warrantySelectedTreeNode: any = null;
+  warrantyTreeLoading = false;
+  warrantySpaceSearchQuery = '';
+  warrantySpaceSearchResults: any[] = [];
+  warrantyIsSearchingSpaces = false;
+  warrantyShowSpaceSearchResults = false;
+  private warrantySpaceSearchTimeout: any = null;
+
+  // Insurance tree picker state
+  insuranceTreeNodes: any[] = [];
+  insuranceTreePickerVisible = false;
+  insuranceSelectedTreeNode: any = null;
+  insuranceTreeLoading = false;
+  insuranceSpaceSearchQuery = '';
+  insuranceSpaceSearchResults: any[] = [];
+  insuranceIsSearchingSpaces = false;
+  insuranceShowSpaceSearchResults = false;
+  private insuranceSpaceSearchTimeout: any = null;
+
   constructor(
     private fb: FormBuilder,
     private warrantyService: warrantyService,
     private insuranceService: InsuranceService,
     private customTrackerService: CustomTrackerService,
-    private loanService: LoanService
+    private loanService: LoanService,
+    private spaceService: SpaceService
   ) {}
 
   ngOnInit() {
@@ -122,9 +152,16 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
             startDate: data.startDate ? data.startDate.substring(0, 10) : '',
             endDate: data.endDate ? data.endDate.substring(0, 10) : ''
           });
+          // Set tree picker from loaded data
+          if (data.spaceId) {
+            this.warrantySelectedTreeNode = { id: data.spaceId, name: data.spaceName || 'Spațiu #' + data.spaceId, type: data.spaceType };
+          } else {
+            this.warrantySelectedTreeNode = null;
+          }
         } else {
           this.warrantyData = null;
           this.warrantyForm.reset();
+          this.warrantySelectedTreeNode = null;
         }
       } catch (e: any) {
         if (e && e.status === 404) {
@@ -144,15 +181,20 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     this.loading = true;
     this.error = null;
     try {
-      const payload = {
+      const payload: any = {
         ...this.warrantyForm.value,
         assetId: this.assetId
       };
       if (this.warrantyData) {
         // Update existing warranty
+        payload.spaceIdIsSet = true;
+        payload.spaceId = this.warrantySelectedTreeNode ? this.warrantySelectedTreeNode.id : null;
         await this.warrantyService.updateWarranty(String(this.assetId), payload, this.warrantyEditFile || undefined);
       } else {
         // Create new warranty
+        if (this.warrantySelectedTreeNode) {
+          payload.spaceId = this.warrantySelectedTreeNode.id;
+        }
         await this.warrantyService.createWarranty(payload, this.warrantyNewFile || undefined);
       }
       this.warrantyEditFile = null;
@@ -198,9 +240,16 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
           startDate: data.startDate ? data.startDate.substring(0, 10) : '',
           endDate: data.endDate ? data.endDate.substring(0, 10) : ''
         });
+        // Set tree picker from loaded data
+        if (data.spaceId) {
+          this.insuranceSelectedTreeNode = { id: data.spaceId, name: data.spaceName || 'Spațiu #' + data.spaceId, type: data.spaceType };
+        } else {
+          this.insuranceSelectedTreeNode = null;
+        }
       } else {
         this.insuranceData = null;
         this.insuranceForm.reset();
+        this.insuranceSelectedTreeNode = null;
       }
     } catch (e: any) {
       if (e && e.status === 404) {
@@ -219,13 +268,18 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     this.loading = true;
     this.error = null;
     try {
-      const payload = {
+      const payload: any = {
         ...this.insuranceForm.value,
         assetId: this.assetId
       };
       if (this.insuranceData) {
+        payload.spaceIdIsSet = true;
+        payload.spaceId = this.insuranceSelectedTreeNode ? this.insuranceSelectedTreeNode.id : null;
         await this.insuranceService.updateInsurance(String(this.assetId), payload, this.insuranceEditFile || undefined);
       } else {
+        if (this.insuranceSelectedTreeNode) {
+          payload.spaceId = this.insuranceSelectedTreeNode.id;
+        }
         await this.insuranceService.createInsurance(payload, this.insuranceNewFile || undefined);
       }
       this.insuranceEditFile = null;
@@ -380,7 +434,9 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
         notes: this.loanForm.value.notes || null,
         loanedAt: this.loanForm.value.loanedAt
       };
-      await this.loanService.createLoan(payload);
+      await this.loanService.createLoan(payload, this.loanNewFiles.length > 0 ? this.loanNewFiles : undefined);
+      this.loanNewFiles = [];
+      this.loanNewFileNames = [];
       await this.openLoanSection();
     } catch (e) {
       this.error = 'Eroare la crearea împrumutului';
@@ -418,7 +474,9 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
         notes: this.loanForm.value.notes || null,
         loanedAt: this.loanForm.value.loanedAt
       };
-      await this.loanService.updateLoan(String(this.activeLoanData.id), payload);
+      await this.loanService.updateLoan(String(this.activeLoanData.id), payload, this.loanEditFiles.length > 0 ? this.loanEditFiles : undefined);
+      this.loanEditFiles = [];
+      this.loanEditFileNames = [];
       await this.openLoanSection();
     } catch (e) {
       this.error = 'Eroare la salvarea împrumutului';
@@ -672,6 +730,280 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
     }
     this.loading = false;
   }
-  
-  
+
+  // Loan edit file selection (multiple)
+  onLoanEditFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      for (let i = 0; i < input.files.length; i++) {
+        this.loanEditFiles.push(input.files[i]);
+        this.loanEditFileNames.push(input.files[i].name);
+      }
+    }
+    input.value = '';
+  }
+  removeLoanEditFile(index: number) {
+    this.loanEditFiles.splice(index, 1);
+    this.loanEditFileNames.splice(index, 1);
+  }
+
+  // Loan new file selection (multiple)
+  onLoanNewFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      for (let i = 0; i < input.files.length; i++) {
+        this.loanNewFiles.push(input.files[i]);
+        this.loanNewFileNames.push(input.files[i].name);
+      }
+    }
+    input.value = '';
+  }
+  removeLoanNewFile(index: number) {
+    this.loanNewFiles.splice(index, 1);
+    this.loanNewFileNames.splice(index, 1);
+  }
+
+  // Download loan document by document ID
+  async downloadLoanDocument(doc: any) {
+    if (!doc?.id) return;
+    this.loading = true;
+    try {
+      const blob = await this.loanService.downloadLoanDocument(String(doc.id));
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.fileName || 'document';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      this.error = 'Eroare la descărcarea documentului';
+    }
+    this.loading = false;
+  }
+
+  // Delete single loan document by document ID
+  async deleteLoanDocument(doc: any) {
+    if (!doc?.id) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.loanService.deleteLoanDocument(String(doc.id));
+      // Refresh data
+      await this.openLoanSection();
+    } catch (e) {
+      this.error = 'Eroare la ștergerea documentului';
+    }
+    this.loading = false;
+  }
+
+  // Delete all loan documents
+  async deleteAllLoanDocuments() {
+    if (!this.activeLoanData) return;
+    this.loading = true;
+    this.error = null;
+    try {
+      await this.loanService.deleteAllLoanDocuments(String(this.activeLoanData.id));
+      await this.openLoanSection();
+    } catch (e) {
+      this.error = 'Eroare la ștergerea documentelor';
+    }
+    this.loading = false;
+  }
+
+  // --- Warranty tree picker methods ---
+  async openWarrantyTreePicker(): Promise<void> {
+    this.warrantyTreePickerVisible = true;
+    this.warrantyShowSpaceSearchResults = false;
+    if (this.warrantyTreeNodes.length === 0) {
+      this.warrantyTreeLoading = true;
+      try {
+        const roots = await this.spaceService.getSpacesParents();
+        this.warrantyTreeNodes = roots.map((r: any) => ({ ...r, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+      } finally { this.warrantyTreeLoading = false; }
+    }
+    if (this.warrantySelectedTreeNode?.id) {
+      try {
+        const chain: any[] = await this.spaceService.getParentChain(this.warrantySelectedTreeNode.id.toString());
+        let currentLevel = this.warrantyTreeNodes;
+        for (const ancestor of chain) {
+          const node = currentLevel.find((n: any) => n.id === ancestor.id);
+          if (!node) break;
+          if (!node.childrenLoaded) {
+            const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+            node.children = children.map((c: any) => ({ ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+            node.childrenLoaded = true;
+          }
+          if (node.children.length > 0) { node.expanded = true; }
+          currentLevel = node.children;
+        }
+      } catch {}
+    }
+  }
+
+  async toggleWarrantyTreeNode(node: any): Promise<void> {
+    if (node.expanded) { node.expanded = false; return; }
+    if (!node.childrenLoaded) {
+      node.loadingChildren = true;
+      try {
+        const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+        node.children = children.map((c: any) => ({ ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+        node.childrenLoaded = true;
+      } finally { node.loadingChildren = false; }
+    }
+    if (node.children.length > 0) { node.expanded = true; }
+  }
+
+  selectWarrantyTreeNode(node: any): void {
+    this.warrantySelectedTreeNode = node;
+    this.warrantyTreePickerVisible = false;
+  }
+
+  clearWarrantyTreeSelection(): void {
+    this.warrantySelectedTreeNode = null;
+    this.warrantySpaceSearchQuery = '';
+    this.warrantySpaceSearchResults = [];
+    this.warrantyShowSpaceSearchResults = false;
+    this.warrantyTreeNodes = [];
+  }
+
+  onWarrantySpaceSearchInput(): void {
+    const query = this.warrantySpaceSearchQuery.trim();
+    if (this.warrantySpaceSearchTimeout) { clearTimeout(this.warrantySpaceSearchTimeout); }
+    if (query.length < 2) { this.warrantySpaceSearchResults = []; this.warrantyShowSpaceSearchResults = false; return; }
+    this.warrantyTreePickerVisible = false;
+    this.warrantySpaceSearchTimeout = setTimeout(() => { this.performWarrantySpaceSearch(query); }, 300);
+  }
+
+  async performWarrantySpaceSearch(query: string): Promise<void> {
+    this.warrantyIsSearchingSpaces = true;
+    this.warrantyShowSpaceSearchResults = true;
+    try {
+      const results = await this.spaceService.searchSpaces(query);
+      this.warrantySpaceSearchResults = Array.isArray(results) ? results : [];
+    } catch { this.warrantySpaceSearchResults = []; }
+    finally { this.warrantyIsSearchingSpaces = false; }
+  }
+
+  async selectWarrantySpaceFromSearch(space: any): Promise<void> {
+    this.warrantySelectedTreeNode = { ...space, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
+    this.warrantySpaceSearchQuery = '';
+    this.warrantyShowSpaceSearchResults = false;
+    this.warrantyTreeNodes = [];
+  }
+
+  startEditingWarrantySpace(): void {
+    this.warrantySelectedTreeNode = null;
+    this.warrantySpaceSearchQuery = '';
+    this.warrantyTreePickerVisible = false;
+    this.warrantyTreeNodes = [];
+  }
+
+  onWarrantySpaceSearchFocus(): void {
+    if (this.warrantySpaceSearchQuery.trim().length >= 2) { this.warrantyShowSpaceSearchResults = true; }
+  }
+
+  // --- Insurance tree picker methods ---
+  async openInsuranceTreePicker(): Promise<void> {
+    this.insuranceTreePickerVisible = true;
+    this.insuranceShowSpaceSearchResults = false;
+    if (this.insuranceTreeNodes.length === 0) {
+      this.insuranceTreeLoading = true;
+      try {
+        const roots = await this.spaceService.getSpacesParents();
+        this.insuranceTreeNodes = roots.map((r: any) => ({ ...r, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+      } finally { this.insuranceTreeLoading = false; }
+    }
+    if (this.insuranceSelectedTreeNode?.id) {
+      try {
+        const chain: any[] = await this.spaceService.getParentChain(this.insuranceSelectedTreeNode.id.toString());
+        let currentLevel = this.insuranceTreeNodes;
+        for (const ancestor of chain) {
+          const node = currentLevel.find((n: any) => n.id === ancestor.id);
+          if (!node) break;
+          if (!node.childrenLoaded) {
+            const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+            node.children = children.map((c: any) => ({ ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+            node.childrenLoaded = true;
+          }
+          if (node.children.length > 0) { node.expanded = true; }
+          currentLevel = node.children;
+        }
+      } catch {}
+    }
+  }
+
+  async toggleInsuranceTreeNode(node: any): Promise<void> {
+    if (node.expanded) { node.expanded = false; return; }
+    if (!node.childrenLoaded) {
+      node.loadingChildren = true;
+      try {
+        const children = await this.spaceService.getSpaceByIdParents(node.id.toString());
+        node.children = children.map((c: any) => ({ ...c, expanded: false, childrenLoaded: false, children: [], loadingChildren: false }));
+        node.childrenLoaded = true;
+      } finally { node.loadingChildren = false; }
+    }
+    if (node.children.length > 0) { node.expanded = true; }
+  }
+
+  selectInsuranceTreeNode(node: any): void {
+    this.insuranceSelectedTreeNode = node;
+    this.insuranceTreePickerVisible = false;
+  }
+
+  clearInsuranceTreeSelection(): void {
+    this.insuranceSelectedTreeNode = null;
+    this.insuranceSpaceSearchQuery = '';
+    this.insuranceSpaceSearchResults = [];
+    this.insuranceShowSpaceSearchResults = false;
+    this.insuranceTreeNodes = [];
+  }
+
+  onInsuranceSpaceSearchInput(): void {
+    const query = this.insuranceSpaceSearchQuery.trim();
+    if (this.insuranceSpaceSearchTimeout) { clearTimeout(this.insuranceSpaceSearchTimeout); }
+    if (query.length < 2) { this.insuranceSpaceSearchResults = []; this.insuranceShowSpaceSearchResults = false; return; }
+    this.insuranceTreePickerVisible = false;
+    this.insuranceSpaceSearchTimeout = setTimeout(() => { this.performInsuranceSpaceSearch(query); }, 300);
+  }
+
+  async performInsuranceSpaceSearch(query: string): Promise<void> {
+    this.insuranceIsSearchingSpaces = true;
+    this.insuranceShowSpaceSearchResults = true;
+    try {
+      const results = await this.spaceService.searchSpaces(query);
+      this.insuranceSpaceSearchResults = Array.isArray(results) ? results : [];
+    } catch { this.insuranceSpaceSearchResults = []; }
+    finally { this.insuranceIsSearchingSpaces = false; }
+  }
+
+  async selectInsuranceSpaceFromSearch(space: any): Promise<void> {
+    this.insuranceSelectedTreeNode = { ...space, expanded: false, childrenLoaded: false, children: [], loadingChildren: false };
+    this.insuranceSpaceSearchQuery = '';
+    this.insuranceShowSpaceSearchResults = false;
+    this.insuranceTreeNodes = [];
+  }
+
+  startEditingInsuranceSpace(): void {
+    this.insuranceSelectedTreeNode = null;
+    this.insuranceSpaceSearchQuery = '';
+    this.insuranceTreePickerVisible = false;
+    this.insuranceTreeNodes = [];
+  }
+
+  onInsuranceSpaceSearchFocus(): void {
+    if (this.insuranceSpaceSearchQuery.trim().length >= 2) { this.insuranceShowSpaceSearchResults = true; }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.tree-picker-wrapper')) {
+      this.warrantyShowSpaceSearchResults = false;
+      this.warrantyTreePickerVisible = false;
+      this.insuranceShowSpaceSearchResults = false;
+      this.insuranceTreePickerVisible = false;
+    }
+  }
 }

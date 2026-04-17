@@ -218,6 +218,10 @@
 								<label>Zile rămase</label>
 								<p class="info-value days-remaining">{{calculateDaysRemaining(warrantyData.endDate)}}</p>
 							</div>
+							<div class="info-item" *ngIf="warrantyData.spaceName">
+								<label>Spațiu</label>
+								<p class="info-value">{{warrantyData.spaceName}}</p>
+							</div>
 						</div>
 						<!-- Document atașat -->
 						<div class="document-section" *ngIf="warrantyData.documentFileName">
@@ -280,6 +284,51 @@
 							</label>
 							<div class="input-wrapper">
 								<input formControlName="endDate" type="date" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Spațiu asociat (opțional) -->
+					<div class="space-picker-section">
+						<h5 class="form-title">Spațiu asociat (opțional)</h5>
+						<div class="tree-picker-wrapper">
+							<div class="tree-selected-display" [class.is-focused]="warrantyShowSpaceSearchResults || warrantyTreePickerVisible" (click)="$event.stopPropagation()">
+								<svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+								</svg>
+								<input type="text" class="tree-combobox-input" [placeholder]="warrantySelectedTreeNode ? '' : 'Scrie pentru a căuta sau click ▼'" [value]="warrantySpaceSearchQuery" (input)="warrantySpaceSearchQuery = $any($event.target).value; onWarrantySpaceSearchInput()" (focus)="onWarrantySpaceSearchFocus()" autocomplete="off" *ngIf="!warrantySelectedTreeNode">
+								<span class="tree-display-text selected-text" *ngIf="warrantySelectedTreeNode" (click)="startEditingWarrantySpace()">
+									{{ warrantySelectedTreeNode.name }}
+									<span class="tree-type-inline" *ngIf="warrantySelectedTreeNode.type !== undefined">({{ warrantySelectedTreeNode.type }})</span>
+								</span>
+								<span *ngIf="warrantyIsSearchingSpaces" class="spinner small space-search-spinner"></span>
+								<button type="button" class="tree-clear-btn" *ngIf="warrantySelectedTreeNode" (click)="$event.stopPropagation(); clearWarrantyTreeSelection()">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+								</button>
+								<svg class="tree-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" (click)="$event.stopPropagation(); openWarrantyTreePicker()" style="cursor:pointer">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+								</svg>
+							</div>
+							<div class="tree-panel" *ngIf="warrantyShowSpaceSearchResults && !warrantyTreePickerVisible">
+								<div class="tree-content">
+									<div *ngIf="warrantySpaceSearchResults.length === 0 && !warrantyIsSearchingSpaces" class="space-search-empty">Niciun spațiu găsit</div>
+									<div *ngFor="let space of warrantySpaceSearchResults" class="space-search-item" (click)="selectWarrantySpaceFromSearch(space)">
+										<div class="space-search-item-name">{{ space.name }}</div>
+										<div class="space-search-item-path">{{ space.fullPath }}</div>
+										<div class="space-search-item-meta">
+											<span class="space-type-badge">{{ space.type }}</span>
+											<span *ngIf="space.assetsCount !== undefined">{{ space.assetsCount }} bunuri</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="tree-panel" *ngIf="warrantyTreePickerVisible && !warrantyShowSpaceSearchResults">
+								<div class="tree-loading" *ngIf="warrantyTreeLoading"><div class="spinner small"></div><span>Se încarcă...</span></div>
+								<div class="tree-content" *ngIf="!warrantyTreeLoading">
+									<ng-container *ngFor="let node of warrantyTreeNodes">
+										<ng-container *ngTemplateOutlet="settingsWarrantyTreeNodeTpl; context: { $implicit: node, level: 0 }"></ng-container>
+									</ng-container>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -407,6 +456,51 @@
 							</div>
 						</div>
 
+						<!-- Spațiu asociat (opțional) -->
+						<div class="space-picker-section">
+							<h5 class="form-title">Spațiu asociat (opțional)</h5>
+							<div class="tree-picker-wrapper">
+								<div class="tree-selected-display" [class.is-focused]="warrantyShowSpaceSearchResults || warrantyTreePickerVisible" (click)="$event.stopPropagation()">
+									<svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+									</svg>
+									<input type="text" class="tree-combobox-input" [placeholder]="warrantySelectedTreeNode ? '' : 'Scrie pentru a căuta sau click ▼'" [value]="warrantySpaceSearchQuery" (input)="warrantySpaceSearchQuery = $any($event.target).value; onWarrantySpaceSearchInput()" (focus)="onWarrantySpaceSearchFocus()" autocomplete="off" *ngIf="!warrantySelectedTreeNode">
+									<span class="tree-display-text selected-text" *ngIf="warrantySelectedTreeNode" (click)="startEditingWarrantySpace()">
+										{{ warrantySelectedTreeNode.name }}
+										<span class="tree-type-inline" *ngIf="warrantySelectedTreeNode.type !== undefined">({{ warrantySelectedTreeNode.type }})</span>
+									</span>
+									<span *ngIf="warrantyIsSearchingSpaces" class="spinner small space-search-spinner"></span>
+									<button type="button" class="tree-clear-btn" *ngIf="warrantySelectedTreeNode" (click)="$event.stopPropagation(); clearWarrantyTreeSelection()">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+									</button>
+									<svg class="tree-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" (click)="$event.stopPropagation(); openWarrantyTreePicker()" style="cursor:pointer">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+									</svg>
+								</div>
+								<div class="tree-panel" *ngIf="warrantyShowSpaceSearchResults && !warrantyTreePickerVisible">
+									<div class="tree-content">
+										<div *ngIf="warrantySpaceSearchResults.length === 0 && !warrantyIsSearchingSpaces" class="space-search-empty">Niciun spațiu găsit</div>
+										<div *ngFor="let space of warrantySpaceSearchResults" class="space-search-item" (click)="selectWarrantySpaceFromSearch(space)">
+											<div class="space-search-item-name">{{ space.name }}</div>
+											<div class="space-search-item-path">{{ space.fullPath }}</div>
+											<div class="space-search-item-meta">
+												<span class="space-type-badge">{{ space.type }}</span>
+												<span *ngIf="space.assetsCount !== undefined">{{ space.assetsCount }} bunuri</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="tree-panel" *ngIf="warrantyTreePickerVisible && !warrantyShowSpaceSearchResults">
+									<div class="tree-loading" *ngIf="warrantyTreeLoading"><div class="spinner small"></div><span>Se încarcă...</span></div>
+									<div class="tree-content" *ngIf="!warrantyTreeLoading">
+										<ng-container *ngFor="let node of warrantyTreeNodes">
+											<ng-container *ngTemplateOutlet="settingsWarrantyTreeNodeTpl; context: { $implicit: node, level: 0 }"></ng-container>
+										</ng-container>
+									</div>
+								</div>
+							</div>
+						</div>
+
 						<!-- File upload for new warranty -->
 						<div class="file-upload-section">
 							<h5 class="form-title">Document atașat (opțional)</h5>
@@ -524,6 +618,10 @@
 								<label>Zile rămase</label>
 								<p class="info-value days-remaining">{{calculateDaysRemaining(insuranceData.endDate)}}</p>
 							</div>
+							<div class="info-item" *ngIf="insuranceData.spaceName">
+								<label>Spațiu</label>
+								<p class="info-value">{{insuranceData.spaceName}}</p>
+							</div>
 						</div>
 						<!-- Document atașat -->
 						<div class="document-section" *ngIf="insuranceData.documentFileName">
@@ -582,6 +680,51 @@
 							</label>
 							<div class="input-wrapper">
 								<input formControlName="endDate" type="date" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Spațiu asociat (opțional) -->
+					<div class="space-picker-section">
+						<h5 class="form-title">Spațiu asociat (opțional)</h5>
+						<div class="tree-picker-wrapper">
+							<div class="tree-selected-display" [class.is-focused]="insuranceShowSpaceSearchResults || insuranceTreePickerVisible" (click)="$event.stopPropagation()">
+								<svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+								</svg>
+								<input type="text" class="tree-combobox-input" [placeholder]="insuranceSelectedTreeNode ? '' : 'Scrie pentru a căuta sau click ▼'" [value]="insuranceSpaceSearchQuery" (input)="insuranceSpaceSearchQuery = $any($event.target).value; onInsuranceSpaceSearchInput()" (focus)="onInsuranceSpaceSearchFocus()" autocomplete="off" *ngIf="!insuranceSelectedTreeNode">
+								<span class="tree-display-text selected-text" *ngIf="insuranceSelectedTreeNode" (click)="startEditingInsuranceSpace()">
+									{{ insuranceSelectedTreeNode.name }}
+									<span class="tree-type-inline" *ngIf="insuranceSelectedTreeNode.type !== undefined">({{ insuranceSelectedTreeNode.type }})</span>
+								</span>
+								<span *ngIf="insuranceIsSearchingSpaces" class="spinner small space-search-spinner"></span>
+								<button type="button" class="tree-clear-btn" *ngIf="insuranceSelectedTreeNode" (click)="$event.stopPropagation(); clearInsuranceTreeSelection()">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+								</button>
+								<svg class="tree-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" (click)="$event.stopPropagation(); openInsuranceTreePicker()" style="cursor:pointer">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+								</svg>
+							</div>
+							<div class="tree-panel" *ngIf="insuranceShowSpaceSearchResults && !insuranceTreePickerVisible">
+								<div class="tree-content">
+									<div *ngIf="insuranceSpaceSearchResults.length === 0 && !insuranceIsSearchingSpaces" class="space-search-empty">Niciun spațiu găsit</div>
+									<div *ngFor="let space of insuranceSpaceSearchResults" class="space-search-item" (click)="selectInsuranceSpaceFromSearch(space)">
+										<div class="space-search-item-name">{{ space.name }}</div>
+										<div class="space-search-item-path">{{ space.fullPath }}</div>
+										<div class="space-search-item-meta">
+											<span class="space-type-badge">{{ space.type }}</span>
+											<span *ngIf="space.assetsCount !== undefined">{{ space.assetsCount }} bunuri</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="tree-panel" *ngIf="insuranceTreePickerVisible && !insuranceShowSpaceSearchResults">
+								<div class="tree-loading" *ngIf="insuranceTreeLoading"><div class="spinner small"></div><span>Se încarcă...</span></div>
+								<div class="tree-content" *ngIf="!insuranceTreeLoading">
+									<ng-container *ngFor="let node of insuranceTreeNodes">
+										<ng-container *ngTemplateOutlet="settingsInsuranceTreeNodeTpl; context: { $implicit: node, level: 0 }"></ng-container>
+									</ng-container>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -700,6 +843,51 @@
 								   </label>
 								   <div class="input-wrapper">
 									   <input formControlName="endDate" type="date" />
+								   </div>
+							   </div>
+						   </div>
+
+						   <!-- Spațiu asociat (opțional) -->
+						   <div class="space-picker-section">
+							   <h5 class="form-title">Spațiu asociat (opțional)</h5>
+							   <div class="tree-picker-wrapper">
+								   <div class="tree-selected-display" [class.is-focused]="insuranceShowSpaceSearchResults || insuranceTreePickerVisible" (click)="$event.stopPropagation()">
+									   <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+										   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+									   </svg>
+									   <input type="text" class="tree-combobox-input" [placeholder]="insuranceSelectedTreeNode ? '' : 'Scrie pentru a căuta sau click ▼'" [value]="insuranceSpaceSearchQuery" (input)="insuranceSpaceSearchQuery = $any($event.target).value; onInsuranceSpaceSearchInput()" (focus)="onInsuranceSpaceSearchFocus()" autocomplete="off" *ngIf="!insuranceSelectedTreeNode">
+									   <span class="tree-display-text selected-text" *ngIf="insuranceSelectedTreeNode" (click)="startEditingInsuranceSpace()">
+										   {{ insuranceSelectedTreeNode.name }}
+										   <span class="tree-type-inline" *ngIf="insuranceSelectedTreeNode.type !== undefined">({{ insuranceSelectedTreeNode.type }})</span>
+									   </span>
+									   <span *ngIf="insuranceIsSearchingSpaces" class="spinner small space-search-spinner"></span>
+									   <button type="button" class="tree-clear-btn" *ngIf="insuranceSelectedTreeNode" (click)="$event.stopPropagation(); clearInsuranceTreeSelection()">
+										   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+									   </button>
+									   <svg class="tree-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" (click)="$event.stopPropagation(); openInsuranceTreePicker()" style="cursor:pointer">
+										   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+									   </svg>
+								   </div>
+								   <div class="tree-panel" *ngIf="insuranceShowSpaceSearchResults && !insuranceTreePickerVisible">
+									   <div class="tree-content">
+										   <div *ngIf="insuranceSpaceSearchResults.length === 0 && !insuranceIsSearchingSpaces" class="space-search-empty">Niciun spațiu găsit</div>
+										   <div *ngFor="let space of insuranceSpaceSearchResults" class="space-search-item" (click)="selectInsuranceSpaceFromSearch(space)">
+											   <div class="space-search-item-name">{{ space.name }}</div>
+											   <div class="space-search-item-path">{{ space.fullPath }}</div>
+											   <div class="space-search-item-meta">
+												   <span class="space-type-badge">{{ space.type }}</span>
+												   <span *ngIf="space.assetsCount !== undefined">{{ space.assetsCount }} bunuri</span>
+											   </div>
+										   </div>
+									   </div>
+								   </div>
+								   <div class="tree-panel" *ngIf="insuranceTreePickerVisible && !insuranceShowSpaceSearchResults">
+									   <div class="tree-loading" *ngIf="insuranceTreeLoading"><div class="spinner small"></div><span>Se încarcă...</span></div>
+									   <div class="tree-content" *ngIf="!insuranceTreeLoading">
+										   <ng-container *ngFor="let node of insuranceTreeNodes">
+											   <ng-container *ngTemplateOutlet="settingsInsuranceTreeNodeTpl; context: { $implicit: node, level: 0 }"></ng-container>
+										   </ng-container>
+									   </div>
 								   </div>
 							   </div>
 						   </div>
@@ -998,6 +1186,32 @@
 								<p class="info-value">{{activeLoanData.notes}}</p>
 							</div>
 						</div>
+						<!-- Documente atașate -->
+						<div class="document-section" *ngIf="activeLoanData.documents && activeLoanData.documents.length > 0">
+							<h5 class="doc-section-title">Documente atașate ({{ activeLoanData.documents.length }})</h5>
+							<div *ngFor="let doc of activeLoanData.documents" class="document-item">
+								<div class="document-info">
+									<svg class="doc-icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+									</svg>
+									<span class="doc-name">{{ doc.fileName }}</span>
+								</div>
+								<div class="document-actions">
+									<button type="button" class="btn-doc-download" (click)="downloadLoanDocument(doc)" [disabled]="loading">
+										<svg viewBox="0 0 24 24">
+											<path fill="currentColor" d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+										</svg>
+										<span>Descarcă</span>
+									</button>
+									<button type="button" class="btn-doc-delete" (click)="deleteLoanDocument(doc)" [disabled]="loading">
+										<svg viewBox="0 0 24 24">
+											<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+										</svg>
+										<span>Șterge</span>
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
 
 					<h5 class="form-title">Editează împrumut</h5>
@@ -1032,6 +1246,38 @@
 							</label>
 							<div class="input-wrapper">
 								<input formControlName="notes" type="text" placeholder="Observații suplimentare..." />
+							</div>
+						</div>
+					</div>
+
+					<!-- File upload for editing loan -->
+					<div class="file-upload-section">
+						<h5 class="form-title">Adaugă documente noi (opțional)</h5>
+						<input type="file" #loanEditFileInput [accept]="acceptedFileTypes" (change)="onLoanEditFileSelected($event)" style="display: none;" multiple>
+						<div class="file-upload-area">
+							<button type="button" class="upload-btn" (click)="loanEditFileInput.click()">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+								</svg>
+								<span>Adaugă documente</span>
+							</button>
+							<span class="file-info">PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT</span>
+						</div>
+						<div *ngFor="let fileName of loanEditFileNames; let i = index" class="selected-file">
+							<div class="file-details">
+								<svg class="icon" viewBox="0 0 24 24">
+									<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+								</svg>
+								<span class="file-name">{{ fileName }}</span>
+								<span class="file-badge new">Fișier nou</span>
+							</div>
+							<div class="file-actions">
+								<button type="button" class="btn-file-remove" (click)="removeLoanEditFile(i)">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+									</svg>
+									<span>Elimină</span>
+								</button>
 							</div>
 						</div>
 					</div>
@@ -1129,6 +1375,38 @@
 								</div>
 							</div>
 						</div>
+
+						<!-- File upload for new loan -->
+						<div class="file-upload-section">
+							<h5 class="form-title">Documente atașate (opțional)</h5>
+							<input type="file" #loanNewFileInput [accept]="acceptedFileTypes" (change)="onLoanNewFileSelected($event)" style="display: none;" multiple>
+							<div class="file-upload-area">
+								<button type="button" class="upload-btn" (click)="loanNewFileInput.click()">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+									</svg>
+									<span>Încarcă documente împrumut</span>
+								</button>
+								<span class="file-info">PDF, JPG, PNG, DOC, DOCX, XLS, XLSX, TXT</span>
+							</div>
+							<div *ngFor="let fileName of loanNewFileNames; let i = index" class="selected-file">
+								<div class="file-details">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-3 4h4v2H10v-2zm0 4h4v2H10v-2zm-2-8h2v2H8v-2z"/>
+									</svg>
+									<span class="file-name">{{ fileName }}</span>
+								</div>
+								<div class="file-actions">
+									<button type="button" class="btn-file-remove" (click)="removeLoanNewFile(i)">
+										<svg class="icon" viewBox="0 0 24 24">
+											<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+										</svg>
+										<span>Elimină</span>
+									</button>
+								</div>
+							</div>
+						</div>
+
 						<div class="form-actions">
 							<button type="submit" class="btn-primary" [disabled]="loading || loanForm.invalid">
 								<svg viewBox="0 0 24 24" *ngIf="!loading">
@@ -1146,3 +1424,43 @@
 
 	</div>
 </div>
+
+<!-- Recursive tree node template for warranty settings -->
+<ng-template #settingsWarrantyTreeNodeTpl let-node let-level="level">
+	<div class="tree-node" [style.padding-left.px]="level * 20 + 8" [class.selected]="warrantySelectedTreeNode?.id === node.id">
+		<span class="tree-toggle" (click)="toggleWarrantyTreeNode(node)">
+			<svg *ngIf="!node.loadingChildren && !(node.childrenLoaded && node.children.length === 0)" class="tree-arrow" [class.expanded]="node.expanded" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+			<span *ngIf="!node.loadingChildren && node.childrenLoaded && node.children.length === 0" class="tree-leaf-dot"></span>
+			<span *ngIf="node.loadingChildren" class="spinner small"></span>
+		</span>
+		<span class="tree-label" (click)="selectWarrantyTreeNode(node)">
+			{{ node.name }}
+			<span class="tree-type-badge" *ngIf="node.type !== undefined">({{ node.type }})</span>
+		</span>
+	</div>
+	<ng-container *ngIf="node.expanded && node.children">
+		<ng-container *ngFor="let child of node.children">
+			<ng-container *ngTemplateOutlet="settingsWarrantyTreeNodeTpl; context: { $implicit: child, level: level + 1 }"></ng-container>
+		</ng-container>
+	</ng-container>
+</ng-template>
+
+<!-- Recursive tree node template for insurance settings -->
+<ng-template #settingsInsuranceTreeNodeTpl let-node let-level="level">
+	<div class="tree-node" [style.padding-left.px]="level * 20 + 8" [class.selected]="insuranceSelectedTreeNode?.id === node.id">
+		<span class="tree-toggle" (click)="toggleInsuranceTreeNode(node)">
+			<svg *ngIf="!node.loadingChildren && !(node.childrenLoaded && node.children.length === 0)" class="tree-arrow" [class.expanded]="node.expanded" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+			<span *ngIf="!node.loadingChildren && node.childrenLoaded && node.children.length === 0" class="tree-leaf-dot"></span>
+			<span *ngIf="node.loadingChildren" class="spinner small"></span>
+		</span>
+		<span class="tree-label" (click)="selectInsuranceTreeNode(node)">
+			{{ node.name }}
+			<span class="tree-type-badge" *ngIf="node.type !== undefined">({{ node.type }})</span>
+		</span>
+	</div>
+	<ng-container *ngIf="node.expanded && node.children">
+		<ng-container *ngFor="let child of node.children">
+			<ng-container *ngTemplateOutlet="settingsInsuranceTreeNodeTpl; context: { $implicit: child, level: level + 1 }"></ng-container>
+		</ng-container>
+	</ng-container>
+</ng-template>

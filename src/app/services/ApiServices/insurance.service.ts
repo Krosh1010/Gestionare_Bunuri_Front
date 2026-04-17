@@ -16,6 +16,9 @@ export class InsuranceService {
         formData.append('InsuredValue', String(insuranceData.insuredValue));
         formData.append('StartDate', insuranceData.startDate);
         formData.append('EndDate', insuranceData.endDate);
+        if (insuranceData.spaceId != null) {
+            formData.append('SpaceId', String(insuranceData.spaceId));
+        }
         if (document) {
             formData.append('document', document);
         }
@@ -33,6 +36,12 @@ export class InsuranceService {
         if (insuranceData.insuredValue) formData.append('InsuredValue', String(insuranceData.insuredValue));
         if (insuranceData.startDate) formData.append('StartDate', insuranceData.startDate);
         if (insuranceData.endDate) formData.append('EndDate', insuranceData.endDate);
+        if (insuranceData.spaceIdIsSet) {
+            formData.append('SpaceIdIsSet', 'true');
+            if (insuranceData.spaceId != null) {
+                formData.append('SpaceId', String(insuranceData.spaceId));
+            }
+        }
         if (document) {
             formData.append('document', document);
         }

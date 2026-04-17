@@ -15,6 +15,9 @@ export class warrantyService {
         formData.append('Provider', warrantyData.provider);
         formData.append('StartDate', warrantyData.startDate);
         formData.append('EndDate', warrantyData.endDate);
+        if (warrantyData.spaceId != null) {
+            formData.append('SpaceId', String(warrantyData.spaceId));
+        }
         if (document) {
             formData.append('document', document);
         }
@@ -31,6 +34,12 @@ export class warrantyService {
         if (warrantyData.provider) formData.append('Provider', warrantyData.provider);
         if (warrantyData.startDate) formData.append('StartDate', warrantyData.startDate);
         if (warrantyData.endDate) formData.append('EndDate', warrantyData.endDate);
+        if (warrantyData.spaceIdIsSet) {
+            formData.append('SpaceIdIsSet', 'true');
+            if (warrantyData.spaceId != null) {
+                formData.append('SpaceId', String(warrantyData.spaceId));
+            }
+        }
         if (document) {
             formData.append('document', document);
         }
