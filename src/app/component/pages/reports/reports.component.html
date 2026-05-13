@@ -163,6 +163,11 @@
               <span class="checkbox-custom"></span>
               <span class="checkbox-text">Categorie</span>
             </label>
+            <label class="checkbox-option">
+              <input type="checkbox" [(ngModel)]="selectedColumns.barcode" (change)="updateCustomExport()">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">Cod de bare</span>
+            </label>
           </div>
           
           <div class="column-section">

@@ -117,6 +117,9 @@ selectedSpaceName: string | null = null;
   isBarcodeSearching: boolean = false;
   barcodeSearchError: string = '';
 
+
+  assetFormError: string = '';
+
   constructor(
     private fb: FormBuilder,
     private assetsService: AssetsService,
@@ -671,8 +674,13 @@ async openAddModal() {
           await this.assetsService.updateAsset(this.editingAsset.id, patch);
           await this.loadAssets(this.currentPage);
           this.closeModal();
-        } catch (err) {
-          alert('Eroare la editarea bunului.');
+        } catch (err: any) {
+          const msg = err?.response?.data?.message;
+          if (msg === 'Barcode already in use.') {
+            this.assetFormError = 'Codul de bare este deja folosit de alt bun.';
+          } else {
+            this.assetFormError = 'Eroare la editarea bunului.';
+          }
         }
       } else {
         // Adăugare nouă
@@ -696,8 +704,13 @@ async openAddModal() {
             this.showWarrantyModal = true;
           }
           this.closeModal();
-        } catch (err) {
-          alert('Eroare la adăugarea bunului.');
+        } catch (err: any) {
+          const msg = err?.response?.data?.message;
+          if (msg === 'Barcode already in use.') {
+            this.assetFormError = 'Codul de bare este deja folosit de alt bun.';
+          } else {
+            this.assetFormError = 'Eroare la adăugarea bunului.';
+          }
         }
       }
     }
@@ -706,13 +719,24 @@ async openAddModal() {
   async closeWarrantyModal(): Promise<void> {
     this.showWarrantyModal = false;
     this.createdAssetId = null;
-    // Reîncarcă lista de bunuri și statistici după ce utilizatorul finalizează garanția/asigurarea
     await this.loadAssets(this.currentPage);
   }
 
   closeModal(): void {
     this.showModal = false;
     this.editingAsset = null;
+    this.assetFormError = '';
+  }
+
+  getTypeLabel(typeValue: number | string): string {
+    const typeMap: { [key: string]: string } = {
+      '0': 'Acasă', 'home': 'Acasă',
+      '1': 'Birou', 'office': 'Birou',
+      '2': 'Cameră', 'room': 'Cameră',
+      '3': 'Depozit', 'storage': 'Depozit'
+    };
+    const key = String(typeValue).toLowerCase();
+    return typeMap[key] || String(typeValue);
   }
 
   // Stats

@@ -20,11 +20,14 @@
 }
 
 .page-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-dark);
+  font-size: 36px;
+  font-weight: 800;
   margin: 0 0 8px;
   line-height: 1.2;
+  background: linear-gradient(135deg, #f97316 0%, #e11d48 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .page-subtitle {

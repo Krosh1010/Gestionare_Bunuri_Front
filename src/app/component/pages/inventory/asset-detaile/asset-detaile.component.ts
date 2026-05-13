@@ -26,6 +26,7 @@ export class AssetDetaileComponent implements OnChanges {
   loanHistory: any[] = [];
   isLoadingHistory: boolean = false;
   showLoanHistory: boolean = false;
+  showHistoryModal: boolean = false;
 
   constructor(
     private assetsService: AssetsService,
@@ -85,6 +86,25 @@ export class AssetDetaileComponent implements OnChanges {
         this.isLoadingHistory = false;
       }
     }
+  }
+
+  async openHistoryModal(): Promise<void> {
+    this.showHistoryModal = true;
+    if (this.loanHistory.length === 0) {
+      this.isLoadingHistory = true;
+      try {
+        const history = await this.loanService.getAllLoansByAssetId(this.assetId!.toString());
+        this.loanHistory = Array.isArray(history) ? history : [];
+      } catch {
+        this.loanHistory = [];
+      } finally {
+        this.isLoadingHistory = false;
+      }
+    }
+  }
+
+  closeHistoryModal(): void {
+    this.showHistoryModal = false;
   }
 
   async deleteLoanFromHistory(loanId: string): Promise<void> {
@@ -209,6 +229,22 @@ export class AssetDetaileComponent implements OnChanges {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Eroare la descărcarea documentului asigurare:', err);
+    }
+  }
+
+  async downloadLoanDoc(documentId: string, fileName: string): Promise<void> {
+    try {
+      const blob = await this.loanService.downloadLoanDocument(documentId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName || 'document-imprumut';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Eroare la descărcarea documentului împrumut:', err);
     }
   }
 }

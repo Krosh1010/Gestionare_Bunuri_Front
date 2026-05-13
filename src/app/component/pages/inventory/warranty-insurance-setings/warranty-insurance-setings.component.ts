@@ -15,6 +15,7 @@ import { SpaceService } from '../../../../services/ApiServices/space.service';
 })
 export class WarrantyInsuranceSetingsComponent implements OnInit {
   @Input() assetId!: number | null;
+  @Input() name!: string;
   warrantyForm!: FormGroup;
   insuranceForm!: FormGroup;
   customTrackerForm!: FormGroup;
@@ -54,6 +55,7 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   loanEditFileNames: string[] = [];
   loanNewFiles: File[] = [];
   loanNewFileNames: string[] = [];
+  loanReplaceFileIndex: number = -1;
 
   // Warranty tree picker state
   warrantyTreeNodes: any[] = [];
@@ -745,6 +747,22 @@ export class WarrantyInsuranceSetingsComponent implements OnInit {
   removeLoanEditFile(index: number) {
     this.loanEditFiles.splice(index, 1);
     this.loanEditFileNames.splice(index, 1);
+  }
+
+  triggerLoanReplaceFile(index: number, input: HTMLInputElement) {
+    this.loanReplaceFileIndex = index;
+    input.value = '';
+    input.click();
+  }
+
+  onLoanReplaceFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0 && this.loanReplaceFileIndex >= 0) {
+      this.loanEditFiles[this.loanReplaceFileIndex] = input.files[0];
+      this.loanEditFileNames[this.loanReplaceFileIndex] = input.files[0].name;
+    }
+    this.loanReplaceFileIndex = -1;
+    input.value = '';
   }
 
   // Loan new file selection (multiple)

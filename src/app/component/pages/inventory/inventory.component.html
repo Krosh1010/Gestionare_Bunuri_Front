@@ -2,7 +2,7 @@
   <!-- Header -->
   <div class="inventory-header">
     <div class="header-left">
-      <h1>Inventar Bunuri</h1>
+      <h1>📦 Inventar Bunuri</h1>
       <p>Gestionează toate activele tale dintr-un singur loc</p>
     </div>
     
@@ -185,7 +185,7 @@
     <div class="stat-card">
       <div class="stat-icon value">💰</div>
       <div class="stat-content">
-        <div class="stat-value">{{totalValue | currency:'USD'}}</div>
+        <div class="stat-value">{{totalValue | number:'1.0-2'}} MDL</div>
         <div class="stat-label">Valoare totală</div>
       </div>
     </div>
@@ -244,7 +244,7 @@
           <div class="asset-details">
             <div class="detail-item">
               <span class="detail-label">Valoare:</span>
-              <span class="detail-value">{{asset.value | currency:'EUR'}}</span>
+              <span class="detail-value">{{asset.value | number:'1.0-2'}} MDL</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Locație:</span>
@@ -352,7 +352,7 @@
           
           <!-- Valoare -->
           <div class="list-cell value">
-            <span class="value-amount">{{asset.value | currency:'EUR'}}</span>
+            <span class="value-amount">{{asset.value | number:'1.0-2'}} MDL</span>
           </div>
           
           <!-- Locatie -->
@@ -540,7 +540,7 @@
       
       <div class="form-row">
         <div class="form-group" style="flex:1; min-width:180px;">
-          <label>Valoare (EUR) *</label>
+          <label>Valoare (MDL) *</label>
           <input type="number" formControlName="value" placeholder="0.00">
         </div>
         <div class="form-group" style="flex:1; min-width:180px;">
@@ -592,7 +592,7 @@
               >
               <span class="tree-display-text selected-text" *ngIf="selectedTreeNode" (click)="startEditingSpace()">
                 {{ selectedTreeNode.name }}
-                <span class="tree-type-inline" *ngIf="selectedTreeNode.type !== undefined">({{ selectedTreeNode.type }})</span>
+                <span class="tree-type-inline" *ngIf="selectedTreeNode.type !== undefined">({{ getTypeLabel(selectedTreeNode.type) }})</span>
               </span>
               <span *ngIf="isSearchingSpaces" class="spinner small space-search-spinner"></span>
               <button type="button" class="tree-clear-btn" *ngIf="selectedTreeNode" (click)="$event.stopPropagation(); clearTreeSelection()">
@@ -619,7 +619,7 @@
                   <div class="space-search-item-name">{{ space.name }}</div>
                   <div class="space-search-item-path">{{ space.fullPath }}</div>
                   <div class="space-search-item-meta">
-                    <span class="space-type-badge">{{ space.type }}</span>
+                    <span class="space-type-badge">{{ getTypeLabel(space.type) }}</span>
                     <span *ngIf="space.assetsCount !== undefined">{{ space.assetsCount }} bunuri</span>
                   </div>
                 </div>
@@ -640,6 +640,8 @@
             </div>
           </div>
         </div>
+
+      <div class="form-error-message" *ngIf="assetFormError">{{ assetFormError }}</div>
 
       <div class="modal-actions">
         <button type="button" class="btn-cancel" (click)="closeModal()">Anulează</button>
@@ -682,6 +684,7 @@
     </div>
     <app-warranty-insurance-setings
       [assetId]="editingAsset?.id ?? null"
+      [name]="editingAsset?.name ?? ''"
       (close)="closeWarrantySettingsModal()"
     ></app-warranty-insurance-setings>
   </div>

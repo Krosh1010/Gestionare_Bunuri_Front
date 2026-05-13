@@ -48,10 +48,10 @@ export class LocationsComponent implements OnInit {
     }
   locationForm: FormGroup;
   types = [
-    { label: 'HOME', value: 0 },
-    { label: 'OFFICE', value: 1 },
-    { label: 'ROOM', value: 2 },
-    { label: 'STORAGE', value: 3 }
+    { label: 'Acasă', value: 0, key: 'home' },
+    { label: 'Birou', value: 1, key: 'office' },
+    { label: 'Cameră', value: 2, key: 'room' },
+    { label: 'Depozit', value: 3, key: 'storage' }
   ];
   
   locations: any[] = [];
@@ -134,9 +134,13 @@ export class LocationsComponent implements OnInit {
     }
   }
 
-  getTypeLabel(typeValue: number): string {
+  getTypeLabel(typeValue: number | string): string {
+    if (typeof typeValue === 'string') {
+      const type = this.types.find(t => t.key === typeValue.toLowerCase());
+      return type ? type.label : typeValue;
+    }
     const type = this.types.find(t => t.value === typeValue);
-    return type ? type.label : 'Unknown';
+    return type ? type.label : 'Necunoscut';
   }
 
   async showCreateForm() {

@@ -9,8 +9,8 @@
 }
 
 .section-icon.loan {
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(251, 146, 60, 0.1) 100%);
-  color: #f97316;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  color: var(--bg-white);
 }
 
 .loan-info-block {
@@ -342,6 +342,10 @@
 
 			&.tracker {
 				background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+			}
+
+			&.loan {
+				background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
 			}
 			
 			svg {
@@ -1019,14 +1023,14 @@
 .document-section {
 	margin-top: 16px;
 	padding: 16px;
-	background: #f0f9ff;
-	border: 1px solid #bae6fd;
+	background: var(--bg-subtle);
+	border: 1px solid var(--border);
 	border-radius: 8px;
 
 	.doc-section-title {
 		font-size: 14px;
 		font-weight: 600;
-		color: #1e40af;
+		color: var(--color-indigo);
 		margin: 0 0 12px 0;
 	}
 
@@ -1035,8 +1039,8 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 8px 12px;
-		background: #fff;
-		border: 1px solid #e0f2fe;
+		background: var(--bg-white);
+		border: 1px solid var(--border);
 		border-radius: 6px;
 		margin-bottom: 8px;
 
@@ -1060,7 +1064,7 @@
 		.doc-name {
 			font-size: 14px;
 			font-weight: 500;
-			color: #1e40af;
+			color: var(--text-secondary);
 			word-break: break-all;
 		}
 	}
@@ -1095,7 +1099,7 @@
 
 		.btn-doc-download {
 			background: var(--color-blue);
-			color: var(--bg-white);
+			color: #ffffff;
 
 			&:hover:not([disabled]) {
 				background: #2563eb;
@@ -1103,11 +1107,11 @@
 		}
 
 		.btn-doc-delete {
-			background: #fee2e2;
-			color: #991b1b;
+			background: rgba(239, 68, 68, 0.12);
+			color: var(--color-danger);
 
 			&:hover:not([disabled]) {
-				background: #fecaca;
+				background: rgba(239, 68, 68, 0.22);
 			}
 		}
 	}
@@ -1124,7 +1128,6 @@
 		color: var(--text-secondary);
 		margin: 0 0 12px;
 	}
-
 	.file-upload-area {
 		display: flex;
 		flex-direction: column;
@@ -1138,7 +1141,7 @@
 
 		&:hover {
 			border-color: var(--color-indigo);
-			background: #f0f9ff;
+			background: rgba(99, 102, 241, 0.06);
 		}
 
 		.upload-btn {
@@ -1147,7 +1150,7 @@
 			gap: 8px;
 			padding: 8px 16px;
 			background: var(--bg-white);
-			border: 1.5px solid #6366f1;
+			border: 1.5px solid var(--color-indigo);
 			border-radius: 8px;
 			color: var(--color-indigo);
 			font-weight: 500;
@@ -1156,11 +1159,11 @@
 			transition: all 0.3s ease;
 
 			&:hover {
-				background: #6366f1;
-				color: var(--bg-white);
+				background: var(--color-indigo);
+				color: #ffffff;
 
 				.icon {
-					color: var(--bg-white);
+					color: #ffffff;
 				}
 			}
 
@@ -1184,7 +1187,7 @@
 		align-items: center;
 		padding: 12px 16px;
 		background: var(--bg-subtle);
-		border: 1.5px solid #e5e7eb;
+		border: 1.5px solid var(--border);
 		border-radius: 8px;
 		flex-wrap: wrap;
 		gap: 10px;
@@ -1215,13 +1218,13 @@
 				font-weight: 600;
 				padding: 2px 8px;
 				border-radius: 12px;
-				background: #e0e7ff;
-				color: var(--color-indigo-dark);
+				background: rgba(99, 102, 241, 0.15);
+				color: var(--color-indigo);
 				white-space: nowrap;
 
 				&.new {
-					background: #d1fae5;
-					color: #065f46;
+					background: rgba(16, 185, 129, 0.15);
+					color: var(--color-success);
 				}
 			}
 		}
@@ -1249,20 +1252,20 @@
 			}
 
 			.btn-file-replace {
-				background: #e0e7ff;
-				color: var(--color-indigo-dark);
+				background: rgba(99, 102, 241, 0.15);
+				color: var(--color-indigo);
 
 				&:hover {
-					background: #c7d2fe;
+					background: rgba(99, 102, 241, 0.28);
 				}
 			}
 
 			.btn-file-remove {
-				background: #fee2e2;
-				color: #991b1b;
+				background: rgba(239, 68, 68, 0.12);
+				color: var(--color-danger);
 
 				&:hover {
-					background: #fecaca;
+					background: rgba(239, 68, 68, 0.22);
 				}
 			}
 		}
@@ -1560,4 +1563,146 @@
 	border-radius: 10px;
 	font-size: 11px;
 	font-weight: 500;
+}
+// ============================
+// Return Loan Modal
+// ============================
+
+.return-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+
+  &.open {
+    opacity: 1;
+    visibility: visible;
+
+    .return-modal {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+.return-modal {
+  background: var(--bg-white);
+  border-radius: 16px;
+  width: 500px;
+  max-width: 94vw;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  transform: scale(0.92) translateY(20px);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.return-modal-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid var(--border);
+
+  .header-content {
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+
+      &.loan {
+        background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      }
+
+      svg {
+        width: 24px;
+        height: 24px;
+        color: #fff;
+      }
+    }
+
+    h4 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin: 0 0 4px;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+}
+
+.return-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: var(--bg-lighter);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  margin-top: 2px;
+
+  &:hover:not(:disabled) {
+    background: var(--border);
+    color: var(--text-dark);
+  }
+}
+
+.return-modal-form-body {
+  padding: 24px;
+
+  .return-modal-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 0;
+
+    .form-group {
+      width: 100%;
+      max-width: 360px;
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .input-wrapper input {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  .form-actions {
+    justify-content: center;
+    max-width: 360px;
+    margin: 0 auto;
+  }
 }

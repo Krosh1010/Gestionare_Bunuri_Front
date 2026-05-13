@@ -22,7 +22,7 @@
 						<path fill="currentColor" d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4z"/>
 					</svg>
 					<div>
-						<h4>Bun #{{assetId}}</h4>
+						<h4>{{name}}</h4>
 						<p>Selectează tipul de setări pe care dorești să le gestionezi</p>
 					</div>
 				</div>
@@ -660,7 +660,7 @@
 						</div>
 						<div class="form-group">
 							<label>
-								<span>Valoare asigurată *</span>
+								<span>Valoare asigurată (MDL) *</span>
 							</label>
 							<div class="input-wrapper">
 								<input formControlName="insuredValue" type="number" placeholder="0.00" />
@@ -823,7 +823,7 @@
 							   </div>
 							   <div class="form-group">
 								   <label>
-									   <span>Valoare asigurată *</span>
+									   <span>Valoare asigurată (MDL) *</span>
 								   </label>
 								   <div class="input-wrapper">
 									   <input formControlName="insuredValue" type="number" placeholder="0.00" />
@@ -1254,6 +1254,7 @@
 					<div class="file-upload-section">
 						<h5 class="form-title">Adaugă documente noi (opțional)</h5>
 						<input type="file" #loanEditFileInput [accept]="acceptedFileTypes" (change)="onLoanEditFileSelected($event)" style="display: none;" multiple>
+						<input type="file" #loanReplaceFileInput [accept]="acceptedFileTypes" (change)="onLoanReplaceFileSelected($event)" style="display: none;">
 						<div class="file-upload-area">
 							<button type="button" class="upload-btn" (click)="loanEditFileInput.click()">
 								<svg class="icon" viewBox="0 0 24 24">
@@ -1272,6 +1273,12 @@
 								<span class="file-badge new">Fișier nou</span>
 							</div>
 							<div class="file-actions">
+								<button type="button" class="btn-file-replace" (click)="triggerLoanReplaceFile(i, loanReplaceFileInput)">
+									<svg class="icon" viewBox="0 0 24 24">
+										<path fill="currentColor" d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+									</svg>
+									<span>Înlocuiește</span>
+								</button>
 								<button type="button" class="btn-file-remove" (click)="removeLoanEditFile(i)">
 									<svg class="icon" viewBox="0 0 24 24">
 										<path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -1290,7 +1297,7 @@
 							<div class="spinner" *ngIf="loading"></div>
 							<span>{{ loading ? 'Se salvează...' : 'Salvează modificări' }}</span>
 						</button>
-						<button type="button" class="btn-primary" (click)="showReturnForm = !showReturnForm" [disabled]="loading">
+						<button type="button" class="btn-primary" (click)="showReturnForm = true" [disabled]="loading">
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
 								<path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
 							</svg>
@@ -1305,37 +1312,61 @@
 					</div>
 				</form>
 
-				<!-- Return Loan Form -->
-				<form *ngIf="activeLoanData && showReturnForm" [formGroup]="returnLoanForm" (ngSubmit)="returnLoan()" class="return-loan-form">
-					<h5 class="form-title">Returnare bun</h5>
-					<div class="form-grid">
-						<div class="form-group">
-							<label><span>Stare la returnare</span></label>
-							<div class="input-wrapper">
-								<input formControlName="conditionOnReturn" type="text" placeholder="Ex: Bun, cu zgârieturi minore..."/>
+				<!-- Return Loan Modal -->
+				<div class="return-modal-overlay" [class.open]="showReturnForm" (click)="$event.target === $event.currentTarget && !loading && (showReturnForm = false)">
+					<div class="return-modal">
+						<!-- Header identic cu section-header din formular -->
+						<div class="return-modal-section-header">
+							<div class="header-content">
+								<div class="section-icon loan">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+										<path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+									</svg>
+								</div>
+								<h4>Returnare bun</h4>
+								<p>Completează detaliile returnului</p>
 							</div>
+							<button type="button" class="return-modal-close" (click)="showReturnForm = false" [disabled]="loading">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+									<path d="M6 18L18 6M6 6l12 12"/>
+								</svg>
+							</button>
 						</div>
-						<div class="form-group">
-							<label><span>Data returnării *</span></label>
-							<div class="input-wrapper">
-								<input formControlName="returnedAt" type="date"/>
+						<!-- Body cu form -->
+						<form [formGroup]="returnLoanForm" (ngSubmit)="returnLoan()" class="return-modal-form-body">
+							<div class="return-modal-fields">
+								<div class="form-group">
+									<label><span>Stare la returnare</span></label>
+									<div class="input-wrapper">
+										<input formControlName="conditionOnReturn" type="text" placeholder="Ex: Bun, cu zgârieturi minore..."/>
+									</div>
+								</div>
+								<div class="form-group">
+									<label><span>Data returnării *</span></label>
+									<div class="input-wrapper">
+										<input formControlName="returnedAt" type="date"/>
+									</div>
+								</div>
+								<div class="form-group">
+									<label><span>Notițe (opțional)</span></label>
+									<div class="input-wrapper">
+										<input formControlName="notes" type="text" placeholder="Observații suplimentare..."/>
+									</div>
+								</div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label><span>Notițe (opțional)</span></label>
-							<div class="input-wrapper">
-								<input formControlName="notes" type="text" placeholder="Observații suplimentare..."/>
+							<div class="form-actions">
+								<button type="submit" class="btn-primary" [disabled]="loading">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" *ngIf="!loading">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+									</svg>
+									<div class="spinner" *ngIf="loading"></div>
+									<span>{{loading ? 'Se salvează...' : 'Confirmă returnarea'}}</span>
+								</button>
+								<button type="button" class="btn-secondary" (click)="showReturnForm = false" [disabled]="loading">Anulează</button>
 							</div>
-						</div>
+						</form>
 					</div>
-					<div class="form-actions">
-						<button type="submit" class="btn-primary" [disabled]="loading">
-							<div class="spinner" *ngIf="loading"></div>
-							<span>{{loading ? 'Se salvează...' : 'Confirmă returnarea'}}</span>
-						</button>
-						<button type="button" class="btn-secondary" (click)="showReturnForm = false" [disabled]="loading">Anulează</button>
-					</div>
-				</form>
+				</div>
 
 				<!-- No Active Loan - Add Form -->
 				<div *ngIf="!activeLoanData" class="no-loan-state no-warranty-state">

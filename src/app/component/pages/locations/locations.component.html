@@ -2,7 +2,7 @@
   <!-- Header Section -->
   <div class="page-header">
     <div class="header-content">
-      <h1 class="page-title">Locații</h1>
+      <h1 class="page-title">🗺️ Locații</h1>
       <p class="page-subtitle">Gestionează toate spațiile și locațiile din inventar</p>
     </div>
     <button class="btn-add" (click)="showCreateForm()">
@@ -114,7 +114,7 @@
                   <div class="space-search-item-name">{{ space.name }}</div>
                   <div class="space-search-item-path">{{ space.fullPath }}</div>
                   <div class="space-search-item-meta">
-                    <span class="space-type-badge">{{ space.type }}</span>
+                    <span class="space-type-badge">{{ getTypeLabel(space.type) }}</span>
                     <span *ngIf="space.assetsCount !== undefined">{{ space.assetsCount }} bunuri</span>
                   </div>
                 </div>
