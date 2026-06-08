@@ -16,6 +16,7 @@ import { LocationNode } from '../../../models/dashboard/location.model';
 })
 export class DashbordComponent implements OnInit {
   currentDate: Date = new Date();
+  formattedDate: string = '';
   notifications: Array<{ id: string; type: number; message: string }> = [];
 
   totalCount: number = 0;
@@ -56,9 +57,22 @@ export class DashbordComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.formattedDate = this.getFormattedDateRo();
     this.loadNotifications();
     this.loadDashboardData();
     this.loadLocationsTree();
+  }
+
+  getFormattedDateRo(): string {
+    const days = ['duminică', 'luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă'];
+    const months = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
+    
+    const day = days[this.currentDate.getDay()];
+    const date = this.currentDate.getDate();
+    const month = months[this.currentDate.getMonth()];
+    const year = this.currentDate.getFullYear();
+    
+    return `${day}, ${date} ${month} ${year}`;
   }
   loadDashboardData(): void {
     this.dashboardService.getDashboardData().then(

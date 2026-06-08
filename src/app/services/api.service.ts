@@ -22,7 +22,7 @@ export class ApiService {
 
   constructor() {
     this.axiosClient = axios.create({
-      baseURL: 'http://localhost:5288/',
+      baseURL: 'https://gestionare-bunuri-back.onrender.com/',
       headers: {
         'Content-Type': 'application/json',
       },

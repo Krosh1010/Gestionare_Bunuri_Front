@@ -516,12 +516,12 @@
       </style>
       <div class="form-row">
         <div class="form-group">
-          <label>Nume bun *</label>
+          <label>Nume bun <span class="required">*</span></label>
           <input type="text" formControlName="name" placeholder="Ex: Laptop Dell XPS 15">
         </div>
         
         <div class="form-group">
-          <label>Categorie *</label>
+          <label>Categorie <span class="required">*</span></label>
           <select formControlName="category">
             <option value="">Selectează categoria</option>
             <option value="electronics">Electronice</option>
@@ -540,7 +540,7 @@
       
       <div class="form-row">
         <div class="form-group" style="flex:1; min-width:180px;">
-          <label>Valoare (MDL) *</label>
+          <label>Valoare (MDL) <span class="required">*</span></label>
           <input type="number" formControlName="value" placeholder="0.00">
         </div>
         <div class="form-group" style="flex:1; min-width:180px;">
@@ -551,7 +551,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Data achiziției</label>
+          <label>Data achiziției <span class="required">*</span></label>
           <input type="date" formControlName="purchaseDate" [max]="todayString">
         </div>
 
@@ -563,7 +563,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1.31.76 1.65 1.65 0 01-2.78 0A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-.76-1.31 1.65 1.65 0 010-2.78A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.6c.29-.19.62-.3.97-.3s.68.11.97.3A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.31-.76 2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.19.29.3.62.3.97s-.11.68-.3.97A1.65 1.65 0 0019.4 15z"/>
       </svg>
     </div>
-    <span class="btn-text">Setări garanție/asigurare/trucker</span>
+    <span class="btn-text">Setări suplimentare</span>
     <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
     </svg>
@@ -573,7 +573,7 @@
       </div>
 
       <div class="form-group">
-          <label>Spațiu *</label>
+          <label>Spațiu <span class="required">*</span></label>
           <div class="tree-picker-wrapper">
             <!-- Combobox: input + display -->
             <div class="tree-selected-display" [class.is-focused]="showSpaceSearchResults || treePickerVisible" (click)="$event.stopPropagation()">
@@ -645,7 +645,7 @@
 
       <div class="modal-actions">
         <button type="button" class="btn-cancel" (click)="closeModal()">Anulează</button>
-        <button type="submit" class="btn-save" [disabled]="assetForm.invalid || !assetForm.value.spaceId">
+        <button type="submit" class="btn-save" [disabled]="assetForm.invalid || !assetForm.value.spaceId || !assetForm.value.purchaseDate">
           {{editingAsset ? 'Salvează modificări' : 'Adaugă bun'}}
         </button>
       </div>

@@ -17,7 +17,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.router.events.subscribe(() => {
-      this.showHeader = !['/login', '/register'].includes(this.router.url);
+      this.showHeader = !['/login', '/register', '/forgot-password', '/reset-password'].includes(this.router.url);
     });
   }
 }

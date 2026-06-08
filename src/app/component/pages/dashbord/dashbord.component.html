@@ -4,14 +4,14 @@
     <div class="header-content">
       <div class="header-left">
         <h1 class="dashboard-title">Dashboard Gestionare Bunuri</h1>
-        <p class="dashboard-subtitle">Monitorizează și gestionează activele companiei tale</p>
+        <p class="dashboard-subtitle">Monitorizează și gestionează activele tale</p>
       </div>
       <div class="header-right">
         <div class="date-display">
           <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span id="current-date">{{ currentDate | date:'EEEE, d MMMM y' }}</span>
+          <span id="current-date">{{ formattedDate }}</span>
         </div>
       </div>
     </div>
@@ -206,7 +206,7 @@
       <div class="notifications-card">
         <div class="card-header">
           <h3>Notificări Recente</h3>
-          <a routerLink="/notifications" class="view-all">Vezi toate →</a>
+          
         </div>
         <div class="notifications-list" style="max-height: 400px; overflow-y: auto;">
           <ng-container *ngIf="notifications.length > 0; else noNotifications">

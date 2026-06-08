@@ -132,7 +132,7 @@ selectedSpaceName: string | null = null;
       category: ['', Validators.required],
       value: [0, [Validators.required, Validators.min(0)]],
       location: [''],
-      purchaseDate: [''],
+      purchaseDate: ['', Validators.required],
       warrantyEnd: [''],
       spaceId: [null, Validators.required],
       barcode: ['']
